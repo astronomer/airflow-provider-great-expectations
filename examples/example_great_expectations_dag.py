@@ -1,8 +1,13 @@
 # A sample DAG to show some functionality of the GE operator
 # You'll first need to install this operator:
-# `pip install -e .` (from the root directory of this repo)
-# You can then test-run a single task using:
-# `airflow test example_great_expectations_dag ge_checkpoint_pass 2020-01-01`
+# `pip install great_expectations_airflow`
+#
+# Make sure airflow is installed and your dags_folder is configured to point to this directory.
+#
+# You can then test-run a single task in this DAG using:
+# Airflow v1.x: `airflow test example_great_expectations_dag ge_checkpoint_pass 2020-01-01`
+# Airflow v2.x: `airflow tasks test example_great_expectations_dag ge_checkpoint_pass 2020-01-01`
+#
 # Note: The tasks that don't set an explicit data_context_root_dir need to be run from within
 # this examples directory, otherwise GE won't know where to find the data context
 
