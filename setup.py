@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name="airflow-provider-great-expectations",
     version="0.0.1",
-    description="An Airflow provider for Great Expectations",
+    description="An Apache Airflow provider for Great Expectations",
     long_description=long_description,
     long_description_content_type='text/markdown',
     url="https://github.com/great-expectations/great_expectations_airflow",
