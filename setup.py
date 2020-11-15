@@ -12,5 +12,6 @@ setuptools.setup(
     url="https://github.com/great-expectations/great_expectations_airflow",
     packages=setuptools.find_packages(),
     python_requires='>=3.6',
-    package_data={'': ['*.csv']},
+    package_data={'great_expectations_provider': ['examples/data/*.csv']},
+    include_package_data=True
 )
