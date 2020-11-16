@@ -14,7 +14,7 @@
 import os
 import airflow
 from airflow import DAG
-from great_expectations_airflow.operators.great_expectations import GreatExpectationsOperator
+from great_expectations_provider.operators.great_expectations import GreatExpectationsOperator
 
 default_args = {
     "owner": "Airflow",
