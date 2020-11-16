@@ -24,4 +24,4 @@ from great_expectations_provider.operators.great_expectations import GreatExpect
 
 See the [**examples**](./great_expectations_provider/examples) directory for an example DAG with some sample tasks that demonstrate operator functionality. The example DAG file contains a comment with instructions on how to run the examples.
 
-**This operator is in very early stages of development! Feel free to submit issues, PRs, or ping the current author (Sam Bail) in the Great Expectations Slack for feedback.
+**This operator is in very early stages of development! Feel free to submit issues, PRs, or ping the current author (Sam Bail) in the [Great Expectations Slack](http://greatexpectations.io/slack) for feedback. Thanks to [Pete DeJoy](https://github.com/petedejoy) and the [Astronomer.io](https://www.astronomer.io/) team for the support.
