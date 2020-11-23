@@ -42,6 +42,7 @@ class GreatExpectationsOperator(BaseOperator):
                  assets_to_validate=None,
                  checkpoint_name=None,
                  fail_task_on_validation_failure=True,
+                 fail_callback_function=None,
                  validation_operator_name="action_list_operator",
                  **kwargs
                  ):
@@ -87,6 +88,7 @@ class GreatExpectationsOperator(BaseOperator):
         self.checkpoint_name = checkpoint_name
 
         self.fail_task_on_validation_failure = fail_task_on_validation_failure
+        self.fail_callback_function = fail_callback_function
 
         self.validation_operator_name = validation_operator_name
 
@@ -127,7 +129,10 @@ class GreatExpectationsOperator(BaseOperator):
 
         if not results["success"]:
             if self.fail_task_on_validation_failure:
-                raise AirflowException("Validation with Great Expectations failed.")
+                if self.fail_callback_function is None:
+                    raise AirflowException("Validation with Great Expectations failed.")
+                else:
+                    self.fail_callback_function(results)
             else:
                 log.warning("Validation with Great Expectations failed. Continuing DAG execution because "
                             "fail_task_on_validation_failure is set to False.")
