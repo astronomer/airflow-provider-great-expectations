@@ -30,7 +30,7 @@ log = logging.getLogger(__name__)
 class GreatExpectationsOperator(BaseOperator):
     ui_color = '#AFEEEE'
     ui_fgcolor = '#000000'
-    template_fields = ['checkpoint_name']
+    template_fields = ['checkpoint_name', 'batch_kwargs', 'assets_to_validate']
 
     @apply_defaults
     def __init__(self,
