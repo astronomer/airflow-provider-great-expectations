@@ -28,9 +28,10 @@ from airflow.hooks.base_hook import BaseHook
 from airflow.utils.decorators import apply_defaults
 from airflow.utils.email import send_email
 
-from great_expectations import GreatExpectationsOperator
-from great_expectations.data_context.types.base import DataContextConfig
+from great_expectations_provider.operators.great_expectations import GreatExpectationsOperator
+from great_expectations.data_context.types.base import DataContextConfig, GCSStoreBackendDefaults
 from great_expectations.data_context import BaseDataContext
+
 
 log = logging.getLogger(__name__)
 
@@ -163,8 +164,7 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
             config_version=2,
             datasources={
                 "bq_datasource": {
-                    "credentials": {
-                        "url": "bigquery://" + self.gcp_project + "/" + self.bq_dataset_name + "?credentials_path=" +
+                    "credentials": { "url": "bigquery://" + self.gcp_project + "/" + self.bq_dataset_name + "?credentials_path=" +
                                credentials_path
                     },
                     "class_name": "SqlAlchemyDatasource",
@@ -175,67 +175,15 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
                     }
                 }
             },
-            expectations_store_name="expectations_GCS_store",
-            validations_store_name="validations_GCS_store",
-            evaluation_parameter_store_name="evaluation_parameter_store",
-            plugins_directory=None,
-            validation_operators={
-                "action_list_operator": {
-                    "class_name": "ActionListValidationOperator",
-                    "action_list": [
-                        {
-                            "name": "store_validation_result",
-                            "action": {"class_name": "StoreValidationResultAction"},
-                        },
-                        {
-                            "name": "store_evaluation_params",
-                            "action": {"class_name": "StoreEvaluationParametersAction"},
-                        },
-                        {
-                            "name": "update_data_docs",
-                            "action": {"class_name": "UpdateDataDocsAction"},
-                        },
-                    ],
-                }
-            },
-            stores={
-                'expectations_GCS_store': {
-                    'class_name': 'ExpectationsStore',
-                    'store_backend': {
-                        'class_name': 'TupleGCSStoreBackend',
-                        'project': self.gcp_project,
-                        'bucket': self.gcs_bucket,
-                        'prefix': self.gcs_expectations_prefix
-                    }
-                },
-                'validations_GCS_store': {
-                    'class_name': 'ValidationsStore',
-                    'store_backend': {
-                        'class_name': 'TupleGCSStoreBackend',
-                        'project': self.gcp_project,
-                        'bucket': self.gcs_bucket,
-                        'prefix': self.gcs_validations_prefix
-                    }
-                },
-                "evaluation_parameter_store": {"class_name": "EvaluationParameterStore"},
-            },
-            data_docs_sites={
-                "GCS_site": {
-                    "class_name": "SiteBuilder",
-                    "store_backend": {
-                        "class_name": "TupleGCSStoreBackend",
-                        "project": self.gcp_project,
-                        "bucket": self.gcs_bucket,
-                        'prefix': self.gcs_datadocs_prefix
-                    },
-                    "site_index_builder": {
-                        "class_name": "DefaultSiteIndexBuilder",
-                    },
-                }
-            },
-            config_variables_file_path=None,
-            commented_map=None,
+            store_backend_defaults=GCSStoreBackendDefaults(
+                default_bucket_name=self.gcs_bucket,
+                default_project_name=self.gcp_project,
+                validations_store_prefix=self.gcs_validations_prefix,
+                expectations_store_prefix=self.gcs_expectations_prefix,
+                data_docs_prefix=self.gcs_datadocs_prefix,
+            ),
         )
+
         return data_context_config
 
     def get_batch_kwargs(self):
@@ -274,7 +222,7 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
         # Expectations as part of the validation.
         data_docs_url = \
             self.data_context.get_docs_sites_urls(resource_identifier=validation_result_identifier,
-                                                  site_name='GCS_site')[0][
+                                                  site_name='gcs_site')[0][
                 'site_url']
         self.log.info("Data docs url is: %s", data_docs_url)
         if results["success"]:
