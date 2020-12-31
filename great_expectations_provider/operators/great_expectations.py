@@ -23,6 +23,7 @@ from airflow.models import BaseOperator
 from airflow.exceptions import AirflowException
 from airflow.utils.decorators import apply_defaults
 import great_expectations as ge
+from botocontext import SessionContext
 
 log = logging.getLogger(__name__)
 
@@ -43,6 +44,7 @@ class GreatExpectationsOperator(BaseOperator):
                  checkpoint_name=None,
                  fail_task_on_validation_failure=True,
                  validation_operator_name="action_list_operator",
+                 s3hook=None,
                  **kwargs
                  ):
         """
@@ -57,6 +59,7 @@ class GreatExpectationsOperator(BaseOperator):
             fail_task_on_validation_failure: Fail the Airflow task if the Great Expectation validation fails
             validation_operator_name: Optional name of a Great Expectations validation operator, defaults to
             action_list_operator
+            s3hook: Airflow S3Hook object with connection to be used by GE
             **kwargs: Optional kwargs
         """
         super().__init__(**kwargs)
@@ -89,47 +92,55 @@ class GreatExpectationsOperator(BaseOperator):
         self.fail_task_on_validation_failure = fail_task_on_validation_failure
 
         self.validation_operator_name = validation_operator_name
+        
+        self.context = SessionContext(hook=s3hook)
+        
+
 
     def execute(self, context):
         log.info("Running validation with Great Expectations...")
 
-        batches_to_validate = []
-        validation_operator_name = self.validation_operator_name
+        with self.context:
+            batches_to_validate = []
+            validation_operator_name = self.validation_operator_name
 
-        if self.batch_kwargs and self.expectation_suite_name:
-            batch = self.data_context.get_batch(self.batch_kwargs, self.expectation_suite_name)
-            batches_to_validate.append(batch)
-
-        elif self.checkpoint_name:
-            checkpoint = self.data_context.get_checkpoint(self.checkpoint_name)
-            validation_operator_name = checkpoint["validation_operator_name"]
-
-            for batch in checkpoint["batches"]:
-                batch_kwargs = batch["batch_kwargs"]
-                for suite_name in batch["expectation_suite_names"]:
-                    suite = self.data_context.get_expectation_suite(suite_name)
-                    batch = self.data_context.get_batch(batch_kwargs, suite)
-                    batches_to_validate.append(batch)
-
-        elif self.assets_to_validate:
-            for asset in self.assets_to_validate:
-                batch = self.data_context.get_batch(
-                    asset["batch_kwargs"],
-                    asset["expectation_suite_name"]
-                )
+            if self.batch_kwargs and self.expectation_suite_name:
+                batch = self.data_context.get_batch(self.batch_kwargs, self.expectation_suite_name)
                 batches_to_validate.append(batch)
 
-        results = self.data_context.run_validation_operator(
-            validation_operator_name,
-            assets_to_validate=batches_to_validate,
-            run_name=self.run_name
-        )
+            elif self.checkpoint_name:
+                checkpoint = self.data_context.get_checkpoint(self.checkpoint_name)
+                validation_operator_name = checkpoint["validation_operator_name"]
 
-        if not results["success"]:
-            if self.fail_task_on_validation_failure:
-                raise AirflowException("Validation with Great Expectations failed.")
+                for batch in checkpoint["batches"]:
+                    batch_kwargs = batch["batch_kwargs"]
+                    for suite_name in batch["expectation_suite_names"]:
+                        suite = self.data_context.get_expectation_suite(suite_name)
+                        batch = self.data_context.get_batch(batch_kwargs, suite)
+                        batches_to_validate.append(batch)
+
+            elif self.assets_to_validate:
+                for asset in self.assets_to_validate:
+                    batch = self.data_context.get_batch(
+                        asset["batch_kwargs"],
+                        asset["expectation_suite_name"]
+                    )
+                    batches_to_validate.append(batch)
+
+            results = self.data_context.run_validation_operator(
+                validation_operator_name,
+                assets_to_validate=batches_to_validate,
+                run_name=self.run_name
+            )
+
+            if not results["success"]:
+                if self.fail_task_on_validation_failure:
+                    if self.fail_callback_function is None:
+                        raise AirflowException("Validation with Great Expectations failed.")
+                    else:
+                        self.fail_callback_function(results)
+                else:
+                    log.warning("Validation with Great Expectations failed. Continuing DAG execution because "
+                                "fail_task_on_validation_failure is set to False.")
             else:
-                log.warning("Validation with Great Expectations failed. Continuing DAG execution because "
-                            "fail_task_on_validation_failure is set to False.")
-        else:
-            log.info("Validation with Great Expectations successful.")
+                log.info("Validation with Great Expectations successful.")
