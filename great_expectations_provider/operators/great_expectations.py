@@ -42,7 +42,7 @@ class GreatExpectationsOperator(BaseOperator):
                  assets_to_validate=None,
                  checkpoint_name=None,
                  fail_task_on_validation_failure=True,
-                 fail_callback_function=None,
+                 on_failure_callback=None,
                  validation_operator_name="action_list_operator",
                  **kwargs
                  ):
@@ -56,6 +56,7 @@ class GreatExpectationsOperator(BaseOperator):
             assets_to_validate: A list of dictionaries of batch_kwargs + expectation suites to use for validation
             checkpoint_name: A Checkpoint name to use for validation
             fail_task_on_validation_failure: Fail the Airflow task if the Great Expectation validation fails
+            on_failure_callback: callback funtion to execute if expectation fails
             validation_operator_name: Optional name of a Great Expectations validation operator, defaults to
             action_list_operator
             **kwargs: Optional kwargs
@@ -88,8 +89,7 @@ class GreatExpectationsOperator(BaseOperator):
         self.checkpoint_name = checkpoint_name
 
         self.fail_task_on_validation_failure = fail_task_on_validation_failure
-        self.fail_callback_function = fail_callback_function
-
+        self.on_failure_callback = on_failure_callback
         self.validation_operator_name = validation_operator_name
 
     def execute(self, context):
@@ -129,10 +129,10 @@ class GreatExpectationsOperator(BaseOperator):
 
         if not results["success"]:
             if self.fail_task_on_validation_failure:
-                if self.fail_callback_function is None:
+                if self.on_failure_callback is None:
                     raise AirflowException("Validation with Great Expectations failed.")
                 else:
-                    self.fail_callback_function(results)
+                    self.on_failure_callback(results)
             else:
                 log.warning("Validation with Great Expectations failed. Continuing DAG execution because "
                             "fail_task_on_validation_failure is set to False.")
