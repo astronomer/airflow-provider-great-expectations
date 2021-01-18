@@ -31,6 +31,7 @@ log = logging.getLogger(__name__)
 class GreatExpectationsOperator(BaseOperator):
     ui_color = '#AFEEEE'
     ui_fgcolor = '#000000'
+    template_fields = ['checkpoint_name', 'batch_kwargs', 'assets_to_validate']
 
     @apply_defaults
     def __init__(self,
@@ -43,6 +44,7 @@ class GreatExpectationsOperator(BaseOperator):
                  assets_to_validate=None,
                  checkpoint_name=None,
                  fail_task_on_validation_failure=True,
+                 on_failure_callback=None,
                  validation_operator_name="action_list_operator",
                  connection_hook=None,
                  **kwargs
@@ -54,9 +56,10 @@ class GreatExpectationsOperator(BaseOperator):
             data_context: A great_expectations DataContext object
             expectation_suite_name: The name of the Expectation Suite to use for validation
             batch_kwargs: The batch_kwargs to use for validation
-            assets_to_validate: A list of dictionaries of batch_kwargs + expectation suites to use for validation
+            assets_to_validate: A list of dictionaries of batch_kwargs + Expectation Suites to use for validation
             checkpoint_name: A Checkpoint name to use for validation
             fail_task_on_validation_failure: Fail the Airflow task if the Great Expectation validation fails
+            on_failure_callback: Callback funtion to execute if Expectation fails
             validation_operator_name: Optional name of a Great Expectations validation operator, defaults to
             action_list_operator
             connection_hook: Airflow Hook object with connection to be used by GE (for example, S3Hook)
@@ -90,7 +93,7 @@ class GreatExpectationsOperator(BaseOperator):
         self.checkpoint_name = checkpoint_name
 
         self.fail_task_on_validation_failure = fail_task_on_validation_failure
-
+        self.on_failure_callback = on_failure_callback
         self.validation_operator_name = validation_operator_name
         
         self.contextwrap = SessionContextWrap(hook=connection_hook)
@@ -133,14 +136,14 @@ class GreatExpectationsOperator(BaseOperator):
                 run_name=self.run_name
             )
 
-            if not results["success"]:
-                if self.fail_task_on_validation_failure:
-                    if self.fail_callback_function is None:
-                        raise AirflowException("Validation with Great Expectations failed.")
-                    else:
-                        self.fail_callback_function(results)
+        if not results["success"]:
+            if self.fail_task_on_validation_failure:
+                if self.on_failure_callback is None:
+                    raise AirflowException("Validation with Great Expectations failed.")
                 else:
-                    log.warning("Validation with Great Expectations failed. Continuing DAG execution because "
-                                "fail_task_on_validation_failure is set to False.")
+                    self.on_failure_callback(results)
             else:
-                log.info("Validation with Great Expectations successful.")
+                log.warning("Validation with Great Expectations failed. Continuing DAG execution because "
+                            "fail_task_on_validation_failure is set to False.")
+        else:
+            log.info("Validation with Great Expectations successful.")
