@@ -23,7 +23,7 @@ from airflow.models import BaseOperator
 from airflow.exceptions import AirflowException
 from airflow.utils.decorators import apply_defaults
 import great_expectations as ge
-from botocontext import SessionContext
+from context import SessionContextWrap
 
 log = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ class GreatExpectationsOperator(BaseOperator):
                  checkpoint_name=None,
                  fail_task_on_validation_failure=True,
                  validation_operator_name="action_list_operator",
-                 s3hook=None,
+                 connection_hook=None,
                  **kwargs
                  ):
         """
@@ -59,7 +59,7 @@ class GreatExpectationsOperator(BaseOperator):
             fail_task_on_validation_failure: Fail the Airflow task if the Great Expectation validation fails
             validation_operator_name: Optional name of a Great Expectations validation operator, defaults to
             action_list_operator
-            s3hook: Airflow S3Hook object with connection to be used by GE
+            connection_hook: Airflow Hook object with connection to be used by GE (for example, S3Hook)
             **kwargs: Optional kwargs
         """
         super().__init__(**kwargs)
@@ -93,14 +93,14 @@ class GreatExpectationsOperator(BaseOperator):
 
         self.validation_operator_name = validation_operator_name
         
-        self.context = SessionContext(hook=s3hook)
+        self.contextwrap = SessionContextWrap(hook=connection_hook)
         
 
 
     def execute(self, context):
         log.info("Running validation with Great Expectations...")
 
-        with self.context:
+        with self.contextwrap.context:
             batches_to_validate = []
             validation_operator_name = self.validation_operator_name
 
