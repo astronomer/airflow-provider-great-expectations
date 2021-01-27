@@ -20,7 +20,6 @@
 import datetime
 import logging
 import uuid
-import enum
 from urllib.parse import urlsplit
 
 from airflow.exceptions import AirflowException
@@ -34,11 +33,6 @@ from great_expectations.data_context import BaseDataContext
 
 
 log = logging.getLogger(__name__)
-
-
-class GreatExpectationsValidations(enum.Enum):
-    SQL = "SQL"
-    TABLE = "TABLE"
 
 
 class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
@@ -72,13 +66,12 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
         :param gcs_datadocs_prefix:  Google Cloud Storage prefix where the validation datadocs files should be saved.
             (e.g. 'ge/datadocs')
         :type gcs_datadocs_prefix: str
-        :param validation_type: For the set of data to be validated (i.e. compared against expectations), is it already
-            sitting in a BigQuery table or do you want to validate the data returned by a SQL query?  The options are
-            'TABLE' or 'SQL'.
-        :type validation_type: str
-        :param validation_type_input:  The name of the BigQuery table (dataset_name.table_name) if the validation_type
-            is 'TABLE' or the SQL query string if the validation_type is 'SQL'.
-        :type validation_type_input: str
+        :param query: a SQL query that defines the set of data to be validated (i.e. compared against expectations).
+            If the query parameter is filled in then the table parameter cannot be.
+        :type query: str
+        :param table:  The name of the BigQuery table (dataset_name.table_name) that defines the set of data to be
+            validated.  If the table parameter is filled in then the query parameter cannot be.
+        :type table: str
         :param bigquery_conn_id: Name of the BigQuery connection that contains the connection and credentials
             info needed to connect to BigQuery.
         :type bigquery_conn_id: str
@@ -99,8 +92,8 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
         :type datadocs_domain: str
         :param email_to:  Email address to receive any alerts when expectations are not met.
         :type email_to: str
-        :param fail_if_expectations_not_met: Fail the Airflow task if expectations are not met?  Defaults to True.
-        :type fail_if_expectations_not_met: boolean
+        :param fail_task_on_validation_failure: Fail the Airflow task if expectations are not met?  Defaults to True.
+        :type fail_task_on_validation_failure: boolean
     """
 
     _EMAIL_CONTENT = '''
@@ -122,17 +115,13 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
 
     @apply_defaults
     def __init__(self, *, gcp_project, expectation_suite_name, gcs_bucket, gcs_expectations_prefix,
-                 gcs_validations_prefix, gcs_datadocs_prefix, validation_type, validation_type_input,
+                 gcs_validations_prefix, gcs_datadocs_prefix, query=None, table=None,
                  bq_dataset_name, email_to, datadocs_domain='none', send_alert_email=True,
                  datadocs_link_in_email=False,
-                 fail_if_expectations_not_met=True, bigquery_conn_id='bigquery_default', **kwargs):
+                 fail_task_on_validation_failure=True, bigquery_conn_id='bigquery_default', **kwargs):
 
-        great_expectations_valid_type = set(item.value for item in GreatExpectationsValidations)
-
-        if validation_type.upper() not in GreatExpectationsValidations.__members__:
-            raise AirflowException(f"argument 'validation_type' must be one of {great_expectations_valid_type}")
-        self.validation_type = validation_type
-        self.validation_type_input = validation_type_input
+        self.query = query
+        self.table = table
         self.bigquery_conn_id = bigquery_conn_id
         self.bq_dataset_name = bq_dataset_name
         self.email_to = email_to
@@ -144,13 +133,17 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
         self.datadocs_domain = datadocs_domain
         self.send_alert_email = send_alert_email
         self.datadocs_link_in_email = datadocs_link_in_email
-        self.fail_if_expectations_not_met = fail_if_expectations_not_met
+        self.fail_task_on_validation_failure = fail_task_on_validation_failure
 
         # Create a data context and batch_kwargs that will then be handed off to the base operator to do the
         # data validation against expectations.
         data_context_config = self.create_data_context_config()
         data_context = BaseDataContext(project_config=data_context_config)
         batch_kwargs = self.get_batch_kwargs()
+        # Call the parent constructor but override the default alerting behavior in the parent by hard coding
+        # fail_task_on_validation_failure=False.  This is done because we want to alert a little differently
+        # than the parent class by sending an email to the user and then throwing an Airflow exception whenever
+        # data doesn't match expectations.
         super().__init__(data_context=data_context, batch_kwargs=batch_kwargs,
                          expectation_suite_name=expectation_suite_name, fail_task_on_validation_failure=False,
                          **kwargs)
@@ -192,13 +185,16 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
             "datasource": "bq_datasource",
         }
 
-        if self.validation_type == GreatExpectationsValidations.SQL.value:
-            batch_kwargs["query"] = self.validation_type_input
+        # Check that only one of the arguments is passed to set a data context (or none)
+        if self.query and self.table:
+            raise ValueError("Only one of query or table can be specified.")
+        if self.query:
+            batch_kwargs["query"] = self.query
             batch_kwargs["data_asset_name"] = self.bq_dataset_name
             batch_kwargs["bigquery_temp_table"] = self.get_temp_table_name(
                 'temp_ge_' + datetime.datetime.now().strftime('%Y%m%d') + '_', 10)
-        elif self.validation_type == GreatExpectationsValidations.TABLE.value:
-            batch_kwargs["table"] = self.validation_type_input
+        elif self.table:
+            batch_kwargs["table"] = self.table
             batch_kwargs["data_asset_name"] = self.bq_dataset_name
 
         self.log.info("batch_kwargs: " + str(batch_kwargs))
@@ -216,7 +212,7 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
 
     def execute(self, context):
         # Execute base operator's validation process
-        results = super().execute()
+        results = super().execute(context)
         validation_result_identifier = list(results['run_results'].keys())[0]
         # For the given validation_result_identifier, get a link to the data docs that were generated by Great
         # Expectations as part of the validation.
@@ -224,15 +220,11 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
             self.data_context.get_docs_sites_urls(resource_identifier=validation_result_identifier,
                                                   site_name='gcs_site')[0][
                 'site_url']
-        self.log.info("Data docs url is: %s", data_docs_url)
-        if results["success"]:
-            self.log.info('All expectations met')
-        else:
-            self.log.info('One or more expectations were not met.')
+        if not results["success"]:
             if self.send_alert_email:
                 self.log.info('Sending alert email...')
                 self.send_alert(data_docs_url)
-            if self.fail_if_expectations_not_met:
+            if self.fail_task_on_validation_failure:
                 raise AirflowException('One or more expectations were not met')
 
     def send_alert(self, data_docs_url='none'):
