@@ -1,6 +1,6 @@
 # Apache Airflow Provider for Great Expectations
 
-**Early development as of 11/16/2020**
+**Experimental library as of February 2021**
 
 An Airflow operator for [Great Expectations](greatexpectations.io), a Python library for testing and validating data.
 
@@ -12,12 +12,22 @@ Pre-requisites: An environment running `great_expectations` and `apache-airflow`
 pip install airflow-provider-great-expectations
 ```
 
+In order to run the `BigQueryOperator`, you will also need to install the relevant dependencies: `pybigquery` and `apache-airflow-providers-google`
+
+
 ## Modules
 
 [Great Expectations Operator](./great_expectations_provider/operators/great_expectations.py): A base operator for Great Expectations. Import into your DAG via: 
 
 ```
 from great_expectations_provider.operators.great_expectations import GreatExpectationsOperator
+```
+
+
+[Great Expectations BigQuery Operator](./great_expectations_provider/operators/great_expectations_biquery.py): An operator for Great Expectations that provides some pre-set parameters for a BigQuery Datasource and Expectation, Validation, and Data Docs stores in Google Cloud Storage. The operator can also be configured to send email on validation failure. See the docstrings in the class for more configuration options. Import into your DAG via: 
+
+```
+from great_expectations_provider.operators.great_expectations_bigquery import GreatExpectationsBigQueryOperator
 ```
 
 ## Examples
