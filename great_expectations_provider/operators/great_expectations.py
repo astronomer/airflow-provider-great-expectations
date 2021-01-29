@@ -139,3 +139,5 @@ class GreatExpectationsOperator(BaseOperator):
                             "fail_task_on_validation_failure is set to False.")
         else:
             log.info("Validation with Great Expectations successful.")
+
+        return results
