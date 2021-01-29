@@ -37,27 +37,27 @@ log = logging.getLogger(__name__)
 
 class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
     """
-         Use Great Expectations to validate data expectations against a BigQuery table or the result of a SQL query.
-         The expectations need to be stored in a JSON file sitting in an accessible GCS bucket.  The validation results
+         Use Great Expectations to validate data Expectations against a BigQuery table or the result of a SQL query.
+         The Expectations need to be stored in a JSON file sitting in an accessible GCS bucket.  The validation results
          are output to GCS in both JSON and HTML formats.
          Here's the current list of expectations types:
          https://docs.greatexpectations.io/en/latest/reference/glossary_of_expectations.html
          Here's how to create expectations files:
          https://docs.greatexpectations.io/en/latest/guides/tutorials/how_to_create_expectations.html
-        :param gcp_project:  The GCP project which houses the GCS buckets where the expectations files are stored
+        :param gcp_project:  The GCP project which houses the GCS buckets where the Expectations files are stored
             and where the validation files & data docs will be output (e.g. HTML docs showing if the data matches
-            expectations).
+            Expectations).
         :type gcp_project: str
-        :param expectations_suite_name: The name of the expectations suite containing the expectations for the data.
-            The suite should be in a JSON file with the same name as the suite (e.g. if the expectations suite named
-            in the expectations file is 'my_suite' then the expectations file should be called my_suite.json)
+        :param expectations_suite_name: The name of the Expectation Suite containing the Expectations for the data.
+            The suite should be in a JSON file with the same name as the suite (e.g. if the Expectations Suite named
+            in the Expectation file is 'my_suite' then the Expectations file should be called my_suite.json)
         :type expectations_suite_name: str
         :param gcs_bucket:  Google Cloud Storage bucket where expectation files are stored and where validation outputs
             and data docs will be saved.
             (e.g. gs://<gcs_bucket>/<gcs_expectations_prefix>/<expectations_file_name>
                   gs://mybucket/myprefix/myexpectationsfile.json )
         :type gcs_bucket: str
-        :param gcs_expectations_prefix:  Google Cloud Storage prefix where the expectations file can be found.
+        :param gcs_expectations_prefix:  Google Cloud Storage prefix where the Expectations file can be found.
             (e.g. 'ge/expectations')
         :type gcs_expectations_prefix: str
         :param gcs_validations_prefix:  Google Cloud Storage prefix where the validation output files should be saved.
@@ -66,19 +66,20 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
         :param gcs_datadocs_prefix:  Google Cloud Storage prefix where the validation datadocs files should be saved.
             (e.g. 'ge/datadocs')
         :type gcs_datadocs_prefix: str
-        :param query: a SQL query that defines the set of data to be validated (i.e. compared against expectations).
+        :param query: a SQL query that defines the set of data to be validated (i.e. compared against Expectations).
             If the query parameter is filled in then the table parameter cannot be.
         :type query: str
         :param table:  The name of the BigQuery table (dataset_name.table_name) that defines the set of data to be
             validated.  If the table parameter is filled in then the query parameter cannot be.
         :type table: str
-        :param bigquery_conn_id: Name of the BigQuery connection that contains the connection and credentials
+        :param bigquery_conn_id: Name of the BigQuery connection (as configured in Airflow) that contains the connection and credentials
             info needed to connect to BigQuery.
         :type bigquery_conn_id: str
         :param bq_dataset_name:  The name of the BigQuery data set where any temp tables will be created that are needed
             as part of the GE validation process.
         :type bq_dataset_name: str
-        :param send_alert_email:  Send an alert email if one or more expectations fail to be met?  Defaults to True.
+        :param send_alert_email:  Send an alert email if one or more Expectations fail to be met.  Defaults to True. This requires configuring 
+            an SMTP server in the Airflow config.
         :type send_alert_email: boolean
         :param datadocs_link_in_email:  Include in the alert email a link to the data doc in GCS that shows the
             validation results?  Defaults to False because there's extra setup needed to serve HTML data docs stored in
@@ -90,9 +91,9 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
         :param datadocs_domain: The domain from which the data docs are set up to be served (e.g. ge-data-docs-dot-my-gcp-project.ue.r.appspot.com).
             This only needs to be set if datadocs_link_in_email is set to True.
         :type datadocs_domain: str
-        :param email_to:  Email address to receive any alerts when expectations are not met.
+        :param email_to:  Email address to receive any alerts when Expectations are not met.
         :type email_to: str
-        :param fail_task_on_validation_failure: Fail the Airflow task if expectations are not met?  Defaults to True.
+        :param fail_task_on_validation_failure: Fail the Airflow task if Expectations are not met?  Defaults to True.
         :type fail_task_on_validation_failure: boolean
     """
 
@@ -136,14 +137,14 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
         self.fail_task_on_validation_failure = fail_task_on_validation_failure
 
         # Create a data context and batch_kwargs that will then be handed off to the base operator to do the
-        # data validation against expectations.
+        # data validation against Expectations.
         data_context_config = self.create_data_context_config()
         data_context = BaseDataContext(project_config=data_context_config)
         batch_kwargs = self.get_batch_kwargs()
         # Call the parent constructor but override the default alerting behavior in the parent by hard coding
         # fail_task_on_validation_failure=False.  This is done because we want to alert a little differently
         # than the parent class by sending an email to the user and then throwing an Airflow exception whenever
-        # data doesn't match expectations.
+        # data doesn't match Expectations.
         super().__init__(data_context=data_context, batch_kwargs=batch_kwargs,
                          expectation_suite_name=expectation_suite_name, fail_task_on_validation_failure=False,
                          **kwargs)
