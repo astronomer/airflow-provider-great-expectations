@@ -1,5 +1,8 @@
 # Apache Airflow Provider for Great Expectations
 
+## 0.0.4
+* [ENHANCEMENT] Adding BigQuery operator for easier use with BigQuery and Google Cloud Storage
+
 ## 0.0.3
 * [ENHANCEMENT] Adding template fields
 * [ENHANCEMENT] Adding fail callback function parameter
