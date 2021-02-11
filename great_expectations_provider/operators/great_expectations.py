@@ -45,6 +45,7 @@ class GreatExpectationsOperator(BaseOperator):
                  fail_task_on_validation_failure=True,
                  on_failure_callback=None,
                  validation_operator_name="action_list_operator",
+                 generate_local_datadocs=False,
                  **kwargs
                  ):
         """
@@ -92,6 +93,7 @@ class GreatExpectationsOperator(BaseOperator):
         self.fail_task_on_validation_failure = fail_task_on_validation_failure
         self.on_failure_callback = on_failure_callback
         self.validation_operator_name = validation_operator_name
+        self.generate_local_datadocs = generate_local_datadocs
 
     def execute(self, context):
         log.info("Running validation with Great Expectations...")
@@ -127,6 +129,9 @@ class GreatExpectationsOperator(BaseOperator):
             assets_to_validate=batches_to_validate,
             run_name=self.run_name
         )
+
+        if self.generate_local_datadocs:
+            self.data_context.build_data_docs()
 
         if not results["success"]:
             if self.fail_task_on_validation_failure:
