@@ -114,4 +114,19 @@ bq_task = GreatExpectationsBigQueryOperator(
     dag=dag
 )
 
+# This runs an expectation suite against a data asset that passes the tests
+# and automatically generates the Great Expectations data docs at your local path
+# under great_expectations/data_docs
+data_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data/yellow_tripdata_sample_2019-01.csv')
+ge_batch_kwargs_pass = GreatExpectationsOperator(
+    task_id='ge_batch_kwargs_pass',
+    expectation_suite_name='taxi.demo',
+    generate_local_datadocs=True,
+    batch_kwargs={
+        'path': data_file,
+        'datasource': 'data__dir'
+    },
+    dag=dag
+)
+
 # TODO: Add an example for creating an in-memory data context using a dictionary config
