@@ -37,7 +37,9 @@ log = logging.getLogger(__name__)
 
 class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
     """
-         Use Great Expectations to validate data Expectations against a BigQuery table or the result of a SQL query.
+
+         An operator that allows you to use Great Expectations to validate data Expectations against a BigQuery table or the result of a SQL query.
+         
          The Expectations need to be stored in a JSON file sitting in an accessible GCS bucket.  The validation results
          are output to GCS in both JSON and HTML formats.
          Here's the current list of expectations types:
