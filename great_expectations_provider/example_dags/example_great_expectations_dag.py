@@ -14,6 +14,10 @@
 # Note: The tasks that don't set an explicit data_context_root_dir need to be run from within
 # this examples directory, otherwise GE won't know where to find the data context.
 
+"""
+A DAG that demonstrates implementation of the GreatExpectationsOperator and GreatExpectationsBigQueryOperator. Note you wil need the necessary data assets and expectations suites imported to your project for this to work- there are available in the provider source directory.
+"""
+
 import os
 import airflow
 from airflow import DAG
@@ -94,11 +98,6 @@ ge_checkpoint_pass_root_dir = GreatExpectationsOperator(
     dag=dag
 )
 
-# This is an example for the BigQuery operator which connects to BigQuery as a Datasource
-# and uses Google Cloud Storage for the Expectation, Validation, and Data Docs stores.
-# This example will require a BigQuery connection with the name "my_bigquery_conn_id" to be configured in
-# Airflow, see the instructions here: https://airflow.apache.org/docs/apache-airflow/stable/howto/connection.html
-# NOTE: This is a minimal working example. Check out the operator docstrings for more configuration options.
 bq_task = GreatExpectationsBigQueryOperator(
     task_id='bq_task',
     gcp_project='my_project',
