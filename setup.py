@@ -11,8 +11,9 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url="https://github.com/great-expectations/airflow-provider-great-expectations",
+    install_requires=['apache-airflow>=1.10', 'great-expectations<=0.13.7'],
     packages=setuptools.find_packages(),
     python_requires='>=3.6',
-    package_data={'great_expectations_provider': ['examples/data/*.csv']},
+    package_data={'great_expectations_provider': ['example_dags/data/*.csv']},
     include_package_data=True
 )
