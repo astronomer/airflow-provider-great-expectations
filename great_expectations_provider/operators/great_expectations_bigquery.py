@@ -46,6 +46,7 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
          https://docs.greatexpectations.io/en/latest/reference/glossary_of_expectations.html
          Here's how to create expectations files:
          https://docs.greatexpectations.io/en/latest/guides/tutorials/how_to_create_expectations.html
+         
         :param gcp_project:  The GCP project which houses the GCS buckets where the Expectations files are stored
             and where the validation files & data docs will be output (e.g. HTML docs showing if the data matches
             Expectations).
