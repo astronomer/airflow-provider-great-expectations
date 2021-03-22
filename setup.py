@@ -8,6 +8,10 @@ setuptools.setup(
     version="0.0.4",
     author="Great Expectations",
     description="An Apache Airflow provider for Great Expectations",
+    entry_points='''
+        [apache_airflow_provider]
+        provider_info=great_expectations_provider.__init__:get_provider_info
+    ''',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url="https://github.com/great-expectations/airflow-provider-great-expectations",
