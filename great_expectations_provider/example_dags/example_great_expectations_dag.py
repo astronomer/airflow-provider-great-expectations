@@ -1,21 +1,24 @@
-# A sample DAG to show some functionality of the GE operator. Steps to run:
-#
-# 1. You'll first need to install this operator:
-# `pip install great_expectations_airflow`
-#
-# 2. Make sure airflow is installed and your dags_folder is configured to point to this directory.
-#
-# 3. When running a checkpoint task, change the path to the data directory in great_expectations/checkpoint/*.yml
-#
-# 4. You can then test-run a single task in this DAG using:
-# Airflow v1.x: `airflow test example_great_expectations_dag ge_batch_kwargs_pass 2020-01-01`
-# Airflow v2.x: `airflow tasks test example_great_expectations_dag ge_batch_kwargs_pass 2020-01-01`
-#
-# Note: The tasks that don't set an explicit data_context_root_dir need to be run from within
-# this examples directory, otherwise GE won't know where to find the data context.
-
 """
 A DAG that demonstrates implementation of the GreatExpectationsOperator and GreatExpectationsBigQueryOperator. Note you wil need the necessary data assets and expectations suites imported to your project for this to work- there are available in the provider source directory.
+
+Steps to run:
+
+1. Download the Astronomer CLI and initialize a project: https://www.astronomer.io/docs/cloud/stable/develop/cli-quickstart
+
+2. Add airflow-provider-great-expectations to your `requirements.txt` file.
+
+3. Place this file in the `/dags` folder of your Astro project.
+
+3. Add your Great Expectations context and data to the `include` directory of your project. You can copy the template context and data in the provider source if you'd prefer to start from our boilerplate.
+https://github.com/great-expectations/airflow-provider-great-expectations
+
+4. If you're running a checkpoint task against a new data source, be sure change the path to the data directory in great_expectations/checkpoint/*.yml
+
+5. You can then test-run a single task in this DAG using:
+Airflow v1.x: `airflow test example_great_expectations_dag ge_batch_kwargs_pass 2020-01-01`
+Airflow v2.x: `airflow tasks test example_great_expectations_dag ge_batch_kwargs_pass 2020-01-01`
+
+Note: You'll need to change the `ge_root_dir` path, `data_file` path, and data paths in your checkpoints if you are running this in a bespoke operating environment.
 """
 
 import os
@@ -34,8 +37,9 @@ dag = DAG(
     default_args=default_args
 )
 
-# This runs an expectation suite against a data asset that passes the tests
-data_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data/yellow_tripdata_sample_2019-01.csv')
+# This runs an expectation suite against a data asset that passes the tests. You may need to change this path if you do not have your `data`
+# directory living in a top-level `include` directory.
+data_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'include', 'data/yellow_tripdata_sample_2019-01.csv')
 ge_batch_kwargs_pass = GreatExpectationsOperator(
     task_id='ge_batch_kwargs_pass',
     expectation_suite_name='taxi.demo',
@@ -88,8 +92,9 @@ ge_checkpoint_fail_but_continue = GreatExpectationsOperator(
 )
 
 # This runs a checkpoint and passes in a root dir.
-# Make sure the checkpoint yml file has the correct path to the data file.
-ge_root_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'great_expectations')
+# Make sure the checkpoint yml file has the correct path to the data file. You also may need to change this path if you do not have your `great_expectations`
+# checkpoints living in a top-level `include` directory.
+ge_root_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'include', 'great_expectations')
 ge_checkpoint_pass_root_dir = GreatExpectationsOperator(
     task_id='ge_checkpoint_pass_root_dir',
     run_name='ge_airflow_run',
