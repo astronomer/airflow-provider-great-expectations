@@ -1,5 +1,7 @@
 """
-A DAG that demonstrates implementation of the GreatExpectationsOperator and GreatExpectationsBigQueryOperator. Note you wil need the necessary data assets and expectations suites imported to your project for this to work- there are available in the provider source directory.
+A DAG that demonstrates implementation of the GreatExpectationsOperator and GreatExpectationsBigQueryOperator. 
+
+Note: you wil need to reference the necessary data assets and expectations suites in your project. You can find samples available in the provider source directory.
 
 Steps to run:
 
@@ -18,9 +20,10 @@ https://github.com/great-expectations/airflow-provider-great-expectations
 Airflow v1.x: `airflow test example_great_expectations_dag ge_batch_kwargs_pass 2020-01-01`
 Airflow v2.x: `airflow tasks test example_great_expectations_dag ge_batch_kwargs_pass 2020-01-01`
 
-Note: You'll need to change the `ge_root_dir` path, `data_file` path, and data paths in your checkpoints if you are running this in a bespoke operating environment.
+Note: You'll need to set the `ge_root_dir` path, `data_file` path, and data paths in your checkpoints if you are running this in a bespoke operating environment.
 """
 
+import logging
 import os
 import airflow
 from airflow import DAG
@@ -37,9 +40,14 @@ dag = DAG(
     default_args=default_args
 )
 
-# This runs an expectation suite against a data asset that passes the tests. You may need to change this path if you do not have your `data`
-# directory living in a top-level `include` directory.
-data_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'include', 'data/yellow_tripdata_sample_2019-01.csv')
+# This runs an expectation suite against a sample data asset. You may need to change these paths if you do not have your `data`
+# directory living in a top-level `include` directory. Ensure the checkpoint yml files have the correct path to the data file.
+base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+data_file = os.path.join(base_path, 'include',
+                         'data/yellow_tripdata_sample_2019-01.csv')
+ge_root_dir = os.path.join(base_path, 'include', 'great_expectations')
+
+
 ge_batch_kwargs_pass = GreatExpectationsOperator(
     task_id='ge_batch_kwargs_pass',
     expectation_suite_name='taxi.demo',
@@ -47,7 +55,9 @@ ge_batch_kwargs_pass = GreatExpectationsOperator(
         'path': data_file,
         'datasource': 'data__dir'
     },
-    dag=dag
+    data_context_root_dir=ge_root_dir,
+    dag=dag,
+
 )
 
 # This runs an expectation suite against a data asset that passes the tests
@@ -62,7 +72,8 @@ ge_batch_kwargs_list_pass = GreatExpectationsOperator(
             'expectation_suite_name': 'taxi.demo'
         }
     ],
-    dag=dag
+    data_context_root_dir=ge_root_dir,
+    dag=dag,
 )
 
 # This runs a checkpoint that will pass. Make sure the checkpoint yml file has the correct path to the data file.
@@ -70,6 +81,7 @@ ge_checkpoint_pass = GreatExpectationsOperator(
     task_id='ge_checkpoint_pass',
     run_name='ge_airflow_run',
     checkpoint_name='taxi.pass.chk',
+    data_context_root_dir=ge_root_dir,
     dag=dag
 )
 
@@ -78,23 +90,21 @@ ge_checkpoint_fail = GreatExpectationsOperator(
     task_id='ge_checkpoint_fail',
     run_name='ge_airflow_run',
     checkpoint_name='taxi.fail.chk',
+    data_context_root_dir=ge_root_dir,
     dag=dag
 )
 
 # This runs a checkpoint that will fail, but we set a flag to exit the task successfully.
-# Make sure the checkpoint yml file has the correct path to the data file.
 ge_checkpoint_fail_but_continue = GreatExpectationsOperator(
     task_id='ge_checkpoint_fail_but_continue',
     run_name='ge_airflow_run',
     checkpoint_name='taxi.fail.chk',
     fail_task_on_validation_failure=False,
+    data_context_root_dir=ge_root_dir,
     dag=dag
 )
 
 # This runs a checkpoint and passes in a root dir.
-# Make sure the checkpoint yml file has the correct path to the data file. You also may need to change this path if you do not have your `great_expectations`
-# checkpoints living in a top-level `include` directory.
-ge_root_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'include', 'great_expectations')
 ge_checkpoint_pass_root_dir = GreatExpectationsOperator(
     task_id='ge_checkpoint_pass_root_dir',
     run_name='ge_airflow_run',
@@ -107,14 +117,18 @@ bq_task = GreatExpectationsBigQueryOperator(
     task_id='bq_task',
     gcp_project='my_project',
     gcs_bucket='my_bucket',
-    gcs_expectations_prefix='expectations',  # GE will use a folder "my_bucket/expectations"
-    gcs_validations_prefix='validations',  # GE will use a folder "my_bucket/validations"
+    # GE will use a folder "my_bucket/expectations"
+    gcs_expectations_prefix='expectations',
+    # GE will use a folder "my_bucket/validations"
+    gcs_validations_prefix='validations',
     gcs_datadocs_prefix='data_docs',  # GE will use a folder "my_bucket/data_docs"
-    expectation_suite_name='taxi.demo',  # GE will look for a file my_bucket/expectations/taxi/demo.json
+    # GE will look for a file my_bucket/expectations/taxi/demo.json
+    expectation_suite_name='taxi.demo',
     table='my_table_in_bigquery',
     bq_dataset_name='my_dataset',
     bigquery_conn_id='my_bigquery_conn_id',
     send_alert_email=False,
+    email_to='your@email.com',
     dag=dag
 )
 

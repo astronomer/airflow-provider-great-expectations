@@ -21,6 +21,8 @@ pip install airflow-provider-great-expectations
 
 In order to run the `BigQueryOperator`, you will also need to install the relevant dependencies: `pybigquery` and `apache-airflow-providers-google`
 
+Depending on your use-case, you might need to add `ENV AIRFLOW__CORE__ENABLE_XCOM_PICKLING=true` to your Dockerfile to enable XCOM to pass data between tasks.
+
 
 ## Modules
 
