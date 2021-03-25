@@ -41,6 +41,13 @@ from great_expectations_provider.operators.great_expectations_bigquery import Gr
 
 ## Examples
 
-See the [**examples**](https://github.com/great-expectations/airflow-provider-great-expectations/tree/main/great_expectations_provider/example_dags) directory for an example DAG with some sample tasks that demonstrate operator functionality. The example DAG file contains a comment with instructions on how to run the examples.
+See the [**example_dags**](https://github.com/great-expectations/airflow-provider-great-expectations/tree/main/great_expectations_provider/example_dags) directory for an example DAG with some sample tasks that demonstrate operator functionality. The example DAG file contains a comment with instructions on how to run the examples.
+
+To run these examples:
+1. Initialize a project with the [Astro CLI](https://www.astronomer.io/docs/cloud/stable/develop/cli-quickstart)
+2. Copy the example DAG into the `dags/` folder of your astro project
+3. Copy the directories in the `include` folder of this repository into the `include` directory of your Astro project
+4. Add `airflow-provider-great-expectations` to your `requirements.txt`
+5. Run `astro dev start` to view the DAG on a local Airflow instance (you will need Docker running)
 
 **This operator is in early stages of development! Feel free to submit issues, PRs, or join the #integration-airflow channel in the [Great Expectations Slack](http://greatexpectations.io/slack) for feedback. Thanks to [Pete DeJoy](https://github.com/petedejoy) and the [Astronomer.io](https://www.astronomer.io/) team for the support.

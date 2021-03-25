@@ -18,7 +18,7 @@ setuptools.setup(
     install_requires=['apache-airflow>=1.10',
                       'great-expectations<=0.13.7',
                       'pybigquery==0.5.0'],
-    packages=['great_expectations_provider']
+    packages=['great_expectations_provider'],
     python_requires='>=3.6',
     include_package_data=True
 )
