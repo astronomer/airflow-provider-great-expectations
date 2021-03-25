@@ -125,7 +125,6 @@ class GreatExpectationsOperator(BaseOperator):
         context_config_version = self.data_context.get_ge_config_version()
 
         if context_config_version == 2.0:
-            print(f"Context config version is {context_config_version}")
             instantiated_batches_to_validate = []
             for batch in batches_to_validate:
                 for suite_name in batch["expectation_suite_names"]:
@@ -142,7 +141,6 @@ class GreatExpectationsOperator(BaseOperator):
             )
 
         elif context_config_version == 3.0:
-            print(f"Context config version is {context_config_version}")
             results = LegacyCheckpoint(
                 name="_temp_checkpoint",
                 data_context=self.data_context,
