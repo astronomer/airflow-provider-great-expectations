@@ -17,7 +17,7 @@ batches:
       # Note this path is designed to integrate with an Astronomer Airflow project where the top-level
       # data and great_expectations directories live in `/include`. Changes will need to be made to this path
       # if you are running in a separate context.
-      path: '/usr/local/airflow/include/data/yellow_tripdata_sample_2019-01.csv'
+      path: /usr/local/airflow/include/data/yellow_tripdata_sample_2019-01.csv
       datasource: data__dir
       data_asset_name: yellow_tripdata_sample_2019-01
     expectation_suite_names: # one or more suites may validate against a single batch
