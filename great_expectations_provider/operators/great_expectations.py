@@ -45,7 +45,7 @@ class GreatExpectationsOperator(BaseOperator):
                  checkpoint_name=None,
                  fail_task_on_validation_failure=True,
                  on_failure_callback=None,
-                 # validation_operator_name="action_list_operator",
+                 validation_operator_name="action_list_operator",
                  **kwargs
                  ):
         """
@@ -92,12 +92,12 @@ class GreatExpectationsOperator(BaseOperator):
 
         self.fail_task_on_validation_failure = fail_task_on_validation_failure
         self.on_failure_callback = on_failure_callback
-        # self.validation_operator_name = validation_operator_name
+        self.validation_operator_name = validation_operator_name
 
     def execute(self, context):
         log.info("Running validation with Great Expectations...")
         batches_to_validate = []
-        # validation_operator_name = self.validation_operator_name
+        validation_operator_name = self.validation_operator_name
 
         if self.batch_kwargs and self.expectation_suite_name:
             # batch = self.data_context.get_batch(self.batch_kwargs, self.expectation_suite_name)
@@ -108,12 +108,9 @@ class GreatExpectationsOperator(BaseOperator):
             checkpoint = self.data_context.get_checkpoint(self.checkpoint_name)
 
             for batch in checkpoint.batches:
-                print(type(batch))
-                print(batch)
-                print(batch.__dir__)
+
                 batch_kwargs = batch["batch_kwargs"]
                 for suite_name in batch["expectation_suite_names"]:
-                    print(f"suite_name is {suite_name}")
                     batch = {"batch_kwargs": batch_kwargs, "expectation_suite_names": [suite_name]}
                     batches_to_validate.append(batch)
 
@@ -125,16 +122,37 @@ class GreatExpectationsOperator(BaseOperator):
                 }
                 batches_to_validate.append(batch)
 
-        print("PRINTING 4")
-        print(f"batches_to_validate:{batches_to_validate}")
-        results = LegacyCheckpoint(
-            name="_temp_checkpoint",
-            data_context=self.data_context,
-            batches=batches_to_validate,
-            validation_operator_name="action_list_operator"
-        ).run()
+        context_config_version = self.data_context.get_ge_config_version()
 
-        print("PRINTING 5")
+        if context_config_version == 2.0:
+            print(f"Context config version is {context_config_version}")
+            instantiated_batches_to_validate = []
+            for batch in batches_to_validate:
+                for suite_name in batch["expectation_suite_names"]:
+                    instantiated_batch = self.data_context.get_batch(
+                        batch["batch_kwargs"],
+                        suite_name
+                    )
+                    instantiated_batches_to_validate.append(instantiated_batch)
+
+            results = self.data_context.run_validation_operator(
+                validation_operator_name,
+                assets_to_validate=instantiated_batches_to_validate,
+                run_name=self.run_name
+            )
+
+        elif context_config_version == 3.0:
+            print(f"Context config version is {context_config_version}")
+            results = LegacyCheckpoint(
+                name="_temp_checkpoint",
+                data_context=self.data_context,
+                batches=batches_to_validate,
+            ).run()
+
+        else:
+            raise ValueError("Great Expectations configuration version not recognized. "
+                             "Config version must be 2.0 or 3.0")
+
         if not results["success"]:
             if self.fail_task_on_validation_failure:
                 if self.on_failure_callback is None:
