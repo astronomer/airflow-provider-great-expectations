@@ -11,12 +11,10 @@ Steps to run:
 
 3. Place this file in the `/dags` folder of your Astro project.
 
-4. Be sure to flip the `enable_xcom_pickling` value in your airflow.cfg to true. You can do this by adding `ENV AIRFLOW__CORE__ENABLE_XCOM_PICKLING=True` to your Dockerfile.
-
-4=5. Add your Great Expectations context and data to the `include` directory of your project. You can copy the template context and data in the provider source if you'd prefer to start from our boilerplate.
+3. Add your Great Expectations context and data to the `include` directory of your project. You can copy the template context and data in the provider source if you'd prefer to start from our boilerplate.
 https://github.com/great-expectations/airflow-provider-great-expectations
 
-6. If you're running a checkpoint task against a new data source, be sure change the path to the data directory in great_expectations/checkpoint/*.yml
+4. If you're running a checkpoint task against a new data source, be sure change the path to the data directory in great_expectations/checkpoint/*.yml
 
 Note: You'll need to set the `ge_root_dir` path, `data_file` path, and data paths in your checkpoints if you are running this in a bespoke operating environment.
 """
@@ -55,7 +53,6 @@ ge_batch_kwargs_pass = GreatExpectationsOperator(
     },
     data_context_root_dir=ge_root_dir,
     dag=dag,
-
 )
 
 # This runs an expectation suite against a data asset that passes the tests
@@ -110,4 +107,5 @@ ge_checkpoint_pass_root_dir = GreatExpectationsOperator(
     data_context_root_dir=ge_root_dir,
     dag=dag
 )
-
+ 
+ge_batch_kwargs_list_pass >> ge_checkpoint_pass_root_dir >> ge_batch_kwargs_pass >>ge_checkpoint_fail_but_continue >> ge_checkpoint_pass >> ge_checkpoint_fail
