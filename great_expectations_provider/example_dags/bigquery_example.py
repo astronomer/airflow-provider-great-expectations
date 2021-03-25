@@ -14,9 +14,11 @@ Steps to run:
 3. Add your Great Expectations context and data to the `include` directory of your project. You can copy the template context and data in the provider source if you'd prefer to start from our boilerplate.
 https://github.com/great-expectations/airflow-provider-great-expectations
 
-4. If you're running a checkpoint task against a new data source, be sure change the path to the data directory in great_expectations/checkpoint/*.yml
+4. Be sure to flip the `enable_xcom_pickling` value in your airflow.cfg to true. You can do this by adding `ENV AIRFLOW__CORE__ENABLE_XCOM_PICKLING=True` to your Dockerfile.
 
-5. Add a bigquery connection and title it `my_bigquery_conn_id`.
+5. If you're running a checkpoint task against a new data source, be sure change the path to the data directory in great_expectations/checkpoint/*.yml
+
+6. Add a bigquery connection and title it `my_bigquery_conn_id`.
 
 Note: You'll need to set the `ge_root_dir` path, `data_file` path, and data paths in your checkpoints if you are running this in a bespoke operating environment.
 """

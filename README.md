@@ -43,12 +43,15 @@ from great_expectations_provider.operators.great_expectations_bigquery import Gr
 
 See the [**example_dags**](https://github.com/great-expectations/airflow-provider-great-expectations/tree/main/great_expectations_provider/example_dags) directory for an example DAG with some sample tasks that demonstrate operator functionality. The example DAG file contains a comment with instructions on how to run the examples.
 
+Note that to make these operators work, you will need to change the value of [`enable_xcom_pickling`](https://github.com/apache/airflow/blob/master/airflow/config_templates/default_airflow.cfg#L181) to `true` in your airflow.cfg.
+
 To run these examples:
 1. Initialize a project with the [Astro CLI](https://www.astronomer.io/docs/cloud/stable/develop/cli-quickstart)
 2. Copy the example DAG into the `dags/` folder of your astro project
-3. Copy the directories in the `include` folder of this repository into the `include` directory of your Astro project
-4. Add `airflow-provider-great-expectations` to your `requirements.txt`
-5. Run `astro dev start` to view the DAG on a local Airflow instance (you will need Docker running)
+3. Add the following env var to your `Dockerfile` to enable xcom pickling: `ENV AIRFLOW__CORE__ENABLE_XCOM_PICKLING=True`
+4. Copy the directories in the `include` folder of this repository into the `include` directory of your Astro project
+5. Add `airflow-provider-great-expectations` to your `requirements.txt`
+6. Run `astro dev start` to view the DAG on a local Airflow instance (you will need Docker running)
 
 **This operator is in very early stages of development! Feel free to submit issues, PRs, or ping the current author (Sam Bail) in the [Great Expectations Slack](http://greatexpectations.io/slack) for feedback. Thanks to [Pete DeJoy](https://github.com/petedejoy) and the [Astronomer.io](https://www.astronomer.io/) team for the support.
 
