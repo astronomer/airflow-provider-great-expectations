@@ -18,8 +18,7 @@ setuptools.setup(
     install_requires=['apache-airflow>=1.10',
                       'great-expectations<=0.13.7',
                       'pybigquery==0.5.0'],
-    packages=setuptools.find_packages(),
+    packages=['great_expectations_provider']
     python_requires='>=3.6',
-    package_data={'great_expectations_provider': ['example_dags/data/*.csv']},
     include_package_data=True
 )
