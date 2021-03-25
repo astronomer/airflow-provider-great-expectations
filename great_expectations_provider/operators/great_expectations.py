@@ -45,7 +45,6 @@ class GreatExpectationsOperator(BaseOperator):
                  checkpoint_name=None,
                  fail_task_on_validation_failure=True,
                  on_failure_callback=None,
-                 validation_operator_name="action_list_operator",
                  **kwargs
                  ):
         """
@@ -59,7 +58,6 @@ class GreatExpectationsOperator(BaseOperator):
             checkpoint_name: A Checkpoint name to use for validation
             fail_task_on_validation_failure: Fail the Airflow task if the Great Expectation validation fails
             on_failure_callback: Callback funtion to execute if Expectation fails
-            validation_operator_name: Optional name of a Great Expectations validation operator, defaults to
             action_list_operator
             **kwargs: Optional kwargs
         """
@@ -92,12 +90,10 @@ class GreatExpectationsOperator(BaseOperator):
 
         self.fail_task_on_validation_failure = fail_task_on_validation_failure
         self.on_failure_callback = on_failure_callback
-        self.validation_operator_name = validation_operator_name
 
     def execute(self, context):
         log.info("Running validation with Great Expectations...")
         batches_to_validate = []
-        validation_operator_name = self.validation_operator_name
 
         if self.batch_kwargs and self.expectation_suite_name:
             batch = {"batch_kwargs": self.batch_kwargs, "expectation_suite_names": [self.expectation_suite_name]}
