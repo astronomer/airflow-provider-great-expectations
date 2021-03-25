@@ -1,7 +1,7 @@
 # Apache Airflow Provider for Great Expectations
 
 ## 0.0.5
-* [BREAKING] Updated GreatExpectations operator to work with class-based Checkpoints (Great Expectations >= 0.13.8)  
+* [BREAKING] Updated GreatExpectations operator to work with class-based Checkpoints (Great Expectations >= 0.13.9)  
 
 ## 0.0.4
 * [ENHANCEMENT] Adding BigQuery operator for easier use with BigQuery and Google Cloud Storage
