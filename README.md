@@ -1,6 +1,6 @@
 # Apache Airflow Provider for Great Expectations
 
-**Experimental library as of February 2021! The Great Expectations core team maintains this provider in an experimental state and does not guarantee ongoing support yet.**
+**This is an experimental library as of March 2021! The Great Expectations core team maintains this provider in an experimental state and does not guarantee ongoing support yet.**
 
 An Airflow operator for [Great Expectations](greatexpectations.io), a Python library for testing and validating data.
 
@@ -34,4 +34,4 @@ from great_expectations_provider.operators.great_expectations_bigquery import Gr
 
 See the [**examples**](./great_expectations_provider/examples) directory for an example DAG with some sample tasks that demonstrate operator functionality. The example DAG file contains a comment with instructions on how to run the examples.
 
-**This operator is in very early stages of development! Feel free to submit issues, PRs, or ping the current author (Sam Bail) in the [Great Expectations Slack](http://greatexpectations.io/slack) for feedback. Thanks to [Pete DeJoy](https://github.com/petedejoy) and the [Astronomer.io](https://www.astronomer.io/) team for the support.
+**This operator is in early stages of development! Feel free to submit issues, PRs, or join the #integration-airflow channel in the [Great Expectations Slack](http://greatexpectations.io/slack) for feedback. Thanks to [Pete DeJoy](https://github.com/petedejoy) and the [Astronomer.io](https://www.astronomer.io/) team for the support.
