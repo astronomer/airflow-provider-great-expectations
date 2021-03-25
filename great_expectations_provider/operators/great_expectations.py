@@ -100,7 +100,6 @@ class GreatExpectationsOperator(BaseOperator):
         validation_operator_name = self.validation_operator_name
 
         if self.batch_kwargs and self.expectation_suite_name:
-            # batch = self.data_context.get_batch(self.batch_kwargs, self.expectation_suite_name)
             batch = {"batch_kwargs": self.batch_kwargs, "expectation_suite_names": [self.expectation_suite_name]}
             batches_to_validate.append(batch)
 
@@ -121,7 +120,7 @@ class GreatExpectationsOperator(BaseOperator):
                     "expectation_suite_names": [asset["expectation_suite_name"]]
                 }
                 batches_to_validate.append(batch)
-  
+
         results = LegacyCheckpoint(
             name="_temp_checkpoint",
             data_context=self.data_context,
