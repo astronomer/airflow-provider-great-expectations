@@ -121,35 +121,12 @@ class GreatExpectationsOperator(BaseOperator):
                     "expectation_suite_names": [asset["expectation_suite_name"]]
                 }
                 batches_to_validate.append(batch)
-
-        context_config_version = self.data_context.get_ge_config_version()
-
-        if context_config_version == 2.0:
-            instantiated_batches_to_validate = []
-            for batch in batches_to_validate:
-                for suite_name in batch["expectation_suite_names"]:
-                    instantiated_batch = self.data_context.get_batch(
-                        batch["batch_kwargs"],
-                        suite_name
-                    )
-                    instantiated_batches_to_validate.append(instantiated_batch)
-
-            results = self.data_context.run_validation_operator(
-                validation_operator_name,
-                assets_to_validate=instantiated_batches_to_validate,
-                run_name=self.run_name
-            )
-
-        elif context_config_version == 3.0:
-            results = LegacyCheckpoint(
-                name="_temp_checkpoint",
-                data_context=self.data_context,
-                batches=batches_to_validate,
-            ).run()
-
-        else:
-            raise ValueError("Great Expectations configuration version not recognized. "
-                             "Config version must be 2.0 or 3.0")
+  
+        results = LegacyCheckpoint(
+            name="_temp_checkpoint",
+            data_context=self.data_context,
+            batches=batches_to_validate,
+        ).run()
 
         if not results["success"]:
             if self.fail_task_on_validation_failure:
