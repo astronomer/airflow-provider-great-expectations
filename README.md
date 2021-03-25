@@ -50,4 +50,8 @@ To run these examples:
 4. Add `airflow-provider-great-expectations` to your `requirements.txt`
 5. Run `astro dev start` to view the DAG on a local Airflow instance (you will need Docker running)
 
-**This operator is in early stages of development! Feel free to submit issues, PRs, or join the #integration-airflow channel in the [Great Expectations Slack](http://greatexpectations.io/slack) for feedback. Thanks to [Pete DeJoy](https://github.com/petedejoy) and the [Astronomer.io](https://www.astronomer.io/) team for the support.
+**This operator is in very early stages of development! Feel free to submit issues, PRs, or ping the current author (Sam Bail) in the [Great Expectations Slack](http://greatexpectations.io/slack) for feedback. Thanks to [Pete DeJoy](https://github.com/petedejoy) and the [Astronomer.io](https://www.astronomer.io/) team for the support.
+
+## Constraints
+
+This package has been most recently tested with Airflow 2.0 and Great Expectations v0.13.7. 
