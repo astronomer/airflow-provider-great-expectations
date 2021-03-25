@@ -1,5 +1,5 @@
 """
-A DAG that demonstrates implementation of the GreatExpectationsOperator and GreatExpectationsBigQueryOperator. 
+A DAG that demonstrates implementation of the GreatExpectationsOperator. 
 
 Note: you wil need to reference the necessary data assets and expectations suites in your project. You can find samples available in the provider source directory.
 
@@ -15,10 +15,6 @@ Steps to run:
 https://github.com/great-expectations/airflow-provider-great-expectations
 
 4. If you're running a checkpoint task against a new data source, be sure change the path to the data directory in great_expectations/checkpoint/*.yml
-
-5. You can then test-run a single task in this DAG using:
-Airflow v1.x: `airflow test example_great_expectations_dag ge_batch_kwargs_pass 2020-01-01`
-Airflow v2.x: `airflow tasks test example_great_expectations_dag ge_batch_kwargs_pass 2020-01-01`
 
 Note: You'll need to set the `ge_root_dir` path, `data_file` path, and data paths in your checkpoints if you are running this in a bespoke operating environment.
 """
@@ -113,23 +109,3 @@ ge_checkpoint_pass_root_dir = GreatExpectationsOperator(
     dag=dag
 )
 
-bq_task = GreatExpectationsBigQueryOperator(
-    task_id='bq_task',
-    gcp_project='my_project',
-    gcs_bucket='my_bucket',
-    # GE will use a folder "my_bucket/expectations"
-    gcs_expectations_prefix='expectations',
-    # GE will use a folder "my_bucket/validations"
-    gcs_validations_prefix='validations',
-    gcs_datadocs_prefix='data_docs',  # GE will use a folder "my_bucket/data_docs"
-    # GE will look for a file my_bucket/expectations/taxi/demo.json
-    expectation_suite_name='taxi.demo',
-    table='my_table_in_bigquery',
-    bq_dataset_name='my_dataset',
-    bigquery_conn_id='my_bigquery_conn_id',
-    send_alert_email=False,
-    email_to='your@email.com',
-    dag=dag
-)
-
-# TODO: Add an example for creating an in-memory data context using a dictionary config
