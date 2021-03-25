@@ -4,6 +4,13 @@
 
 An Airflow operator for [Great Expectations](greatexpectations.io), a Python library for testing and validating data.
 
+
+###Notes on compatibility 
+
+* This operator has been updated to use Great Expectations Checkpoints instead of the former ValidationOperators. Therefore, it requires Great Expectations >=v0.13.9, which is pinned in the requirements.txt starting with release 0.0.5.
+* Great Expectations version 0.13.8 unfortunately contained a bug that would make this operator not work.
+* Great Expectations version 0.13.7 and below will work with version 0.0.4 of this operator and below.
+
 ## Installation
 
 Pre-requisites: An environment running `great_expectations` and `apache-airflow`, of course.

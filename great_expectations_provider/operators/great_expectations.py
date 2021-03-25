@@ -23,6 +23,7 @@ from airflow.models import BaseOperator
 from airflow.exceptions import AirflowException
 from airflow.utils.decorators import apply_defaults
 import great_expectations as ge
+from great_expectations.checkpoint import LegacyCheckpoint
 
 log = logging.getLogger(__name__)
 
@@ -73,9 +74,9 @@ class GreatExpectationsOperator(BaseOperator):
         if data_context:
             self.data_context = data_context
         elif data_context_root_dir:
-            self.data_context = ge.DataContext(data_context_root_dir)
+            self.data_context = ge.data_context.DataContext(data_context_root_dir)
         else:
-            self.data_context = ge.DataContext()
+            self.data_context = ge.data_context.DataContext()
 
         # Check that only the correct args to validate are passed
         # this doesn't cover the case where only one of expectation_suite_name or batch_kwargs is specified
@@ -95,38 +96,36 @@ class GreatExpectationsOperator(BaseOperator):
 
     def execute(self, context):
         log.info("Running validation with Great Expectations...")
-
         batches_to_validate = []
         validation_operator_name = self.validation_operator_name
 
         if self.batch_kwargs and self.expectation_suite_name:
-            batch = self.data_context.get_batch(self.batch_kwargs, self.expectation_suite_name)
+            batch = {"batch_kwargs": self.batch_kwargs, "expectation_suite_names": [self.expectation_suite_name]}
             batches_to_validate.append(batch)
 
         elif self.checkpoint_name:
             checkpoint = self.data_context.get_checkpoint(self.checkpoint_name)
-            validation_operator_name = checkpoint["validation_operator_name"]
 
-            for batch in checkpoint["batches"]:
+            for batch in checkpoint.batches:
+
                 batch_kwargs = batch["batch_kwargs"]
                 for suite_name in batch["expectation_suite_names"]:
-                    suite = self.data_context.get_expectation_suite(suite_name)
-                    batch = self.data_context.get_batch(batch_kwargs, suite)
+                    batch = {"batch_kwargs": batch_kwargs, "expectation_suite_names": [suite_name]}
                     batches_to_validate.append(batch)
 
         elif self.assets_to_validate:
             for asset in self.assets_to_validate:
-                batch = self.data_context.get_batch(
-                    asset["batch_kwargs"],
-                    asset["expectation_suite_name"]
-                )
+                batch = {
+                    "batch_kwargs": asset["batch_kwargs"],
+                    "expectation_suite_names": [asset["expectation_suite_name"]]
+                }
                 batches_to_validate.append(batch)
 
-        results = self.data_context.run_validation_operator(
-            validation_operator_name,
-            assets_to_validate=batches_to_validate,
-            run_name=self.run_name
-        )
+        results = LegacyCheckpoint(
+            name="_temp_checkpoint",
+            data_context=self.data_context,
+            batches=batches_to_validate,
+        ).run()
 
         if not results["success"]:
             if self.fail_task_on_validation_failure:
