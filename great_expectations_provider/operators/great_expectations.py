@@ -43,7 +43,7 @@ class GreatExpectationsOperator(BaseOperator):
     :param batch_kwargs: The batch_kwargs to use for validation
     :type batch_kwargs: dict
     :param assets_to_validate: A list of dictionaries of batch_kwargs + Expectation Suites to use for validation
-    :type assets_to_validate:iterable
+    :type assets_to_validate: iterable
     :param checkpoint_name: A Checkpoint name to use for validation
     :type checkpoint_name: str
     :param fail_task_on_validation_failure: Fail the Airflow task if the Great Expectation validation fails
