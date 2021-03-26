@@ -33,7 +33,6 @@ data_file = os.path.join(base_path,
 ge_root_dir = os.path.join(base_path, 'include', 'great_expectations')
 
 
-@mock.patch.dict('os.environ', AIRFLOW_CONN_MY_BIGQUERY_CONN_ID='http://API_KEY:API_SECRET@?extra__google_cloud_platform__key_path=extra__google_cloud_platform__key_path')
 class TestGreatExpectationsOperator(unittest.TestCase):
     """ 
     Test functions for GreatExpectationsOperator Operator. 
