@@ -39,7 +39,7 @@ class TestGreatExpectationsOperator(unittest.TestCase):
     Test functions for GreatExpectationsOperator Operator. 
     """
 
-    def test_great_expectations_operator(self):
+    def test_great_expectations_operator_batch_kwargs_success(self):
 
         operator = GreatExpectationsOperator(
             task_id='ge_batch_kwargs_pass',
