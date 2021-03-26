@@ -29,6 +29,30 @@ log = logging.getLogger(__name__)
 
 
 class GreatExpectationsOperator(BaseOperator):
+    """
+    An operator to leverage Great Expectations as a task in your Airflow DAG.
+
+    :param run_name: Identifies the validation run (defaults to timestamp if not specified)
+    :type run_name: Optional[str]
+    :param data_context_root_dir: Path of the great_expectations directory
+    :type data_context_root_dir: str
+    :param data_contex: A great_expectations DataContext object
+    :type data_contex: dict
+    :param expectation_suite_name: The name of the Expectation Suite to use for validation
+    :type expectation_suite_name: str
+    :param batch_kwargs: The batch_kwargs to use for validation
+    :type batch_kwargs: dict
+    :param assets_to_validate: A list of dictionaries of batch_kwargs + Expectation Suites to use for validation
+    :type assets_to_validate: iterable
+    :param checkpoint_name: A Checkpoint name to use for validation
+    :type checkpoint_name: str
+    :param fail_task_on_validation_failure: Fail the Airflow task if the Great Expectation validation fails
+    :type  fail_task_on_validation_failure: bool
+    :param validation_operator_name: name of a Great Expectations validation operator, defaults to action_list_operator
+    :type validation_operator_name: Optional[str]
+    :param **kwargs: kwargs
+    :type **kwargs: Optional[dict]
+    """
     ui_color = '#AFEEEE'
     ui_fgcolor = '#000000'
     template_fields = ('checkpoint_name', 'batch_kwargs', 'assets_to_validate')
@@ -47,20 +71,6 @@ class GreatExpectationsOperator(BaseOperator):
                  on_failure_callback=None,
                  **kwargs
                  ):
-        """
-        Args:
-            run_name: Optional run_name to identify the validation run (defaults to timestamp if not specified)
-            data_context_root_dir: Path of the great_expectations directory
-            data_context: A great_expectations DataContext object
-            expectation_suite_name: The name of the Expectation Suite to use for validation
-            batch_kwargs: The batch_kwargs to use for validation
-            assets_to_validate: A list of dictionaries of batch_kwargs + Expectation Suites to use for validation
-            checkpoint_name: A Checkpoint name to use for validation
-            fail_task_on_validation_failure: Fail the Airflow task if the Great Expectation validation fails
-            on_failure_callback: Callback funtion to execute if Expectation fails
-            action_list_operator
-            **kwargs: Optional kwargs
-        """
         super().__init__(**kwargs)
 
         self.run_name = run_name
