@@ -3,20 +3,7 @@ A DAG that demonstrates implementation of the GreatExpectationsOperator.
 
 Note: you wil need to reference the necessary data assets and expectations suites in your project. You can find samples available in the provider source directory.
 
-Steps to run:
-
-1. Download the Astronomer CLI and initialize a project: https://www.astronomer.io/docs/cloud/stable/develop/cli-quickstart
-
-2. Add airflow-provider-great-expectations to your `requirements.txt` file.
-
-3. Place this file in the `/dags` folder of your Astro project.
-
-3. Add your Great Expectations context and data to the `include` directory of your project. You can copy the template context and data in the provider source if you'd prefer to start from our boilerplate.
-https://github.com/great-expectations/airflow-provider-great-expectations
-
-4. If you're running a checkpoint task against a new data source, be sure change the path to the data directory in great_expectations/checkpoint/*.yml
-
-Note: You'll need to set the `ge_root_dir` path, `data_file` path, and data paths in your checkpoints if you are running this in a bespoke operating environment.
+To view steps on running this DAG, check out the Provider Readme: https://github.com/great-expectations/airflow-provider-great-expectations#examples
 """
 
 import logging
