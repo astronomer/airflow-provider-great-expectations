@@ -143,14 +143,17 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
         # data validation against Expectations.
         data_context_config = self.create_data_context_config()
         data_context = BaseDataContext(project_config=data_context_config)
-        batch_kwargs = self.get_batch_kwargs()
-        # Call the parent constructor but override the default alerting behavior in the parent by hard coding
-        # fail_task_on_validation_failure=False.  This is done because we want to alert a little differently
-        # than the parent class by sending an email to the user and then throwing an Airflow exception whenever
-        # data doesn't match Expectations.
-        super().__init__(data_context=data_context, batch_kwargs=batch_kwargs,
-                         expectation_suite_name=expectation_suite_name, fail_task_on_validation_failure=False,
-                         **kwargs)
+        # batch_kwargs = self.get_batch_kwargs()
+        # # Call the parent constructor but override the default alerting behavior in the parent by hard coding
+        # # fail_task_on_validation_failure=False.  This is done because we want to alert a little differently
+        # # than the parent class by sending an email to the user and then throwing an Airflow exception whenever
+        # # data doesn't match Expectations.
+        super().__init__(
+            # data_context=data_context, 
+            # batch_kwargs=batch_kwargs,
+            expectation_suite_name=expectation_suite_name, 
+            fail_task_on_validation_failure=False,
+            **kwargs)
 
     def create_data_context_config(self):
         # Get the credentials information for the BigQuery data source from the BigQuery Airflow connection
