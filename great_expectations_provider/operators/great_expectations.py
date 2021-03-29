@@ -74,17 +74,19 @@ class GreatExpectationsOperator(BaseOperator):
         super().__init__(**kwargs)
 
         self.run_name = run_name
+        self.data_context = data_context
+        self.data_context_root_dir = data_context_root_dir
 
-        # Check that only one of the arguments is passed to set a data context (or none)
-        if data_context_root_dir and data_context:
-            raise ValueError("Only one of data_context_root_dir or data_context can be specified.")
+        # # Check that only one of the arguments is passed to set a data context (or none)
+        # if data_context_root_dir and data_context:
+        #     raise ValueError("Only one of data_context_root_dir or data_context can be specified.")
 
-        if data_context:
-            self.data_context = data_context
-        elif data_context_root_dir:
-            self.data_context = ge.data_context.DataContext(data_context_root_dir)
-        else:
-            self.data_context = ge.data_context.DataContext()
+        # if data_context:
+        #     self.data_context = data_context
+        # elif data_context_root_dir:
+        #     self.data_context = ge.data_context.DataContext(data_context_root_dir)
+        # else:
+        #     self.data_context = ge.data_context.DataContext()
 
         # Check that only the correct args to validate are passed
         # this doesn't cover the case where only one of expectation_suite_name or batch_kwargs is specified
@@ -100,8 +102,24 @@ class GreatExpectationsOperator(BaseOperator):
 
         self.fail_task_on_validation_failure = fail_task_on_validation_failure
         self.on_failure_callback = on_failure_callback
+    
+    def get_data_context(self):
+        # Check that only one of the arguments is passed to set a data context (or none)
+        if self.data_context_root_dir and self.data_context:
+            raise ValueError("Only one of data_context_root_dir or data_context can be specified.")
+
+        if self.data_context:
+            data_context = self.data_context
+        elif self.data_context_root_dir:
+            data_context = ge.data_context.DataContext(self.data_context_root_dir)
+        else:
+           data_context = ge.data_context.DataContext()
+
+        return data_context
 
     def execute(self, context):
+
+        data_context = self.get_data_context()
         log.info("Running validation with Great Expectations...")
         batches_to_validate = []
 
@@ -110,7 +128,7 @@ class GreatExpectationsOperator(BaseOperator):
             batches_to_validate.append(batch)
 
         elif self.checkpoint_name:
-            checkpoint = self.data_context.get_checkpoint(self.checkpoint_name)
+            checkpoint = data_context.get_checkpoint(self.checkpoint_name)
 
             for batch in checkpoint.batches:
 
@@ -129,7 +147,7 @@ class GreatExpectationsOperator(BaseOperator):
 
         results = LegacyCheckpoint(
             name="_temp_checkpoint",
-            data_context=self.data_context,
+            data_context=data_context,
             batches=batches_to_validate,
         ).run()
 

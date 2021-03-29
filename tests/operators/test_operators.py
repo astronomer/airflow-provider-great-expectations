@@ -55,6 +55,7 @@ class TestGreatExpectationsOperator(unittest.TestCase):
 
         self.assertTrue(result['success'])
 
+    # @mock.patch('airflow.providers.google.cloud.operators.bigquery.BigQueryHook')
     def test_great_expectations_operator_bigquery(self):
 
         operator = GreatExpectationsBigQueryOperator(
@@ -73,14 +74,10 @@ class TestGreatExpectationsOperator(unittest.TestCase):
             bigquery_conn_id='my_bigquery_conn_id',
             send_alert_email=False,
             email_to='your@email.com',
-            data_context_root_dir=ge_root_dir,
-            batch_kwargs={
-                'path': data_file,
-                'datasource': 'data__dir'
-            },
+            # data_context_root_dir=ge_root_dir,
         ) 
 
-        result = operator.execute({})
+        result = operator.execute(None)
         log.info(result)
 
 
