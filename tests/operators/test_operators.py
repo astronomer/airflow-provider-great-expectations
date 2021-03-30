@@ -55,8 +55,8 @@ class TestGreatExpectationsOperator(unittest.TestCase):
 
         self.assertTrue(result['success'])
 
-    @mock.patch('airflow.hooks.base.BaseHook')
-    def test_great_expectations_operator_bigquery(self, mock_hook):
+    @mock.patch('great_expectations_provider.operators.great_expectations_bigquery.GreatExpectationsBigQueryOperator.create_data_context_config')
+    def test_great_expectations_operator_bigquery(self, mock_data_context):
 
         operator = GreatExpectationsBigQueryOperator(
             task_id='bq_task',
@@ -71,14 +71,13 @@ class TestGreatExpectationsOperator(unittest.TestCase):
             expectation_suite_name='taxi.demo',
             table='my_table_in_bigquery',
             bq_dataset_name='my_dataset',
-            bigquery_conn_id='my_bigquery_conn_id',
             send_alert_email=False,
             email_to='your@email.com',
             # data_context_root_dir=ge_root_dir,
         ) 
 
-        result = operator.execute(None)
-        log.info(result)
+        result = operator.execute({})
+        # log.info(result)
 
 
 
