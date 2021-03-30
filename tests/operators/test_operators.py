@@ -20,7 +20,6 @@ from unittest import mock
 
 # Import Operator as module
 from great_expectations_provider.operators.great_expectations import GreatExpectationsOperator
-from great_expectations_provider.operators.great_expectations_bigquery import GreatExpectationsBigQueryOperator
 
 
 log = logging.getLogger(__name__)
@@ -54,32 +53,6 @@ class TestGreatExpectationsOperator(unittest.TestCase):
         log.info(result)
 
         self.assertTrue(result['success'])
-
-    @mock.patch('great_expectations_provider.operators.great_expectations_bigquery.GreatExpectationsBigQueryOperator.create_data_context_config')
-    def test_great_expectations_operator_bigquery(self, mock_data_context):
-
-        operator = GreatExpectationsBigQueryOperator(
-            task_id='bq_task',
-            gcp_project='my_project',
-            gcs_bucket='my_bucket',
-            # GE will use a folder "my_bucket/expectations"
-            gcs_expectations_prefix='expectations',
-            # GE will use a folder "my_bucket/validations"
-            gcs_validations_prefix='validations',
-            gcs_datadocs_prefix='data_docs',  # GE will use a folder "my_bucket/data_docs"
-            # GE will look for a file my_bucket/expectations/taxi/demo.json
-            expectation_suite_name='taxi.demo',
-            table='my_table_in_bigquery',
-            bq_dataset_name='my_dataset',
-            send_alert_email=False,
-            email_to='your@email.com',
-            # data_context_root_dir=ge_root_dir,
-        ) 
-
-        result = operator.execute({})
-        # log.info(result)
-
-
 
 if __name__ == '__main__':
     unittest.main()
