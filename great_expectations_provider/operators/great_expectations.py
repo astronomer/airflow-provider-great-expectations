@@ -117,9 +117,9 @@ class GreatExpectationsOperator(BaseOperator):
 
         return data_context
 
-    def execute(self, context):
-
-        data_context = self.get_data_context()
+    def execute(self, context, data_contex=None):
+        if data_context == None:
+            data_context = self.get_data_context()
         log.info("Running validation with Great Expectations...")
         batches_to_validate = []
 
