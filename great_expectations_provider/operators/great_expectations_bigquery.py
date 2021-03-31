@@ -138,11 +138,7 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
         self.send_alert_email = send_alert_email
         self.datadocs_link_in_email = datadocs_link_in_email
         self.fail_task_on_validation_failure = fail_task_on_validation_failure
-
-        # Create a data context and batch_kwargs that will then be handed off to the base operator to do the
-        # data validation against Expectations.
-        # data_context_config = self.create_data_context_config()
-        # data_context = BaseDataContext(project_config=data_context_config)
+        
         batch_kwargs = self.get_batch_kwargs()
         # Call the parent constructor but override the default alerting behavior in the parent by hard coding
         # fail_task_on_validation_failure=False.  This is done because we want to alert a little differently
@@ -217,6 +213,8 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
         return full_name
 
     def execute(self, context):
+        # Create a data context and batch_kwargs that will then be handed off to the base operator to do the
+        # data validation against Expectations.
         # Execute base operator's validation process
         results = super().execute(context, data_context=BaseDataContext(project_config=self.create_data_context_config()))
         validation_result_identifier = list(results['run_results'].keys())[0]
