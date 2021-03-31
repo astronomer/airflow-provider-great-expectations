@@ -19,7 +19,7 @@ default_args = {
 }
 
 dag = DAG(
-    dag_id='example_great_expectations_dag',
+    dag_id='example_great_expectations_bq_dag',
     default_args=default_args
 )
 
