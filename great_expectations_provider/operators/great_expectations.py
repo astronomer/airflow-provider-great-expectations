@@ -77,17 +77,6 @@ class GreatExpectationsOperator(BaseOperator):
         self.data_context = data_context
         self.data_context_root_dir = data_context_root_dir
 
-        # # Check that only one of the arguments is passed to set a data context (or none)
-        # if data_context_root_dir and data_context:
-        #     raise ValueError("Only one of data_context_root_dir or data_context can be specified.")
-
-        # if data_context:
-        #     self.data_context = data_context
-        # elif data_context_root_dir:
-        #     self.data_context = ge.data_context.DataContext(data_context_root_dir)
-        # else:
-        #     self.data_context = ge.data_context.DataContext()
-
         # Check that only the correct args to validate are passed
         # this doesn't cover the case where only one of expectation_suite_name or batch_kwargs is specified
         # along with one of the others, but I'm ok with just giving precedence to the correct one
