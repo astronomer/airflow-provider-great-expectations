@@ -47,7 +47,7 @@ class GreatExpectationsOperator(BaseOperator):
     :param checkpoint_name: A Checkpoint name to use for validation
     :type checkpoint_name: str
     :param fail_task_on_validation_failure: Fail the Airflow task if the Great Expectation validation fails
-    :type  fail_task_on_validation_failure: bool
+    :type fail_task_on_validation_failure: bool
     :param validation_operator_name: name of a Great Expectations validation operator, defaults to action_list_operator
     :type validation_operator_name: Optional[str]
     :param **kwargs: kwargs
