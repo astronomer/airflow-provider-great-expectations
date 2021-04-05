@@ -1,1 +1,1 @@
-great-expectations>=0.13.9   # package
+great-expectations>=0.13.14   # package
