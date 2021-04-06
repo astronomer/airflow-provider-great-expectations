@@ -3,6 +3,9 @@
 ## Upcoming 
 * (please add here)
 
+## 0.0.6
+* [BUGFIX] Update setup.py with appropriate versions 
+
 ## 0.0.5
 * [BREAKING] Updated GreatExpectations operator to work with class-based Checkpoints (Great Expectations >= 0.13.9)  
 * [ENHANCEMENT] Restructured project, provider metadata, examples, added "how to run" steps to README, and added tests
