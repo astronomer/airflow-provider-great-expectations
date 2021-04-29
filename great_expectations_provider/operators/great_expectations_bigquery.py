@@ -51,10 +51,6 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
             and where the validation files & data docs will be output (e.g. HTML docs showing if the data matches
             Expectations).
         :type gcp_project: str
-        :param expectations_suite_name: The name of the Expectation Suite containing the Expectations for the data.
-            The suite should be in a JSON file with the same name as the suite (e.g. if the Expectations Suite named
-            in the Expectation file is 'my_suite' then the Expectations file should be called my_suite.json)
-        :type expectations_suite_name: str
         :param gcs_bucket:  Google Cloud Storage bucket where expectation files are stored and where validation outputs
             and data docs will be saved.
             (e.g. gs://<gcs_bucket>/<gcs_expectations_prefix>/<expectations_file_name>
@@ -118,7 +114,7 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
             '''
 
     @apply_defaults
-    def __init__(self, *, gcp_project, expectation_suite_name, gcs_bucket, gcs_expectations_prefix,
+    def __init__(self, *, gcp_project, gcs_bucket, gcs_expectations_prefix,
                  gcs_validations_prefix, gcs_datadocs_prefix, query=None, table=None,
                  bq_dataset_name, email_to, datadocs_domain='none', send_alert_email=True,
                  datadocs_link_in_email=False,
@@ -149,7 +145,7 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
         # than the parent class by sending an email to the user and then throwing an Airflow exception whenever
         # data doesn't match Expectations.
         super().__init__(data_context=data_context, batch_kwargs=batch_kwargs,
-                         expectation_suite_name=expectation_suite_name, fail_task_on_validation_failure=False,
+                         fail_task_on_validation_failure=False,
                          **kwargs)
 
     def create_data_context_config(self):

@@ -86,10 +86,18 @@ class GreatExpectationsOperator(BaseOperator):
         else:
             self.data_context = ge.data_context.DataContext()
 
-        # Check that only the correct args to validate are passed
-        # this doesn't cover the case where only one of expectation_suite_name or batch_kwargs is specified
-        # along with one of the others, but I'm ok with just giving precedence to the correct one
-        if sum(bool(x) for x in [(expectation_suite_name and batch_kwargs), assets_to_validate, checkpoint_name]) != 1:
+        if (
+            sum(
+                bool(x)
+                for x in [
+                    (expectation_suite_name and batch_kwargs),
+                    assets_to_validate,
+                    checkpoint_name,
+                    (bool(expectation_suite_name) != bool(batch_kwargs)) * 2,
+                ]
+            )
+            != 1
+        ):
             raise ValueError("Exactly one of expectation_suite_name + batch_kwargs, assets_to_validate, \
              or checkpoint_name is required to run validation.")
 
