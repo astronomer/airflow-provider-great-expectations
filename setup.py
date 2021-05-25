@@ -20,7 +20,8 @@ setuptools.setup(
                       'pybigquery>0.3.0',
                       'SQLAlchemy>=1.3.18,<1.4'],
     packages=['great_expectations_provider',
-              'great_expectations_provider.operators'],
+              'great_expectations_provider.operators',
+              'great_expectations_provider.example_dags'],
     python_requires='>=3.6',
     include_package_data=True
 )
