@@ -137,7 +137,7 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
         self.datadocs_domain = datadocs_domain
         self.send_alert_email = send_alert_email
         self.datadocs_link_in_email = datadocs_link_in_email
-        self.fail_task_on_validation_failure = fail_task_on_validation_failure
+        self.bq_fail_task_on_validation_failure = fail_task_on_validation_failure
 
         # Create a data context and batch_kwargs that will then be handed off to the base operator to do the
         # data validation against Expectations.
@@ -206,7 +206,7 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
         return batch_kwargs
 
     # Generate a unique name for a temporary table.  For example, if desired_prefix= 'temp_ge_' and
-    # desired_length_of_random_portion = 10 then the following table name might be generated: 'temp_ge_304kcj39rM'.
+    # desired_length_of_random_portion = 10 then the foll¶owing table name might be generated: 'temp_ge_304kcj39rM'.
     def get_temp_table_name(self, desired_prefix, desired_length_of_random_portion):
         random_string = str(uuid.uuid4().hex)
         random_portion_of_name = random_string[:desired_length_of_random_portion]
@@ -228,7 +228,7 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
             if self.send_alert_email:
                 self.log.info('Sending alert email...')
                 self.send_alert(data_docs_url)
-            if self.fail_task_on_validation_failure:
+            if self.bq_fail_task_on_validation_failure:
                 raise AirflowException('One or more expectations were not met')
 
     def send_alert(self, data_docs_url='none'):
