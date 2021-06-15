@@ -137,7 +137,7 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
         self.datadocs_domain = datadocs_domain
         self.send_alert_email = send_alert_email
         self.datadocs_link_in_email = datadocs_link_in_email
-        self.fail_task_on_validation_failure = fail_task_on_validation_failure
+        self.bq_fail_task_on_validation_failure = fail_task_on_validation_failure
 
         # Create a data context and batch_kwargs that will then be handed off to the base operator to do the
         # data validation against Expectations.
@@ -228,7 +228,7 @@ class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
             if self.send_alert_email:
                 self.log.info('Sending alert email...')
                 self.send_alert(data_docs_url)
-            if self.fail_task_on_validation_failure:
+            if self.bq_fail_task_on_validation_failure:
                 raise AirflowException('One or more expectations were not met')
 
     def send_alert(self, data_docs_url='none'):
