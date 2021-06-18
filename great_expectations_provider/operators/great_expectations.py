@@ -36,8 +36,8 @@ class GreatExpectationsOperator(BaseOperator):
     :type run_name: Optional[str]
     :param data_context_root_dir: Path of the great_expectations directory
     :type data_context_root_dir: str
-    :param data_contex: A great_expectations DataContext object
-    :type data_contex: dict
+    :param data_context: A great_expectations DataContext object
+    :type data_context: dict
     :param expectation_suite_name: The name of the Expectation Suite to use for validation
     :type expectation_suite_name: str
     :param batch_kwargs: The batch_kwargs to use for validation
