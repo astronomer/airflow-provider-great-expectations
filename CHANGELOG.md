@@ -3,6 +3,12 @@
 ## Upcoming 
 * (please add here)
 
+## 0.0.7
+* [BUGFIX] Addressed a bug whereby the fail_task_on_validation_failure in the BigQuery operator was being shadowed by the parent class.
+* [ENHANCEMENT] Add support for validation operators when running LegacyCheckpoints with the GreatExpectationsOperator
+* [DOCS] Fixed typos in documentation - thanks @armandduijn and @sunkickr!
+* [MAINTENANCE] Make some improvements to the package by updating setup.py dependencies, exposing the example_dags within that, and adding an __init__.py to the example DAG directory - thanks @petedejoy and @pgzmnk! 
+
 ## 0.0.6
 * [BUGFIX] Update setup.py with appropriate versions 
 
