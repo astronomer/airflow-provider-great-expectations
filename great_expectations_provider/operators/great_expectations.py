@@ -140,7 +140,8 @@ class GreatExpectationsOperator(BaseOperator):
                 if self.on_failure_callback is None:
                     raise AirflowException("Validation with Great Expectations failed.")
                 else:
-                    self.on_failure_callback(results)
+                    context["great_expectation_results"] = results
+                    self.on_failure_callback(context)
             else:
                 log.warning("Validation with Great Expectations failed. Continuing DAG execution because "
                             "fail_task_on_validation_failure is set to False.")
