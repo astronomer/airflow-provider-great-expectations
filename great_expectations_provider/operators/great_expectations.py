@@ -67,6 +67,7 @@ class GreatExpectationsOperator(BaseOperator):
                  batch_kwargs=None,
                  assets_to_validate=None,
                  checkpoint_name=None,
+                 validation_operator_name=None,
                  fail_task_on_validation_failure=True,
                  on_failure_callback=None,
                  **kwargs
@@ -97,7 +98,7 @@ class GreatExpectationsOperator(BaseOperator):
         self.batch_kwargs = batch_kwargs
         self.assets_to_validate = assets_to_validate
         self.checkpoint_name = checkpoint_name
-
+        self.validation_operator_name = validation_operator_name
         self.fail_task_on_validation_failure = fail_task_on_validation_failure
         self.on_failure_callback = on_failure_callback
 
@@ -130,6 +131,7 @@ class GreatExpectationsOperator(BaseOperator):
         results = LegacyCheckpoint(
             name="_temp_checkpoint",
             data_context=self.data_context,
+            validation_operator_name=self.validation_operator_name,
             batches=batches_to_validate,
         ).run()
 
