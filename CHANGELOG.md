@@ -12,7 +12,6 @@
 * [MAINTENANCE] Add type hints and update docstrings - thanks, @jeffkpayne!
 * [MAINTENANCE] Add unit and integration test coverage - thanks, @jeffkpayne!
 
-
 ## 0.0.7
 * [BUGFIX] Addressed a bug whereby the fail_task_on_validation_failure in the BigQuery operator was being shadowed by the parent class.
 * [ENHANCEMENT] Add support for validation operators when running LegacyCheckpoints with the GreatExpectationsOperator
