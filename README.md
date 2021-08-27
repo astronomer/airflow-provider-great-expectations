@@ -1,6 +1,6 @@
 # Apache Airflow Provider for Great Expectations
 
-**This is an experimental library as of June 2021! The Great Expectations core team and community maintains this provider in an experimental state and does not guarantee ongoing support yet.**
+**This is an experimental library as of August 2021! The Great Expectations core team and community maintains this provider in an experimental state and does not guarantee ongoing support yet.**
 
 A set of Airflow operators for [Great Expectations](greatexpectations.io), a Python library for testing and validating data.
 
