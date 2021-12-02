@@ -37,6 +37,23 @@ bad_data_file = os.path.join(
 )
 ge_root_dir = os.path.join(base_path, "include", "great_expectations")
 
+# Test
+# Data context from root dir
+# Data context from config
+# Checkpoint from data context
+# Checkpoint from config
+# Checkpoint kwargs
+# bigquery
+# GCP
+# local file system
+# postgres
+# pandas
+# failure on callback
+# failure handler
+# success
+# astronomer
+# update below tests
+
 
 def test_great_expectations_operator__valid_expectation_suite():
     operator = GreatExpectationsOperator(
