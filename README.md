@@ -27,6 +27,18 @@ pip install airflow-provider-great-expectations
 
 Depending on your use-case, you might need to add `ENV AIRFLOW__CORE__ENABLE_XCOM_PICKLING=true` to your Dockerfile to enable XCOM to pass data between tasks.
 
+## Usage
+
+The operator requires two Great Expectations elements to run: 
+1. A DataContext, which can be specified either as:
+   1. A path to a directory in which a yaml-based DataContext configuration is located
+   2. A Great Expectations DataContextConfig object
+2. A Checkpoint, which can be specified either as:
+   1. The name of a Checkpoint already located in the Checkpoint Store of the specified DataContext
+   2. A Great Expectations CheckpointConfig object
+
+The operator also enables you to pass in a Python dictionary containing kwargs which will be added/substituted to the Checkpoint at runtime.
+
 ## Modules
 
 [Great Expectations Base Operator](https://github.com/great-expectations/airflow-provider-great-expectations/blob/main/great_expectations_provider/operators/great_expectations.py): A base operator for Great Expectations. Import into your DAG via: 
