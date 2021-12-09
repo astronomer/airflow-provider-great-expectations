@@ -34,14 +34,6 @@ data_dir = os.path.join(base_path, "include", "data")
 
 ge_root_dir = os.path.join(base_path, "include", "great_expectations")
 
-# Test
-# bigquery
-# GCP
-# postgres
-# pandas
-# astronomer
-
-
 @pytest.fixture()
 def in_memory_data_context_config():
     data_context_config = DataContextConfig(
@@ -238,7 +230,7 @@ def test_great_expectations_operator__checkpoint_config_with_substituted_batch_r
     )
     result = operator.execute(context={})  # should fail the suite
     logger.info(result)
-    assert not result["success"]
+    assert result["success"] is False
 
 
 def test_great_expectations_operator__checkpoint_config_with_substituted_expectation_suite_works_and_fails(
@@ -253,7 +245,7 @@ def test_great_expectations_operator__checkpoint_config_with_substituted_expecta
     )
     result = operator.execute(context={})  # should fail the suite
     logger.info(result)
-    assert not result["success"]
+    assert result["success"] is False
 
 
 def test_great_expectations_operator__raises_error_without_data_context():
@@ -372,7 +364,7 @@ def test_great_expectations_operator__validation_failure_logs_warning(caplog):
     caplog.set_level(level="WARNING", logger="my_test_logger")
     caplog.clear()
     result = operator.execute(context={})
-    assert not result["success"]
+    assert result["success"] is False
     assert ("my_test_logger", logging.WARNING) in (
         (r.name, r.levelno) for r in caplog.records
     )
@@ -388,5 +380,5 @@ def test_great_expectations_operator__validation_failure_callback():
         validation_failure_callback=my_callback,
     )
     result = operator.execute(context={})
-    assert not result["success"]
+    assert result["success"] is False
     my_callback.assert_called_once_with(result)
