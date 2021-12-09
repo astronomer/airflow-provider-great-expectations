@@ -138,7 +138,7 @@ def in_memory_data_context_config():
 def in_memory_checkpoint_config():
     checkpoint_config = CheckpointConfig(
         **{
-            "name": "check.full.pass",
+            "name": "taxi.pass.from_config",
             "config_version": 1.0,
             "template_name": None,
             "module_name": "great_expectations.checkpoint",

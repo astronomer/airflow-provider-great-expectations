@@ -175,6 +175,14 @@ ge_data_context_root_dir_with_checkpoint_name_fail_validation_and_not_task = Gre
     dag=dag,
 )
 
+ge_checkpoint_kwargs_substitute_batch_request_fails_validation_but_not_task = GreatExpectationsOperator(
+    task_id="ge_checkpoint_kwargs_substitute_batch_request_fails_validation_but_not_task",
+    data_context_root_dir=ge_root_dir,
+    checkpoint_name="taxi.pass.chk",
+    checkpoint_kwargs={"expectation_suite_name": "taxi.demo_fail"},
+    fail_task_on_validation_failure=False,
+    dag=dag,
+)
 
 ge_data_context_config_with_checkpoint_config_pass = GreatExpectationsOperator(
     task_id="ge_data_context_config_with_checkpoint_config_pass",
@@ -183,27 +191,20 @@ ge_data_context_config_with_checkpoint_config_pass = GreatExpectationsOperator(
     dag=dag,
 )
 
-ge_checkpoint_kwargs_substitute_batch_request_passes = GreatExpectationsOperator(
-    task_id="ge_checkpoint_kwargs_substitute_batch_request_passes",
-    data_context_root_dir=ge_root_dir,
-    checkpoint_name="taxi.fail.chk",
-    checkpoint_kwargs={"validations": [{"batch_request": passing_batch_request}]},
-    dag=dag,
-)
 
 ge_checkpoint_fails_and_runs_callback = GreatExpectationsOperator(
     task_id="ge_checkpoint_fails_and_runs_callback",
     data_context_root_dir=ge_root_dir,
     checkpoint_name="taxi.fail.chk",
     fail_task_on_validation_failure=False,
-    validation_failure_callback=(lambda: print("Callback successfully run")),
+    validation_failure_callback=(lambda x: print("Callback successfully run", x)),
     dag=dag,
 )
 
 (
     ge_data_context_root_dir_with_checkpoint_name_pass
     >> ge_data_context_root_dir_with_checkpoint_name_fail_validation_and_not_task
+    >> ge_checkpoint_kwargs_substitute_batch_request_fails_validation_but_not_task
     >> ge_data_context_config_with_checkpoint_config_pass
-    >> ge_checkpoint_kwargs_substitute_batch_request_passes
     >> ge_checkpoint_fails_and_runs_callback
 )
