@@ -17,28 +17,18 @@
 # under the License.
 #
 
-import datetime
 import os
-from typing import Any, Callable, Dict, List, Optional, Union
-import uuid
+from typing import Any, Callable, Dict, Optional, Union
 
-import airflow
-from airflow.exceptions import AirflowException
-
-if airflow.__version__ > "2.0":
-    from airflow.hooks.base import BaseHook
-else:
-    from airflow.hooks.base_hook import BaseHook
-from airflow.models import BaseOperator
-from airflow.utils.decorators import apply_defaults
 import great_expectations as ge
-from great_expectations.checkpoint import LegacyCheckpoint, Checkpoint
-from great_expectations.checkpoint.types.checkpoint_result import CheckpointResult
-from great_expectations.data_context.types.base import (
-    DataContextConfig,
-    GCSStoreBackendDefaults, CheckpointConfig,
-)
+from airflow.exceptions import AirflowException
+from airflow.models import BaseOperator
+from great_expectations.checkpoint import Checkpoint
+from great_expectations.checkpoint.types.checkpoint_result import \
+    CheckpointResult
 from great_expectations.data_context import BaseDataContext
+from great_expectations.data_context.types.base import (CheckpointConfig,
+                                                        DataContextConfig)
 
 
 class GreatExpectationsOperator(BaseOperator):
@@ -55,18 +45,14 @@ class GreatExpectationsOperator(BaseOperator):
     :type run_name: Optional[str]
     :param data_context_root_dir: Path of the great_expectations directory
     :type data_context_root_dir: Optional[str]
-    :param data_context: A great_expectations `DataContext` object
-    :type data_context: Optional[BaseDataContext]
-    :param expectation_suite_name: The name of the Expectation Suite to use for validation
-    :type expectation_suite_name: Optional[str]
-    :param batch_kwargs: The batch_kwargs to use for validation
-    :type batch_kwargs: Optional[dict]
-    :param assets_to_validate: A list of dictionaries of batch_kwargs + Expectation Suites to use for validation
-    :type assets_to_validate: Optional[list[dict]]
+    :param data_context_config: A great_expectations `DataContextConfig` object
+    :type data_context_config: Optional[DataContextConfig]
     :param checkpoint_name: A Checkpoint name to use for validation
     :type checkpoint_name: Optional[str]
-    :param validation_operator_name: name of a Great Expectations validation operator, defaults to action_list_operator
-    :type validation_operator_name: Optional[str]
+    :param checkpoint_config: A great_expectations `CheckpointConfig` object to use for validation
+    :type checkpoint_config: Optional[CheckpointConfig]
+    :param checkpoint_kwargs: A dictionary whose keys match the parameters of CheckpointConfig which can be used to update and populate the Operator's Checkpoint at runtime
+    :type checkpoint_kwargs: Optional[Dict]
     :param fail_task_on_validation_failure: Fail the Airflow task if the Great Expectation validation fails
     :type fail_task_on_validation_failure: Optiopnal[bool]
     :param validation_failure_callback: Called when the Great Expectations validation fails
@@ -78,10 +64,11 @@ class GreatExpectationsOperator(BaseOperator):
     ui_color = "#AFEEEE"
     ui_fgcolor = "#000000"
     template_fields = (
-        "checkpoint_name",
-        "batch_kwargs",
-        "assets_to_validate",
         "data_context_root_dir",
+        "data_context_config",
+        "checkpoint_name",
+        "checkpoint_config",
+        "checkpoint_kwargs",
     )
 
     def __init__(
@@ -89,15 +76,10 @@ class GreatExpectationsOperator(BaseOperator):
         *,
         run_name: Optional[str] = None,
         data_context_root_dir: Optional[Union[str, bytes, os.PathLike]] = None,
-        data_context_config: DataContextConfig = None,
-        # expectation_suite_name: Optional[str] = None,
-        # batch_kwargs: Optional[Dict] = None,
-        # batch_request: Optional[Dict] = None,
-        # assets_to_validate: Optional[List[Dict]] = None,
+        data_context_config: Optional[DataContextConfig] = None,
         checkpoint_name: Optional[str] = None,
         checkpoint_config: Optional[CheckpointConfig] = None,
         checkpoint_kwargs: Optional[Dict] = None,
-        # validation_operator_name: Optional[str] = None,
         fail_task_on_validation_failure: Optional[bool] = True,
         validation_failure_callback: Optional[
             Callable[[CheckpointResult], None]
@@ -107,21 +89,31 @@ class GreatExpectationsOperator(BaseOperator):
         super().__init__(**kwargs)
 
         self.run_name: Optional[str] = run_name
-        self.data_context_root_dir: Optional[Union[str, bytes, os.PathLike]] = data_context_root_dir
+        self.data_context_root_dir: Optional[
+            Union[str, bytes, os.PathLike]
+        ] = data_context_root_dir
         self.data_context_config: DataContextConfig = data_context_config
         self.checkpoint_name: Optional[str] = checkpoint_name
-        self.checkpoint_config: Optional[CheckpointConfig] = checkpoint_config
+        self.checkpoint_config: Optional[CheckpointConfig] = checkpoint_config or {}
         self.checkpoint_kwargs: Optional[dict] = checkpoint_kwargs
-        self.fail_task_on_validation_failure: Optional[bool] = fail_task_on_validation_failure
-        self.validation_failure_callback: Optional[Callable[[CheckpointResult], None]] = validation_failure_callback
+        self.fail_task_on_validation_failure: Optional[
+            bool
+        ] = fail_task_on_validation_failure
+        self.validation_failure_callback: Optional[
+            Callable[[CheckpointResult], None]
+        ] = validation_failure_callback
 
         # Check that only one of the arguments is passed to set a data context
         if not bool(self.data_context_root_dir) ^ bool(self.data_context_config):
-            raise ValueError("Exactly one of data_context_root_dir or data_context_config must be specified.")
+            raise ValueError(
+                "Exactly one of data_context_root_dir or data_context_config must be specified."
+            )
 
         # Check that only one of the arguments is passed to set a checkpoint
         if not bool(self.checkpoint_name) ^ bool(self.checkpoint_config):
-            raise ValueError("Exactly one of checkpoint_name or checkpoint_config must be specified.")
+            raise ValueError(
+                "Exactly one of checkpoint_name or checkpoint_config must be specified."
+            )
 
         # Instantiate the Data Context
         self.log.info("Ensuring data context is valid...")
@@ -130,25 +122,20 @@ class GreatExpectationsOperator(BaseOperator):
                 context_root_dir=self.data_context_root_dir
             )
         else:
-            self.data_context: BaseDataContext = BaseDataContext(project_config=self.data_context_config)
+            self.data_context: BaseDataContext = BaseDataContext(
+                project_config=self.data_context_config
+            )
 
         # Instantiate the Checkpoint
+        self.checkpoint: Checkpoint
         if self.checkpoint_name:
-            if self.checkpoint_name not in self.data_context.list_checkpoints():
-                raise ValueError(f"Checkpoint of name {self.checkpoint_name} not found in the supplied data_context. "
-                                 f"Please ensure that a Checkpoint of the given name exists and try again.")
-            self.checkpoint: Checkpoint = self.data_context.get_checkpoint(name=self.checkpoint_name)
+            self.checkpoint = self.data_context.get_checkpoint(
+                name=self.checkpoint_name
+            )
         else:
-            try:
-                self.checkpoint: Checkpoint = Checkpoint(
-                    data_context=self.data_context,
-                    **self.checkpoint_config
-                )
-
-            except:
-                raise ValueError("Unable to instantiate a Checkpoint with the included configuration. Please ensure "
-                                 "that your Checkpoint configuration is correct.")
-
+            self.checkpoint = Checkpoint(
+                data_context=self.data_context, **self.checkpoint_config.to_json_dict()
+            )
 
     def execute(self, context: Any) -> CheckpointResult:
         self.log.info("Running validation with Great Expectations...")
@@ -156,6 +143,8 @@ class GreatExpectationsOperator(BaseOperator):
         if self.checkpoint_kwargs:
             result = self.checkpoint.run(**self.checkpoint_kwargs)
 
+        else:
+            result = self.checkpoint.run()
 
         self.handle_result(result)
 
