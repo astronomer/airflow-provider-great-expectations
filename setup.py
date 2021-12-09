@@ -16,10 +16,10 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/great-expectations/airflow-provider-great-expectations",
     install_requires=[
-        "apache-airflow>=1.10",
+        "apache-airflow>=2.0",
         "great-expectations>=0.13.14",
-        "pybigquery>0.3.0",
-        "SQLAlchemy>=1.3.18,<1.4",
+        "pybigquery>=0.4.15",
+        "sqlalchemy>=1.3.16,<1.4.10",
     ],
     packages=[
         "great_expectations_provider",

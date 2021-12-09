@@ -1,19 +1,21 @@
 # Apache Airflow Provider for Great Expectations
 
-**This is an experimental library as of August 2021! The Great Expectations core team and community maintains this provider in an experimental state and does not guarantee ongoing support yet.**
-
 A set of Airflow operators for [Great Expectations](greatexpectations.io), a Python library for testing and validating data.
 
 
 ### Notes on compatibility 
-
-* This operator has been updated to use Great Expectations Checkpoints instead of the former ValidationOperators. Therefore, it requires Great Expectations >=v0.13.9, which is pinned in the requirements.txt starting with release 0.0.5.
-* Great Expectations version 0.13.8 unfortunately contained a bug that would make this operator not work.
+* This operator currently works with the Great Expectations V3 Batch Request API only. If you would like to use the operator in conjunction with the V2 Batch Kwargs API, you must use a version below 0.1.0
+* This operator uses Great Expectations Checkpoints instead of the former ValidationOperators. 
+* Because of the above, this operator requires Great Expectations >=v0.13.9, which is pinned in the requirements.txt starting with release 0.0.5.
+* Great Expectations version 0.13.8 contained a bug that would make this operator not work.
 * Great Expectations version 0.13.7 and below will work with version 0.0.4 of this operator and below.
 
-This package has been most recently unit tested with `apache-airflow=2.1.2` and `great-expectation=0.13.24`.
+This package has been most recently unit tested with `apache-airflow=2.1.2` and `great-expectation=0.13.44`.
 
-The example DAG has been most recently tested in the `quay.io/astronomer/ap-airflow:2.1.1-buster-onbuild` Docker image using  the [Astro CLI](https://www.astronomer.io/docs/cloud/stable/develop/cli-quickstart), with `great-expectation=0.13.24`, `pybigquery=0.10.0`, and `SQLAlchemy=1.3.24`
+[comment]: <> (The example DAG has been most recently tested in the `quay.io/astronomer/ap-airflow:2.1.1-buster-onbuild` Docker image using the [Astro CLI]&#40;https://www.astronomer.io/docs/cloud/stable/develop/cli-quickstart&#41;, with `great-expectation=0.13.24`, `pybigquery=0.10.0`, and `SQLAlchemy=1.3.24`)
+
+**Formerly, there was a separate operator for BigQuery, to facilitate the use of GCP stores. This functionality is now baked into the core Great Expectations library, so the generic Operator will work with any back-end and SQL dialect for which you have a working Data Context and Datasources.**
+
 
 ## Installation
 
@@ -31,12 +33,6 @@ Depending on your use-case, you might need to add `ENV AIRFLOW__CORE__ENABLE_XCO
 
 ```
 from great_expectations_provider.operators.great_expectations import GreatExpectationsOperator
-```
-
-[Great Expectations BigQuery Operator](https://github.com/great-expectations/airflow-provider-great-expectations/blob/main/great_expectations_provider/operators/great_expectations.py): An operator for Great Expectations that provides some pre-set parameters for a BigQuery Datasource and Expectation, Validation, and Data Docs stores in Google Cloud Storage. See the docstrings in the class for more configuration options. Import into your DAG via: 
-
-```
-from great_expectations_provider.operators.great_expectations import GreatExpectationsBigQueryOperator
 ```
 
 ### Previously Available Email Alert Functionality
