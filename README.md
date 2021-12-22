@@ -2,6 +2,8 @@
 
 A set of Airflow operators for [Great Expectations](greatexpectations.io), a Python library for testing and validating data.
 
+### Version Warning:  
+Due to apply_default decorator removal, this version of the provider requires Airflow 2.1.0+. If your Airflow version is < 2.1.0, and you want to install this provider version, first upgrade Airflow to at least version 2.1.0. Otherwise, your Airflow package version will be upgraded automatically, and you will have to manually run airflow upgrade db to complete the migration.
 
 ### Notes on compatibility 
 * This operator currently works with the Great Expectations V3 Batch Request API only. If you would like to use the operator in conjunction with the V2 Batch Kwargs API, you must use a version below 0.1.0

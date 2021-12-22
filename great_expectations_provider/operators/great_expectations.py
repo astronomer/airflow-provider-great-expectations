@@ -65,9 +65,7 @@ class GreatExpectationsOperator(BaseOperator):
     ui_fgcolor = "#000000"
     template_fields = (
         "data_context_root_dir",
-        "data_context_config",
         "checkpoint_name",
-        "checkpoint_config",
         "checkpoint_kwargs",
     )
 
