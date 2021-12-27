@@ -57,6 +57,8 @@ class GreatExpectationsOperator(BaseOperator):
     :type fail_task_on_validation_failure: Optiopnal[bool]
     :param validation_failure_callback: Called when the Great Expectations validation fails
     :type validation_failure_callback: Callable[[CheckpointResult], None]
+    :param return_json_dict: If True, returns a json-serializable dictionary instead of a CheckpointResult object
+    :type return_json_dict: bool
     :param **kwargs: kwargs
     :type **kwargs: Optional[dict]
     """
@@ -82,6 +84,7 @@ class GreatExpectationsOperator(BaseOperator):
         validation_failure_callback: Optional[
             Callable[[CheckpointResult], None]
         ] = None,
+        return_json_dict: bool = False,
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -100,6 +103,7 @@ class GreatExpectationsOperator(BaseOperator):
         self.validation_failure_callback: Optional[
             Callable[[CheckpointResult], None]
         ] = validation_failure_callback
+        self.return_json_dict: bool = return_json_dict
 
         # Check that only one of the arguments is passed to set a data context
         if not bool(self.data_context_root_dir) ^ bool(self.data_context_config):
@@ -135,7 +139,7 @@ class GreatExpectationsOperator(BaseOperator):
                 data_context=self.data_context, **self.checkpoint_config.to_json_dict()
             )
 
-    def execute(self, context: Any) -> CheckpointResult:
+    def execute(self, context: Any) -> [CheckpointResult, dict]:
         self.log.info("Running validation with Great Expectations...")
 
         if self.checkpoint_kwargs:
@@ -145,6 +149,9 @@ class GreatExpectationsOperator(BaseOperator):
             result = self.checkpoint.run()
 
         self.handle_result(result)
+
+        if self.return_json_dict:
+            return result.to_json_dict()
 
         return result
 
