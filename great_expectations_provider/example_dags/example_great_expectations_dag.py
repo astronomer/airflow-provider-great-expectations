@@ -10,13 +10,8 @@ from airflow import DAG
 
 from great_expectations_provider.operators.great_expectations import GreatExpectationsOperator
 
-from include.object_configs.example_data_context_config import example_data_context_config
-from include.object_configs.example_checkpoint_config import example_checkpoint_config
-
-"""
-TODO: DataContext configs are here and this is how you specify them and modify them.
-"""
-
+from include.great_expectations.object_configs.example_data_context_config import example_data_context_config
+from include.great_expectations.object_configs.example_checkpoint_config import example_checkpoint_config
 
 base_path = Path(__file__).parents[2]
 data_dir = os.path.join(base_path, "include", "data")

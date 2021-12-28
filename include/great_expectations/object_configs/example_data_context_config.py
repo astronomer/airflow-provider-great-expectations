@@ -3,8 +3,8 @@ import os
 from pathlib import Path
 
 base_path = Path(__file__).parents[2]
-data_dir = os.path.join(base_path, "include", "data")
-ge_root_dir = os.path.join(base_path, "include", "great_expectations")
+data_dir = os.path.join(base_path, "data")
+ge_root_dir = os.path.join(base_path, "great_expectations")
 
 example_data_context_config = DataContextConfig(
     **{

@@ -382,3 +382,16 @@ def test_great_expectations_operator__validation_failure_callback():
     result = operator.execute(context={})
     assert result["success"] is False
     my_callback.assert_called_once_with(result)
+
+
+def test_great_expectations_operator__return_json_dict():
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_root_dir=ge_root_dir,
+        checkpoint_name="taxi.pass.chk",
+        return_json_dict=True
+    )
+    result = operator.execute(context={})
+    logger.info(result)
+    assert isinstance(result, dict)
+    assert result["success"]
