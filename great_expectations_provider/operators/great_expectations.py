@@ -17,28 +17,18 @@
 # under the License.
 #
 
-import datetime
 import os
-from typing import Any, Callable, Dict, List, Optional, Union
-import uuid
+from typing import Any, Callable, Dict, Optional, Union
 
-import airflow
-from airflow.exceptions import AirflowException
-
-if airflow.__version__ > "2.0":
-    from airflow.hooks.base import BaseHook
-else:
-    from airflow.hooks.base_hook import BaseHook
-from airflow.models import BaseOperator
-from airflow.utils.decorators import apply_defaults
 import great_expectations as ge
-from great_expectations.checkpoint import LegacyCheckpoint
-from great_expectations.checkpoint.types.checkpoint_result import CheckpointResult
-from great_expectations.data_context.types.base import (
-    DataContextConfig,
-    GCSStoreBackendDefaults,
-)
+from airflow.exceptions import AirflowException
+from airflow.models import BaseOperator
+from great_expectations.checkpoint import Checkpoint
+from great_expectations.checkpoint.types.checkpoint_result import \
+    CheckpointResult
 from great_expectations.data_context import BaseDataContext
+from great_expectations.data_context.types.base import (CheckpointConfig,
+                                                        DataContextConfig)
 
 
 class GreatExpectationsOperator(BaseOperator):
@@ -55,22 +45,20 @@ class GreatExpectationsOperator(BaseOperator):
     :type run_name: Optional[str]
     :param data_context_root_dir: Path of the great_expectations directory
     :type data_context_root_dir: Optional[str]
-    :param data_context: A great_expectations `DataContext` object
-    :type data_context: Optional[BaseDataContext]
-    :param expectation_suite_name: The name of the Expectation Suite to use for validation
-    :type expectation_suite_name: Optional[str]
-    :param batch_kwargs: The batch_kwargs to use for validation
-    :type batch_kwargs: Optional[dict]
-    :param assets_to_validate: A list of dictionaries of batch_kwargs + Expectation Suites to use for validation
-    :type assets_to_validate: Optional[list[dict]]
+    :param data_context_config: A great_expectations `DataContextConfig` object
+    :type data_context_config: Optional[DataContextConfig]
     :param checkpoint_name: A Checkpoint name to use for validation
     :type checkpoint_name: Optional[str]
-    :param validation_operator_name: name of a Great Expectations validation operator, defaults to action_list_operator
-    :type validation_operator_name: Optional[str]
+    :param checkpoint_config: A great_expectations `CheckpointConfig` object to use for validation
+    :type checkpoint_config: Optional[CheckpointConfig]
+    :param checkpoint_kwargs: A dictionary whose keys match the parameters of CheckpointConfig which can be used to update and populate the Operator's Checkpoint at runtime
+    :type checkpoint_kwargs: Optional[Dict]
     :param fail_task_on_validation_failure: Fail the Airflow task if the Great Expectation validation fails
     :type fail_task_on_validation_failure: Optiopnal[bool]
     :param validation_failure_callback: Called when the Great Expectations validation fails
     :type validation_failure_callback: Callable[[CheckpointResult], None]
+    :param return_json_dict: If True, returns a json-serializable dictionary instead of a CheckpointResult object
+    :type return_json_dict: bool
     :param **kwargs: kwargs
     :type **kwargs: Optional[dict]
     """
@@ -78,130 +66,92 @@ class GreatExpectationsOperator(BaseOperator):
     ui_color = "#AFEEEE"
     ui_fgcolor = "#000000"
     template_fields = (
-        "checkpoint_name",
-        "batch_kwargs",
-        "assets_to_validate",
         "data_context_root_dir",
+        "checkpoint_name",
+        "checkpoint_kwargs",
     )
 
-    @apply_defaults
     def __init__(
         self,
         *,
         run_name: Optional[str] = None,
         data_context_root_dir: Optional[Union[str, bytes, os.PathLike]] = None,
-        data_context: Optional[BaseDataContext] = None,
-        expectation_suite_name: Optional[str] = None,
-        batch_kwargs: Optional[Dict] = None,
-        assets_to_validate: Optional[List[Dict]] = None,
+        data_context_config: Optional[DataContextConfig] = None,
         checkpoint_name: Optional[str] = None,
-        validation_operator_name: Optional[str] = None,
+        checkpoint_config: Optional[CheckpointConfig] = None,
+        checkpoint_kwargs: Optional[Dict] = None,
         fail_task_on_validation_failure: Optional[bool] = True,
         validation_failure_callback: Optional[
             Callable[[CheckpointResult], None]
         ] = None,
+        return_json_dict: bool = False,
         **kwargs
     ):
         super().__init__(**kwargs)
 
         self.run_name: Optional[str] = run_name
-
-        # Check that only one of the arguments is passed to set a data context (or none)
-        if data_context_root_dir and data_context:
-            raise ValueError(
-                "Only one of data_context_root_dir or data_context can be specified."
-            )
-
-        self.data_context_root_dir: Optional[str] = data_context_root_dir
-        self.data_context: Optional[BaseDataContext] = data_context
-
-        # Check that only the correct args to validate are passed
-        # this doesn't cover the case where only one of expectation_suite_name or batch_kwargs is specified
-        # along with one of the others, but I'm ok with just giving precedence to the correct one
-        if (
-            sum(
-                bool(x)
-                for x in [
-                    (expectation_suite_name and batch_kwargs),
-                    assets_to_validate,
-                    checkpoint_name,
-                ]
-            )
-            != 1
-        ):
-            raise ValueError(
-                "Exactly one of expectation_suite_name + batch_kwargs, "
-                "assets_to_validate, or checkpoint_name is required to run validation."
-            )
-
-        self.expectation_suite_name: Optional[str] = expectation_suite_name
-        self.batch_kwargs: Optional[Dict] = batch_kwargs
-        self.assets_to_validate: Optional[List[Dict]] = assets_to_validate
+        self.data_context_root_dir: Optional[
+            Union[str, bytes, os.PathLike]
+        ] = data_context_root_dir
+        self.data_context_config: DataContextConfig = data_context_config
         self.checkpoint_name: Optional[str] = checkpoint_name
-        self.validation_operator_name: Optional[str] = validation_operator_name
-        self.fail_task_on_validation_failure = fail_task_on_validation_failure
-        self.validation_failure_callback = validation_failure_callback
+        self.checkpoint_config: Optional[CheckpointConfig] = checkpoint_config or {}
+        self.checkpoint_kwargs: Optional[dict] = checkpoint_kwargs
+        self.fail_task_on_validation_failure: Optional[
+            bool
+        ] = fail_task_on_validation_failure
+        self.validation_failure_callback: Optional[
+            Callable[[CheckpointResult], None]
+        ] = validation_failure_callback
+        self.return_json_dict: bool = return_json_dict
 
-    def create_data_context(self) -> BaseDataContext:
-        """Create and return the :class:`~ge.data_context.DataContext` to be used
-        during validation.
+        # Check that only one of the arguments is passed to set a data context
+        if not bool(self.data_context_root_dir) ^ bool(self.data_context_config):
+            raise ValueError(
+                "Exactly one of data_context_root_dir or data_context_config must be specified."
+            )
 
-        Subclasses should override this to provide custom logic around creating a
-        `DataContext`. This is called at task execution time, which defers connecting
-        to the meta database and allows for the use of templated variables.
-        """
-        if self.data_context_root_dir:
-            return ge.data_context.DataContext(
+        # Check that only one of the arguments is passed to set a checkpoint
+        if not bool(self.checkpoint_name) ^ bool(self.checkpoint_config):
+            raise ValueError(
+                "Exactly one of checkpoint_name or checkpoint_config must be specified."
+            )
+
+        # Instantiate the Data Context
+        self.log.info("Ensuring data context is valid...")
+        if data_context_root_dir:
+            self.data_context: BaseDataContext = ge.data_context.DataContext(
                 context_root_dir=self.data_context_root_dir
             )
         else:
-            return ge.data_context.DataContext()
+            self.data_context: BaseDataContext = BaseDataContext(
+                project_config=self.data_context_config
+            )
 
-    def execute(self, context: Any) -> CheckpointResult:
-        self.log.info("Ensuring data context exists...")
-        if not self.data_context:
-            self.log.info("Data context does not exist, creating now.")
-            self.data_context: Optional[BaseDataContext] = self.create_data_context()
+        # Instantiate the Checkpoint
+        self.checkpoint: Checkpoint
+        if self.checkpoint_name:
+            self.checkpoint = self.data_context.get_checkpoint(
+                name=self.checkpoint_name
+            )
+        else:
+            self.checkpoint = Checkpoint(
+                data_context=self.data_context, **self.checkpoint_config.to_json_dict()
+            )
 
+    def execute(self, context: Any) -> [CheckpointResult, dict]:
         self.log.info("Running validation with Great Expectations...")
-        batches_to_validate = []
 
-        if self.batch_kwargs and self.expectation_suite_name:
-            batch = {
-                "batch_kwargs": self.batch_kwargs,
-                "expectation_suite_names": [self.expectation_suite_name],
-            }
-            batches_to_validate.append(batch)
+        if self.checkpoint_kwargs:
+            result = self.checkpoint.run(**self.checkpoint_kwargs)
 
-        elif self.checkpoint_name:
-            checkpoint = self.data_context.get_checkpoint(self.checkpoint_name)
-
-            for batch in checkpoint.batches:
-
-                batch_kwargs = batch["batch_kwargs"]
-                for suite_name in batch["expectation_suite_names"]:
-                    batch = {
-                        "batch_kwargs": batch_kwargs,
-                        "expectation_suite_names": [suite_name],
-                    }
-                    batches_to_validate.append(batch)
-
-        elif self.assets_to_validate:
-            for asset in self.assets_to_validate:
-                batch = {
-                    "batch_kwargs": asset["batch_kwargs"],
-                    "expectation_suite_names": [asset["expectation_suite_name"]],
-                }
-                batches_to_validate.append(batch)
-
-        result = LegacyCheckpoint(
-            name="_temp_checkpoint",
-            data_context=self.data_context,
-            validation_operator_name=self.validation_operator_name,
-            batches=batches_to_validate,
-        ).run(run_name=self.run_name)
+        else:
+            result = self.checkpoint.run()
 
         self.handle_result(result)
+
+        if self.return_json_dict:
+            return result.to_json_dict()
 
         return result
 
@@ -233,145 +183,3 @@ class GreatExpectationsOperator(BaseOperator):
                 )
         else:
             self.log.info("Validation with Great Expectations successful.")
-
-
-class GreatExpectationsBigQueryOperator(GreatExpectationsOperator):
-    """
-    An operator that allows you to use Great Expectations to validate data Expectations
-    against a BigQuery table or the result of a SQL query.
-
-    The Expectations need to be stored in a JSON file sitting in an accessible GCS
-    bucket. The validation results are output to GCS in both JSON and HTML formats.
-
-    :param gcp_project: The GCP project of the bucket holding the Great Expectations
-        artifacts.
-    :type gcp_project: str
-    :param gcs_bucket: GCS bucket holding the Great Expectations artifacts.
-    :type gcs_bucket: str
-    :param gcs_expectations_prefix: GCS prefix where the Expectations file can be
-        found. For example, "ge/expectations".
-    :type gcs_expectations_prefix: str
-    :param gcs_validations_prefix:  GCS prefix where the validation output files should
-        be saved. For example, "ge/expectations".
-    :type gcs_validations_prefix: str
-    :param gcs_datadocs_prefix:  GCS prefix where the validation datadocs files should
-        be saved. For example, "ge/expectations".
-    :type gcs_datadocs_prefix: str
-    :param query: The SQL query that defines the set of data to be validated. If the
-        query parameter is filled in then the `table` parameter cannot be.
-    :type query: Optional[str]
-    :param table: The name of the BigQuery table with the data to be validated. If the
-        table parameter is filled in then the `query` parameter cannot be.
-    :type table: Optional[str]
-    :param bq_dataset_name:  The name of the BigQuery data set where any temp tables
-        will be created that are needed as part of the GE validation process.
-    :type bq_dataset_name: str
-    :param bigquery_conn_id: ID of the connection with the credentials info needed to
-        connect to BigQuery.
-    :type bigquery_conn_id: str
-
-    """
-
-    ui_color = "#AFEEEE"
-    ui_fgcolor = "#000000"
-    template_fields = GreatExpectationsOperator.template_fields + (
-        "bq_dataset_name",
-        "gcp_project",
-        "gcs_bucket",
-    )
-
-    @apply_defaults
-    def __init__(
-        self,
-        *,
-        gcp_project: str,
-        gcs_bucket: str,
-        gcs_expectations_prefix: str,
-        gcs_validations_prefix: str,
-        gcs_datadocs_prefix: str,
-        query: Optional[str] = None,
-        table: Optional[str] = None,
-        bq_dataset_name: str,
-        bigquery_conn_id: str = "bigquery_default",
-        **kwargs
-    ):
-        self.query: Optional[str] = query
-        self.table: Optional[str] = table
-        self.bigquery_conn_id = bigquery_conn_id
-        self.bq_dataset_name = bq_dataset_name
-        self.gcp_project = gcp_project
-        self.gcs_bucket = gcs_bucket
-        self.gcs_expectations_prefix = gcs_expectations_prefix
-        self.gcs_validations_prefix = gcs_validations_prefix
-        self.gcs_datadocs_prefix = gcs_datadocs_prefix
-        super().__init__(batch_kwargs=self.get_batch_kwargs(), **kwargs)
-
-    def create_data_context(self) -> BaseDataContext:
-        """Create and return the `DataContext` with a BigQuery `DataSource`."""
-        # Get the credentials information for the BigQuery data source from the BigQuery
-        # Airflow connection
-        conn = BaseHook.get_connection(self.bigquery_conn_id)
-        connection_json = conn.extra_dejson
-        credentials_path = connection_json.get("extra__google_cloud_platform__key_path")
-        data_context_config = DataContextConfig(
-            config_version=2,
-            datasources={
-                "bq_datasource": {
-                    "credentials": {
-                        "url": "bigquery://"
-                        + self.gcp_project
-                        + "/"
-                        + self.bq_dataset_name
-                        + "?credentials_path="
-                        + credentials_path
-                    },
-                    "class_name": "SqlAlchemyDatasource",
-                    "module_name": "great_expectations.datasource",
-                    "data_asset_type": {
-                        "module_name": "great_expectations.dataset",
-                        "class_name": "SqlAlchemyDataset",
-                    },
-                }
-            },
-            store_backend_defaults=GCSStoreBackendDefaults(
-                default_bucket_name=self.gcs_bucket,
-                default_project_name=self.gcp_project,
-                validations_store_prefix=self.gcs_validations_prefix,
-                expectations_store_prefix=self.gcs_expectations_prefix,
-                data_docs_prefix=self.gcs_datadocs_prefix,
-            ),
-        )
-
-        return BaseDataContext(project_config=data_context_config)
-
-    def get_batch_kwargs(self) -> Dict:
-        # Tell GE where to fetch the batch of data to be validated.
-        batch_kwargs = {
-            "datasource": "bq_datasource",
-        }
-
-        # Check that only one of the arguments is passed to set a data context (or none)
-        if self.query and self.table:
-            raise ValueError("Only one of query or table can be specified.")
-        if self.query:
-            batch_kwargs["query"] = self.query
-            batch_kwargs["data_asset_name"] = self.bq_dataset_name
-            batch_kwargs["bigquery_temp_table"] = self.get_temp_table_name(
-                "ge_" + datetime.datetime.now().strftime("%Y%m%d") + "_", 10
-            )
-        elif self.table:
-            batch_kwargs["table"] = self.table
-            batch_kwargs["data_asset_name"] = self.bq_dataset_name
-
-        self.log.info("batch_kwargs: " + str(batch_kwargs))
-
-        return batch_kwargs
-
-    def get_temp_table_name(
-        self, desired_prefix: str, desired_length_of_random_portion: int
-    ) -> str:
-        random_string = str(uuid.uuid4().hex)
-        random_portion_of_name = random_string[:desired_length_of_random_portion]
-        full_name = desired_prefix + random_portion_of_name
-        self.log.info("Generated name for temporary table: %s", full_name)
-        return full_name

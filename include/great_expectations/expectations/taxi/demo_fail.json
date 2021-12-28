@@ -35,8 +35,7 @@
         "column": "vendor_id",
         "value_set": [
           1,
-          2,
-          4
+          2
         ]
       },
       "meta": {}
