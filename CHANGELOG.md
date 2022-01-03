@@ -3,6 +3,11 @@
 ## Upcoming 
 * (please add here)
 
+## 0.1.0
+* [FEATURE] Update Operator to work with Great Expectations V3 API - thanks @denimalpaca @josh-fell @jeffkpayne!
+* [FEATURE] Combine BigQuery Operator with general Great Expectations Operator
+* [MAINTENANCE] Update required Airflow version to Airflow 2.1
+
 ## 0.0.8
 * [FEATURE] Add explicit Airflow version handling - thanks, @jeffkpayne!
 * [FEATURE] Add example DAG setup conveniences - thanks, @jeffkpayne!
