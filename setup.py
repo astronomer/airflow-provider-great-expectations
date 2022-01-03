@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="airflow-provider-great-expectations",
-    version="0.0.8",
+    version="0.1.0",
     author="Great Expectations",
     description="An Apache Airflow provider for Great Expectations",
     entry_points="""
@@ -18,7 +18,6 @@ setuptools.setup(
     install_requires=[
         "apache-airflow>=2.1,<3.0",
         "great-expectations>=0.13.14",
-        "pybigquery>=0.4.15",
         "sqlalchemy>=1.3.16,<1.4.10",
     ],
     packages=[
