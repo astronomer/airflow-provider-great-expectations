@@ -3,6 +3,9 @@
 ## Upcoming 
 * (please add here)
 
+## 0.1.1
+* [BUGFIX] Resolve dependency resolution conflict with Astronomer Docker image
+
 ## 0.1.0
 * [FEATURE] Update Operator to work with Great Expectations V3 API - thanks @denimalpaca @josh-fell @jeffkpayne!
 * [FEATURE] Combine BigQuery Operator with general Great Expectations Operator
