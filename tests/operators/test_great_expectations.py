@@ -287,52 +287,7 @@ def test_great_expectations_operator__raises_error_with_checkpoint_name_and_chec
             data_context_root_dir=ge_root_dir,
             checkpoint_name="taxi.pass.chk",
         )
-
-
-def test_great_expectations_operator__valid_checkpoint():
-    @contextmanager
-    def temp_open(path, mode):
-        file = open(path, mode)
-        try:
-            yield file
-        finally:
-            file.close()
-            os.remove(path)
-
-    temp_yaml = """name: taxi.pass.chk
-config_version: 1.0
-module_name: great_expectations.checkpoint
-class_name: Checkpoint
-run_name_template: '%Y%m%d-%H%M%S-my-run-name-template'
-batch_request:
-    datasource_name: my_datasource
-    data_connector_name: default_inferred_data_connector_name
-    data_asset_name: yellow_tripdata_sample_2019-01.csv
-    data_connector_query:
-        index: -1
-action_list:
-  - name: store_validation_result
-    action:
-      class_name: StoreValidationResultAction
-expectation_suite_name: taxi.demo
-ge_cloud_id:
-expectation_suite_ge_cloud_id:
-"""
-    with temp_open(
-        path=os.path.join(ge_root_dir, "checkpoints", "taxi.temp.chk.yml"),
-        mode="w+",
-    ) as temp_yaml_file:
-        temp_yaml_file.write(temp_yaml)
-        temp_yaml_file.close()
-        operator = GreatExpectationsOperator(
-            task_id="task_id",
-            checkpoint_name="taxi.temp.chk",
-            data_context_root_dir=ge_root_dir,
-        )
-        result = operator.execute(context={})
-        logger.info(result)
-        assert result["success"]
-
+        
 
 def test_great_expectations_operator__invalid_checkpoint_name():
     with pytest.raises(CheckpointNotFoundError):

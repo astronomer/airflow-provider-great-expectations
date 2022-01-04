@@ -16,7 +16,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/great-expectations/airflow-provider-great-expectations",
     install_requires=[
-        "apache-airflow>=2.1,<3.0",
+        "apache-airflow>=2.1",
         "great-expectations>=0.13.14",
         "sqlalchemy>=1.3.16,<1.4.10",
     ],
