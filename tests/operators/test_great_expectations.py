@@ -349,4 +349,4 @@ def test_great_expectations_operator__return_json_dict():
     result = operator.execute(context={})
     logger.info(result)
     assert isinstance(result, dict)
-    assert result["success"]
+    assert result["_success"] # TODO: Update to "success"
