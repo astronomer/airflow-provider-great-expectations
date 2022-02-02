@@ -141,9 +141,6 @@ class GreatExpectationsOperator(BaseOperator):
                 runtime_environment={"data_context": self.data_context},
                 config_defaults={"module_name": "great_expectations.checkpoint"},
             )
-            # self.checkpoint = Checkpoint(
-            #     data_context=self.data_context, **self.checkpoint_config.to_json_dict()
-            # )
 
     def execute(self, context: Any) -> [CheckpointResult, dict]:
         self.log.info("Running validation with Great Expectations...")

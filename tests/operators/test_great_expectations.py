@@ -350,4 +350,3 @@ def test_great_expectations_operator__return_json_dict():
     logger.info(result)
     assert isinstance(result, dict)
     assert result["_success"] # TODO: Update to "success" upon changes to `to_json_dict` in core GE
-    
