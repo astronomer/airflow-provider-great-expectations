@@ -29,6 +29,7 @@ from great_expectations.checkpoint.types.checkpoint_result import \
 from great_expectations.data_context import BaseDataContext
 from great_expectations.data_context.types.base import (CheckpointConfig,
                                                         DataContextConfig)
+from great_expectations.data_context.util import instantiate_class_from_config
 
 
 class GreatExpectationsOperator(BaseOperator):
@@ -135,8 +136,10 @@ class GreatExpectationsOperator(BaseOperator):
                 name=self.checkpoint_name
             )
         else:
-            self.checkpoint = Checkpoint(
-                data_context=self.data_context, **self.checkpoint_config.to_json_dict()
+            self.checkpoint = instantiate_class_from_config(
+                config=self.checkpoint_config.to_json_dict(),
+                runtime_environment={"data_context": self.data_context},
+                config_defaults={"module_name": "great_expectations.checkpoint"},
             )
 
     def execute(self, context: Any) -> [CheckpointResult, dict]:

@@ -3,6 +3,9 @@
 ## Upcoming 
 * (please add here)
 
+## 0.1.2 
+* [BUGFIX] Fix error with the instantiation of a Checkpoint from a CheckpointConfig
+
 ## 0.1.1
 * [BUGFIX] Resolve dependency resolution conflict with Astronomer Docker image
 
