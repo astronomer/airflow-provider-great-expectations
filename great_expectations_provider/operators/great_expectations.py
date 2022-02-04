@@ -29,7 +29,6 @@ from great_expectations.checkpoint.types.checkpoint_result import \
 from great_expectations.data_context import BaseDataContext
 from great_expectations.data_context.types.base import (CheckpointConfig,
                                                         DataContextConfig)
-from great_expectations.data_context.util import instantiate_class_from_config
 
 
 class GreatExpectationsOperator(BaseOperator):
@@ -58,8 +57,6 @@ class GreatExpectationsOperator(BaseOperator):
     :type fail_task_on_validation_failure: Optiopnal[bool]
     :param validation_failure_callback: Called when the Great Expectations validation fails
     :type validation_failure_callback: Callable[[CheckpointResult], None]
-    :param return_json_dict: If True, returns a json-serializable dictionary instead of a CheckpointResult object
-    :type return_json_dict: bool
     :param **kwargs: kwargs
     :type **kwargs: Optional[dict]
     """
@@ -68,7 +65,9 @@ class GreatExpectationsOperator(BaseOperator):
     ui_fgcolor = "#000000"
     template_fields = (
         "data_context_root_dir",
+        "data_context_config",
         "checkpoint_name",
+        "checkpoint_config",
         "checkpoint_kwargs",
     )
 
@@ -85,7 +84,6 @@ class GreatExpectationsOperator(BaseOperator):
         validation_failure_callback: Optional[
             Callable[[CheckpointResult], None]
         ] = None,
-        return_json_dict: bool = False,
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -96,7 +94,8 @@ class GreatExpectationsOperator(BaseOperator):
         ] = data_context_root_dir
         self.data_context_config: DataContextConfig = data_context_config
         self.checkpoint_name: Optional[str] = checkpoint_name
-        self.checkpoint_config: Optional[CheckpointConfig] = checkpoint_config or {}
+        self.checkpoint_config: Optional[CheckpointConfig] = checkpoint_config or {
+            }
         self.checkpoint_kwargs: Optional[dict] = checkpoint_kwargs
         self.fail_task_on_validation_failure: Optional[
             bool
@@ -104,7 +103,6 @@ class GreatExpectationsOperator(BaseOperator):
         self.validation_failure_callback: Optional[
             Callable[[CheckpointResult], None]
         ] = validation_failure_callback
-        self.return_json_dict: bool = return_json_dict
 
         # Check that only one of the arguments is passed to set a data context
         if not bool(self.data_context_root_dir) ^ bool(self.data_context_config):
@@ -118,9 +116,12 @@ class GreatExpectationsOperator(BaseOperator):
                 "Exactly one of checkpoint_name or checkpoint_config must be specified."
             )
 
+    def execute(self, context: Any) -> CheckpointResult:
+        self.log.info("Running validation with Great Expectations...")
+
         # Instantiate the Data Context
         self.log.info("Ensuring data context is valid...")
-        if data_context_root_dir:
+        if self.data_context_root_dir:
             self.data_context: BaseDataContext = ge.data_context.DataContext(
                 context_root_dir=self.data_context_root_dir
             )
@@ -136,14 +137,9 @@ class GreatExpectationsOperator(BaseOperator):
                 name=self.checkpoint_name
             )
         else:
-            self.checkpoint = instantiate_class_from_config(
-                config=self.checkpoint_config.to_json_dict(),
-                runtime_environment={"data_context": self.data_context},
-                config_defaults={"module_name": "great_expectations.checkpoint"},
+            self.checkpoint = Checkpoint(
+                data_context=self.data_context, **self.checkpoint_config.to_json_dict()
             )
-
-    def execute(self, context: Any) -> [CheckpointResult, dict]:
-        self.log.info("Running validation with Great Expectations...")
 
         if self.checkpoint_kwargs:
             result = self.checkpoint.run(**self.checkpoint_kwargs)
@@ -152,9 +148,6 @@ class GreatExpectationsOperator(BaseOperator):
             result = self.checkpoint.run()
 
         self.handle_result(result)
-
-        if self.return_json_dict:
-            return result.to_json_dict()
 
         return result
 
@@ -177,7 +170,8 @@ class GreatExpectationsOperator(BaseOperator):
             if self.validation_failure_callback:
                 self.validation_failure_callback(result)
             if self.fail_task_on_validation_failure:
-                raise AirflowException("Validation with Great Expectations failed.")
+                raise AirflowException(
+                    "Validation with Great Expectations failed.")
             else:
                 self.log.warning(
                     "Validation with Great Expectations failed. "
