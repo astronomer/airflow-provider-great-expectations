@@ -118,9 +118,12 @@ class GreatExpectationsOperator(BaseOperator):
                 "Exactly one of checkpoint_name or checkpoint_config must be specified."
             )
 
+    def execute(self, context: Any) -> [CheckpointResult, dict]:
+        self.log.info("Running validation with Great Expectations...")
+
         # Instantiate the Data Context
         self.log.info("Ensuring data context is valid...")
-        if data_context_root_dir:
+        if self.data_context_root_dir:
             self.data_context: BaseDataContext = ge.data_context.DataContext(
                 context_root_dir=self.data_context_root_dir
             )
@@ -139,11 +142,9 @@ class GreatExpectationsOperator(BaseOperator):
             self.checkpoint = instantiate_class_from_config(
                 config=self.checkpoint_config.to_json_dict(),
                 runtime_environment={"data_context": self.data_context},
-                config_defaults={"module_name": "great_expectations.checkpoint"},
+                config_defaults={
+                    "module_name": "great_expectations.checkpoint"},
             )
-
-    def execute(self, context: Any) -> [CheckpointResult, dict]:
-        self.log.info("Running validation with Great Expectations...")
 
         if self.checkpoint_kwargs:
             result = self.checkpoint.run(**self.checkpoint_kwargs)
@@ -177,7 +178,8 @@ class GreatExpectationsOperator(BaseOperator):
             if self.validation_failure_callback:
                 self.validation_failure_callback(result)
             if self.fail_task_on_validation_failure:
-                raise AirflowException("Validation with Great Expectations failed.")
+                raise AirflowException(
+                    "Validation with Great Expectations failed.")
             else:
                 self.log.warning(
                     "Validation with Great Expectations failed. "
