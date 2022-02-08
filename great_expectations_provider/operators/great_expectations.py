@@ -96,8 +96,7 @@ class GreatExpectationsOperator(BaseOperator):
         ] = data_context_root_dir
         self.data_context_config: DataContextConfig = data_context_config
         self.checkpoint_name: Optional[str] = checkpoint_name
-        self.checkpoint_config: Optional[CheckpointConfig] = checkpoint_config or {
-            }
+        self.checkpoint_config: Optional[CheckpointConfig] = checkpoint_config or {}
         self.checkpoint_kwargs: Optional[dict] = checkpoint_kwargs
         self.fail_task_on_validation_failure: Optional[
             bool
