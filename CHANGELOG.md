@@ -3,6 +3,9 @@
 ## Upcoming 
 * (please add here)
 
+## 0.1.3
+* [FEATURE] Improve performance by moving DataContext and Checkpoint initialization to Operator.execute() - thanks @denimalpaca
+
 ## 0.1.2 
 * [BUGFIX] Fix error with the instantiation of a Checkpoint from a CheckpointConfig
 

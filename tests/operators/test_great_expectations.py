@@ -290,12 +290,13 @@ def test_great_expectations_operator__raises_error_with_checkpoint_name_and_chec
         
 
 def test_great_expectations_operator__invalid_checkpoint_name():
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        checkpoint_name="invalid-checkpoint.name",
+        data_context_root_dir=ge_root_dir,
+    )
     with pytest.raises(CheckpointNotFoundError):
-        operator = GreatExpectationsOperator(
-            task_id="task_id",
-            checkpoint_name="invalid-checkpoint.name",
-            data_context_root_dir=ge_root_dir,
-        )
+        operator.execute(context={})
 
 
 def test_great_expectations_operator__validation_failure_raises_exc():
@@ -349,4 +350,4 @@ def test_great_expectations_operator__return_json_dict():
     result = operator.execute(context={})
     logger.info(result)
     assert isinstance(result, dict)
-    assert result["_success"] # TODO: Update to "success" upon changes to `to_json_dict` in core GE
+    assert result["success"]
