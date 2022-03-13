@@ -377,7 +377,7 @@ def test_great_expectations_operator__custom_expectation_plugin():
     operator = GreatExpectationsOperator(
         task_id="task_id",
         data_context_root_dir=ge_root_dir,
-        checkpoint_name="plugin_expectation_checkpoint",
+        checkpoint_name="plugin_expectation_checkpoint.chk",
         checkpoint_kwargs={
             "validations": [{"batch_request": batch_request}]
         }
