@@ -95,6 +95,8 @@ class ColumnValuesAreAlphabetical(ColumnMapMetricProvider):
 # The main business logic for calculation lives here.
 class ExpectColumnValuesToBeAlphabetical(ColumnMapExpectation):
     """
+    Given a list of string values, check if the list is alphabetical.
+
     Given a list of string values, check if the list is alphabetical, either forwards or backwards (specified with the
     `reverse` parameter). Comparison is case-insensitive. Using `mostly` will give you how many items are alphabetical
     relative to the immediately previous item in the list.
@@ -264,5 +266,5 @@ class ExpectColumnValuesToBeAlphabetical(ColumnMapExpectation):
     default_kwarg_values = {}
 
 if __name__ == "__main__":
-    diagnostics_report = ExpectColumnValuesToBeAlphabetical().run_diagnostics()
-    print(json.dumps(diagnostics_report, indent=2))
+    diagnostics_report = ExpectColumnValuesToBeAlphabetical().print_diagnostic_checklist()
+    # print(json.dumps(diagnostics_report, indent=2))

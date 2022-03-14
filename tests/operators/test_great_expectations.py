@@ -357,29 +357,15 @@ def test_great_expectations_operator__return_json_dict():
 def test_great_expectations_operator__custom_expectation_plugin():
     from include.great_expectations.plugins.expectations.expect_column_values_to_be_alphabetical \
         import ExpectColumnValuesToBeAlphabetical
-
-    df = pd.DataFrame({
-        "fruits": ["apple", "banana", "cherry", "date"],
-        "animals": ["zebra", "yak", "xylo", "walrus"],
-        "places": ["house", "school", "park", "store"]
-    })
-
-    batch_request = RuntimeBatchRequest(**{
-        "datasource_name": "my_datasource",
-        "data_connector_name": "default_runtime_data_connector_name",
-        "data_asset_name": "my_alphabetical_dataframe",
-        "runtime_parameters": {
-            "batch_data": df
-        },
-        "batch_identifiers": {"default_identifier_name": "default_identifier"},
-    })
+    from include.great_expectations.object_configs.example_runtime_batch_request_for_plugin_expectation \
+        import runtime_batch_request
 
     operator = GreatExpectationsOperator(
         task_id="task_id",
         data_context_root_dir=ge_root_dir,
         checkpoint_name="plugin_expectation_checkpoint.chk",
         checkpoint_kwargs={
-            "validations": [{"batch_request": batch_request}]
+            "validations": [{"batch_request": runtime_batch_request}]
         }
     )
     result = operator.execute(context={})
