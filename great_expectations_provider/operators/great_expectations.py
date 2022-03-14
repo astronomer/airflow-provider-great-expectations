@@ -139,8 +139,15 @@ class GreatExpectationsOperator(BaseOperator):
                 name=self.checkpoint_name
             )
         else:
+            config_dict = self.checkpoint_config.to_json_dict()
+
+            # TODO: Ensure proper Checkpoint/SimpleCheckpoint instantiation in core so this can be removed
+            if config_dict.get("class_name") == "Checkpoint":
+                for i in ["site_names", "notify_with", "notify_on", "slack_webhook"]:
+                    config_dict.pop(i) if i in config_dict else None
+
             self.checkpoint = instantiate_class_from_config(
-                config=self.checkpoint_config.to_json_dict(),
+                config=config_dict,
                 runtime_environment={"data_context": self.data_context},
                 config_defaults={
                     "module_name": "great_expectations.checkpoint"},

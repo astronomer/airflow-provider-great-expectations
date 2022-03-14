@@ -15,10 +15,11 @@ import os
 import unittest.mock as mock
 from contextlib import contextmanager
 from pathlib import Path
+import pandas as pd
 
 import pytest
 from airflow.exceptions import AirflowException
-from great_expectations.core.batch import BatchRequest
+from great_expectations.core.batch import BatchRequest, RuntimeBatchRequest
 from great_expectations.data_context.types.base import (CheckpointConfig,
                                                         DataContextConfig)
 from great_expectations.exceptions.exceptions import CheckpointNotFoundError
@@ -209,7 +210,7 @@ def test_great_expectations_operator__data_context_config_and_checkpoint_config_
     assert result["success"]
 
 
-def test_great_expectations_operator__checkpoint_config_with_substituted_batch_request_works_and_fails(
+def test_great_expectations_operator__checkpoint_config_and_checkpoint_kwargs_substituted_batch_request_works_and_fails(
     in_memory_data_context_config, in_memory_checkpoint_config
 ):
     failing_batch_request = BatchRequest(
@@ -350,4 +351,49 @@ def test_great_expectations_operator__return_json_dict():
     result = operator.execute(context={})
     logger.info(result)
     assert isinstance(result, dict)
+    assert result["success"]
+
+
+def test_great_expectations_operator__custom_expectation_plugin():
+    from include.great_expectations.plugins.expectations.expect_column_values_to_be_alphabetical \
+        import ExpectColumnValuesToBeAlphabetical
+    from include.great_expectations.object_configs.example_runtime_batch_request_for_plugin_expectation \
+        import runtime_batch_request
+
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_root_dir=ge_root_dir,
+        checkpoint_name="plugin_expectation_checkpoint.chk",
+        checkpoint_kwargs={
+            "validations": [{"batch_request": runtime_batch_request}]
+        }
+    )
+    result = operator.execute(context={})
+    logger.info(result)
+    assert result["success"]
+
+
+def test_great_expectations_operator__works_with_simple_checkpoint_and_checkpoint_kwargs(
+    in_memory_data_context_config, in_memory_checkpoint_config
+):
+    batch_request = BatchRequest(
+        **{
+            "datasource_name": "my_datasource",
+            "data_connector_name": "default_inferred_data_connector_name",
+            "data_asset_name": "yellow_tripdata_sample_2019-01.csv",
+            "data_connector_query": {"index": -1},
+        }
+    )
+
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        checkpoint_name="simple.chk",
+        checkpoint_kwargs={"validations": [{
+            "batch_request": batch_request,
+            "expectation_suite_name": "taxi.demo"
+        }]},
+    )
+    result = operator.execute(context={})  # should fail the suite
+    logger.info(result)
     assert result["success"]

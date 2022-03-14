@@ -12,6 +12,10 @@ from great_expectations_provider.operators.great_expectations import GreatExpect
 
 from include.great_expectations.object_configs.example_data_context_config import example_data_context_config
 from include.great_expectations.object_configs.example_checkpoint_config import example_checkpoint_config
+from include.great_expectations.object_configs.example_runtime_batch_request_for_plugin_expectation \
+    import runtime_batch_request
+from include.great_expectations.plugins.expectations.expect_column_values_to_be_alphabetical \
+    import ExpectColumnValuesToBeAlphabetical
 
 base_path = Path(__file__).parents[2]
 data_dir = os.path.join(base_path, "include", "data")
@@ -61,10 +65,21 @@ with DAG(
         validation_failure_callback=(lambda x: print("Callback successfully run", x)),
     )
 
+    ge_data_context_root_dir_with_checkpoint_name_using_custom_expectation_pass = GreatExpectationsOperator(
+        task_id="ge_data_context_root_dir_with_checkpoint_name_using_custom_expectation_pass",
+        data_context_root_dir=ge_root_dir,
+        checkpoint_name="plugin_expectation_checkpoint.chk",
+        checkpoint_kwargs={
+            "validations": [{"batch_request": runtime_batch_request}]
+        }
+    )
+
+
 (
     ge_data_context_root_dir_with_checkpoint_name_pass
     >> ge_data_context_root_dir_with_checkpoint_name_fail_validation_and_not_task
     >> ge_checkpoint_kwargs_substitute_batch_request_fails_validation_but_not_task
     >> ge_data_context_config_with_checkpoint_config_pass
     >> ge_checkpoint_fails_and_runs_callback
+    >> ge_data_context_root_dir_with_checkpoint_name_using_custom_expectation_pass
 )
