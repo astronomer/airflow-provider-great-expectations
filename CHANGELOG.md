@@ -3,6 +3,10 @@
 ## Upcoming 
 * (please add here)
 
+## 0.1.4
+* [BUGFIX] Fix bug around the instantiation of Checkpoints from CheckpointConfig
+* [DOCS] Add test and example demonstrating the use of custom expectations in an Airflow pipeline
+
 ## 0.1.3
 * [FEATURE] Improve performance by moving DataContext and Checkpoint initialization to Operator.execute() - thanks @denimalpaca
 
