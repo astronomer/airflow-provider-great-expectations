@@ -3,6 +3,9 @@
 ## Upcoming 
 * (please add here)
 
+## 0.1.5
+* [MAINTENANCE] Remove upper pin for SqlAlchemy to enable use with later versions of apache-airflow
+
 ## 0.1.4
 * [BUGFIX] Fix bug around the instantiation of Checkpoints from CheckpointConfig
 * [DOCS] Add test and example demonstrating the use of custom expectations in an Airflow pipeline
