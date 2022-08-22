@@ -18,7 +18,7 @@ setuptools.setup(
     install_requires=[
         "apache-airflow>=2.1",
         "great-expectations>=0.13.14",
-        "sqlalchemy>=1.3.16,<1.4.10",
+        "sqlalchemy>=1.3.16",
     ],
     packages=[
         "great_expectations_provider",
