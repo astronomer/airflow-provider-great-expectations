@@ -97,7 +97,8 @@ class GreatExpectationsOperator(BaseOperator):
         data_asset_name: Optional[str] = None,
         data_context_root_dir: Optional[Union[str, bytes, os.PathLike[Any]]] = None,
         data_context_config: Optional[DataContextConfig] = None,
-        runtime_data_source: Optional[Union[DataFrame, str]] = None,
+        dataframe_to_validate: Optional[DataFrame] = None, # should we allow a Spark DataFrame as well?
+        query_to_validate: Optional[str] = None,
         checkpoint_name: Optional[str] = None,
         checkpoint_config: Optional[CheckpointConfig] = None,
         checkpoint_kwargs: Optional[Dict[str, Any]] = None,
@@ -119,7 +120,8 @@ class GreatExpectationsOperator(BaseOperator):
         self.expectation_suite_name: Optional[str] = expectation_suite_name
         self.data_context_root_dir: Optional[Union[str, bytes, os.PathLike[Any]]] = data_context_root_dir
         self.data_context_config: DataContextConfig = data_context_config
-        self.runtime_data_source = runtime_data_source
+        self.dataframe_to_validate: Optional[DataFrame] = dataframe_to_validate
+        self.query_to_validate: Optional[str] = query_to_validate
         self.checkpoint_name: Optional[str] = checkpoint_name
         self.checkpoint_config: Union[CheckpointConfig, Dict[Any, Any]] = (
             checkpoint_config if checkpoint_config else {}
@@ -132,19 +134,24 @@ class GreatExpectationsOperator(BaseOperator):
         self.return_json_dict: bool = return_json_dict
         self.use_open_lineage = use_open_lineage
 
+        if self.dataframe_to_validate is not None and self.query_to_validate:
+            raise ValueError(
+                "Exactly one, or neither, of dataframe_to_validate or query_to_validate may be specified."
+            )
+        self.runtime_datasource = bool(self.dataframe_to_validate is not None) or bool(self.query_to_validate)
         # Check that only one of the arguments is passed to set a data context
         if not (bool(self.data_context_root_dir) ^ bool(self.data_context_config)):
             raise ValueError("Exactly one of data_context_root_dir or data_context_config must be specified.")
 
-        if self.runtime_data_source and self.conn_id:
+        if self.dataframe_to_validate and self.conn_id:
             raise ValueError(
-                "Exactly one, or neither, of runtime_data_source or conn_id may be specified. If neither is"
+                "Exactly one, or neither, of dataframe_to_validate or conn_id may be specified. If neither is"
                 " specified, the data_context_root_dir is used to find the data source."
             )
 
         # A data asset name is also used to determine if a runtime env will be used; if it is not passed in,
         # then the data asset name is assumed to be configured in the data context passed in.
-        if (self.runtime_data_source or self.conn_id) and not self.data_asset_name:
+        if (self.runtime_datasource or self.conn_id) and not self.data_asset_name:
             raise ValueError("A data_asset_name must be specified with a runtime_data_source or conn_id.")
 
         # Check that at most one of the arguments is passed to set a checkpoint
