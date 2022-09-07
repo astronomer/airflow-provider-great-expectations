@@ -57,8 +57,6 @@ class GreatExpectationsOperator(BaseOperator):
     :type file_regex: Optional[Dict]
     :param execution_engine: The execution engine to use when running Great Expectations
     :type execution_engine: Optional[str]
-    :param batch_request_extra: Additional arguments for a batch request
-    :type batch_request_extra: Optional[Dict]
     :param expectation_suite_name: Name of the expectation suite to run if using a default Checkpoint
     :type expectation_suite_name: Optional[str]
     :param data_asset_name: The name of the table or dataframe that the default Data Context will load and default
@@ -94,9 +92,7 @@ class GreatExpectationsOperator(BaseOperator):
         self,
         run_name: Optional[str] = None,
         conn_id: Optional[str] = None,
-        file_regex: Optional[Dict[str, Any]] = None,
         execution_engine: Optional[str] = None,
-        batch_request_extra: Optional[Dict[str, Any]] = None,
         expectation_suite_name: Optional[str] = None,
         data_asset_name: Optional[str] = None,
         data_context_root_dir: Optional[Union[str, bytes, os.PathLike[Any]]] = None,
@@ -117,13 +113,9 @@ class GreatExpectationsOperator(BaseOperator):
         self.data_asset_name: Optional[str] = data_asset_name
         self.run_name: Optional[str] = run_name
         self.conn_id: Optional[str] = conn_id
-        self.file_regex: Optional[Dict[str, Any]] = (
-            file_regex if file_regex else {"group_names": ["data_asset_name"], "pattern": "(.*)"}
-        )
         self.execution_engine: Optional[str] = (
             execution_engine if execution_engine else "PandasExecutionEngine"
         )
-        self.batch_request_extra: Dict[str, Any] = batch_request_extra if batch_request_extra else {}  # noqa
         self.expectation_suite_name: Optional[str] = expectation_suite_name
         self.data_context_root_dir: Optional[Union[str, bytes, os.PathLike[Any]]] = data_context_root_dir
         self.data_context_config: DataContextConfig = data_context_config
@@ -141,12 +133,12 @@ class GreatExpectationsOperator(BaseOperator):
         self.use_open_lineage = use_open_lineage
 
         # Check that only one of the arguments is passed to set a data context
-        if not (self.data_context_root_dir ^ self.data_context_config):
+        if not (bool(self.data_context_root_dir) ^ bool(self.data_context_config)):
             raise ValueError("Exactly one of data_context_root_dir or data_context_config must be specified.")
 
-        if not (self.runtime_data_source and self.conn_id):
+        if self.runtime_data_source and self.conn_id:
             raise ValueError(
-                "Exactly one, or neither, or runtime_data_source or conn_id may be specified. If neither is"
+                "Exactly one, or neither, of runtime_data_source or conn_id may be specified. If neither is"
                 " specified, the data_context_root_dir is used to find the data source."
             )
 
@@ -156,7 +148,7 @@ class GreatExpectationsOperator(BaseOperator):
             raise ValueError("A data_asset_name must be specified with a runtime_data_source or conn_id.")
 
         # Check that at most one of the arguments is passed to set a checkpoint
-        if not (self.checkpoint_name and self.checkpoint_config):
+        if self.checkpoint_name and self.checkpoint_config:
             raise ValueError(
                 "Exactly one, or neither, of checkpoint_name or checkpoint_config may be specified. If neither is"
                 " specified, the default Checkpoint is used."
@@ -188,7 +180,7 @@ class GreatExpectationsOperator(BaseOperator):
             uri_string = f"snowflake://{self.conn.login}:{self.conn.password}@{self.conn.extra_dejson['extra__snowflake__account']}.{self.conn.extra_dejson['extra__snowflake__region']}/{self.conn.extra_dejson['extra__snowflake__database']}/{self.conn.schema}?warehouse={self.conn.extra_dejson['extra__snowflake__warehouse']}&role={self.conn.extra_dejson['extra__snowflake__role']}"  # noqa
         elif self.conn_type == "gcpbigquery":
             uri_string = f"{self.conn.host}{self.conn.schema}"
-        elif self.conn_type == "sqllite":
+        elif self.conn_type == "sqlite":
             uri_string = f"sqlite:///{self.conn.host}"
         # TODO: Add Athena and Trino support if possible
         else:
@@ -222,16 +214,17 @@ class GreatExpectationsOperator(BaseOperator):
                 },
             }
         else:
-            datasource_config["default_datasource"]["execution_engine"] = {
-                "class_name": self.execution_engine
-            }
-            datasource_config["default_datasource"]["data_connectors"] = {
-                "default_configured_data_connector_name": {
-                    "class_name": "ConfiguredAssetFilesystemDataConnector",
-                    "base_directory": self.data_context_root_dir,
-                    "default_regex": self.file_regex,
-                },
-            }
+            pass
+            # datasource_config["default_datasource"]["execution_engine"] = {
+            #     "class_name": self.execution_engine
+            # }
+            # datasource_config["default_datasource"]["data_connectors"] = {
+            #     "default_configured_data_connector_name": {
+            #         "class_name": "ConfiguredAssetFilesystemDataConnector",
+            #         "base_directory": self.data_context_root_dir,
+            #         "default_regex": self.file_regex,
+            #     },
+            # }
         return datasource_config
 
     def build_runtime_env(self) -> Dict[str, Any]:
@@ -252,13 +245,7 @@ class GreatExpectationsOperator(BaseOperator):
             "data_connector_name": data_connector_name,
             "data_asset_name": self.data_asset_name,
         }
-        # BigQuery needs a temp table to run on; it is assumed the table will
-        # be named the same as the data asset but with an added _temp suffix
-        if self.conn_type == "gcpbigquery":
-            self.batch_request_extra["batch_spec_passthrough"] = {
-                "bigquery_temp_table": f"{self.data_asset_name}_temp"
-            }
-        batch_request.update(self.batch_request_extra)
+
         return batch_request
 
     def build_default_action_list(self) -> List[Dict[str, Any]]:
@@ -420,3 +407,53 @@ class GreatExpectationsOperator(BaseOperator):
                 )
         else:
             self.log.info("Validation with Great Expectations successful.")
+
+    def build_configured_sql_datasource_config_from_conn_id(self):
+        datasource_config = {
+            "name": f"{self.conn.name}_datasource",
+            "module_name": "great_expectations.datasource",
+            "class_name": "Datasource",
+            "execution_engine": {
+                "module_name": "great_expectations.execution_engine",
+                "class_name": "SqlAlchemyExecutionEngine",
+                "connection_string": self.make_connection_string(),
+            },
+            "data_connectors": {
+                "default_configured_connector": {
+                    "module_name": "great_expectations.datasource.data_connector",
+                    "class_name": "ConfiguredAssetSqlDataConnector",
+                    "assets": {
+                        f"{self.data_asset_name}": {
+                            "module_name": "great_expectations.datasource.data_connector.asset",
+                            "class_name": "Asset",
+                            "include_schema_name": True,
+                        },
+                    },
+                },
+            },
+        }
+
+        return datasource_config
+
+    def build_runtime_sql_datasource_config_from_conn_id(self):
+        datasource_config = {
+            "name": f"{self.conn.name}_datasource",
+            "module_name": "great_expectations.datasource",
+            "class_name": "Datasource",
+            "execution_engine": {
+                "module_name": "great_expectations.execution_engine",
+                "class_name": "SqlAlchemyExecutionEngine",
+                "connection_string": self.make_connection_string(),
+            },
+            "data_connectors": {
+                "default_runtime_connector": {
+                    "module_name": "great_expectations.datasource.data_connector",
+                    "class_name": "RuntimeDataConnector",
+                    "batch_identifiers": [
+                        "query_text"
+                    ]
+                },
+            },
+        }
+
+        return datasource_config
