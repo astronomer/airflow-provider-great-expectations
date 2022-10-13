@@ -53,8 +53,6 @@ class GreatExpectationsOperator(BaseOperator):
     :type run_name: Optional[str]
     :param conn_id: The name of a connection in Airflow
     :type conn_id: Optional[str]
-    :param file_regex: The regex used to load files if not configured in a data context
-    :type file_regex: Optional[Dict]
     :param execution_engine: The execution engine to use when running Great Expectations
     :type execution_engine: Optional[str]
     :param expectation_suite_name: Name of the expectation suite to run if using a default Checkpoint
@@ -66,8 +64,10 @@ class GreatExpectationsOperator(BaseOperator):
     :type data_context_root_dir: Optional[str]
     :param data_context_config: A great_expectations `DataContextConfig` object
     :type data_context_config: Optional[DataContextConfig]
-    :param runtime_data_source: A dataframe or SQL query passed in for run time checking
-    :type runtime_data_source: Optional[Union[DataFrame, str]]
+    :param dataframe_to_validate: A pandas dataframe to validate
+    :type dataframe_to_validate: Optional[str]
+    :param query_to_validate: A SQL query to validate
+    :type query_to_validate: Optional[str]
     :param checkpoint_name: A Checkpoint name to use for validation
     :type checkpoint_name: Optional[str]
     :param checkpoint_config: A great_expectations `CheckpointConfig` object to use for validation
@@ -75,10 +75,10 @@ class GreatExpectationsOperator(BaseOperator):
     :param checkpoint_kwargs: A dictionary whose keys match the parameters of CheckpointConfig which can be used to
         update and populate the Operator's Checkpoint at runtime
     :type checkpoint_kwargs: Optional[Dict]
-    :param fail_task_on_validation_failure: Fail the Airflow task if the Great Expectation validation fails
-    :type fail_task_on_validation_failure: bool
     :param validation_failure_callback: Called when the Great Expectations validation fails
     :type validation_failure_callback: Callable[[CheckpointResult], None]
+    :param fail_task_on_validation_failure: Fail the Airflow task if the Great Expectation validation fails
+    :type fail_task_on_validation_failure: bool
     :param return_json_dict: If True, returns a json-serializable dictionary instead of a CheckpointResult object
     :type return_json_dict: bool
     :param use_open_lineage: If True (default), creates an OpenLineage action if an OpenLineage environment is found
@@ -128,19 +128,17 @@ class GreatExpectationsOperator(BaseOperator):
         )
         self.checkpoint_kwargs: Optional[Dict[str, Any]] = checkpoint_kwargs
         self.fail_task_on_validation_failure: Optional[bool] = fail_task_on_validation_failure
-        self.validation_failure_callback: Optional[
-            Callable[[CheckpointResult], None]
-        ] = validation_failure_callback
+        self.validation_failure_callback: Optional[Callable[[CheckpointResult], None]] = validation_failure_callback
         self.return_json_dict: bool = return_json_dict
         self.use_open_lineage = use_open_lineage
 
-        if self.dataframe_to_validate is not None and self.query_to_validate:
+        if self.dataframe_to_validate and self.query_to_validate:
             raise ValueError(
                 "Exactly one, or neither, of dataframe_to_validate or query_to_validate may be specified."
             )
-        self.runtime_datasource = bool(self.dataframe_to_validate is not None) or bool(self.query_to_validate)
+        self.runtime_datasource = self.dataframe_to_validate if self.dataframe_to_validate else self.query_to_validate
         # Check that only one of the arguments is passed to set a data context
-        if not (bool(self.data_context_root_dir) ^ bool(self.data_context_config)):
+        if not (self.data_context_root_dir ^ self.data_context_config):
             raise ValueError("Exactly one of data_context_root_dir or data_context_config must be specified.")
 
         if self.dataframe_to_validate and self.conn_id:
@@ -221,17 +219,7 @@ class GreatExpectationsOperator(BaseOperator):
                 },
             }
         else:
-            pass
-            # datasource_config["default_datasource"]["execution_engine"] = {
-            #     "class_name": self.execution_engine
-            # }
-            # datasource_config["default_datasource"]["data_connectors"] = {
-            #     "default_configured_data_connector_name": {
-            #         "class_name": "ConfiguredAssetFilesystemDataConnector",
-            #         "base_directory": self.data_context_root_dir,
-            #         "default_regex": self.file_regex,
-            #     },
-            # }
+            raise ValueError("Unrecognized, or lack of, runtime datasource passed.")
         return datasource_config
 
     def build_runtime_env(self) -> Dict[str, Any]:
@@ -252,6 +240,15 @@ class GreatExpectationsOperator(BaseOperator):
             "data_connector_name": data_connector_name,
             "data_asset_name": self.data_asset_name,
         }
+
+        # Note: this code for BigQuery was removed in the previous PR, want to confirm it's no longer needed
+        # BigQuery needs a temp table to run on; it is assumed the table will
+        # be named the same as the data asset but with an added _temp suffix
+        #if self.conn_type == "gcpbigquery":
+        #    self.batch_request_extra["batch_spec_passthrough"] = {
+        #        "bigquery_temp_table": f"{self.data_asset_name}_temp"
+        #    }
+        #batch_request.update(self.batch_request_extra)
 
         return batch_request
 
