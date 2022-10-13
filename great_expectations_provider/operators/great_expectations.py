@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 import great_expectations as ge
 from airflow.exceptions import AirflowException
 from airflow.hooks.base import BaseHook
-from airflow.models import BaseOperator
+from airflow.models import BaseOperator, BaseOperatorLink, XCom
 from great_expectations.checkpoint import Checkpoint
 from great_expectations.checkpoint.types.checkpoint_result import CheckpointResult
 from great_expectations.data_context import BaseDataContext
@@ -37,6 +37,15 @@ from pandas import DataFrame
 
 if TYPE_CHECKING:
     from airflow.utils.context import Context
+
+
+class GreatExpectationsRunLink(BaseOperatorLink):
+    """Constructs a link to Great Expectations data docs site."""
+
+    name = "Data Docs"
+
+    def get_link(self, operator, *, kwargs) -> str:
+        return operator.data_context.get_docs_sites_urls()
 
 
 class GreatExpectationsOperator(BaseOperator):
@@ -87,6 +96,8 @@ class GreatExpectationsOperator(BaseOperator):
 
     ui_color = "#AFEEEE"
     ui_fgcolor = "#000000"
+
+    operator_extra_links = (GreatExpectationsRunLink(),)
 
     def __init__(
         self,
