@@ -499,5 +499,3 @@ class GreatExpectationsOperator(BaseOperator):
                 )
         else:
             self.log.info("Validation with Great Expectations successful.")
-
-
