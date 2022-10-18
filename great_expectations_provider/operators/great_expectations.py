@@ -27,6 +27,7 @@ from airflow.hooks.base import BaseHook
 from airflow.models import BaseOperator, BaseOperatorLink, XCom
 from great_expectations.checkpoint import Checkpoint
 from great_expectations.checkpoint.types.checkpoint_result import CheckpointResult
+from great_expectations.core.batch import BatchRequest, RuntimeBatchRequest
 from great_expectations.data_context import BaseDataContext
 from great_expectations.data_context.types.base import (
     CheckpointConfig,
@@ -147,7 +148,7 @@ class GreatExpectationsOperator(BaseOperator):
             raise ValueError(
                 "Exactly one, or neither, of dataframe_to_validate or query_to_validate may be specified."
             )
-        self.runtime_datasource = self.dataframe_to_validate if self.dataframe_to_validate else self.query_to_validate
+
         # Check that only one of the arguments is passed to set a data context
         if not (self.data_context_root_dir ^ self.data_context_config):
             raise ValueError("Exactly one of data_context_root_dir or data_context_config must be specified.")
@@ -158,9 +159,14 @@ class GreatExpectationsOperator(BaseOperator):
                 " specified, the data_context_root_dir is used to find the data source."
             )
 
+        if self.query_to_validate and not self.conn_id:
+            raise ValueError(
+                "A conn_id must be specified when query_to_validate is specified."
+            )
+
         # A data asset name is also used to determine if a runtime env will be used; if it is not passed in,
         # then the data asset name is assumed to be configured in the data context passed in.
-        if (self.runtime_datasource or self.conn_id) and not self.data_asset_name:
+        if (self.dataframe_to_validate or self.dataframe_to_validate or self.conn_id) and not self.data_asset_name:
             raise ValueError("A data_asset_name must be specified with a runtime_data_source or conn_id.")
 
         # Check that at most one of the arguments is passed to set a checkpoint
@@ -203,65 +209,133 @@ class GreatExpectationsOperator(BaseOperator):
             raise ValueError(f"Conn type: {self.conn_type} is not supported.")
         return uri_string
 
-    def build_runtime_datasources(self) -> Dict[str, Any]:
-        """Builds runtime datasources based on Airflow connections or the given data_context_directory."""
-        datasource_config: Dict[str, Any] = {"default_datasource": {"class_name": "Datasource"}}
-        if self.conn:
-            connection_string = self.make_connection_string()
-            datasource_config["default_datasource"]["execution_engine"] = {
+
+    def build_configured_sql_datasource_config_from_conn_id(self):
+        datasource_config = {
+            "name": f"{self.conn.name}_datasource",
+            "module_name": "great_expectations.datasource",
+            "class_name": "Datasource",
+            "execution_engine": {
+                "module_name": "great_expectations.execution_engine",
                 "class_name": "SqlAlchemyExecutionEngine",
-                "connection_string": connection_string,
-            }
-            datasource_config["default_datasource"]["data_connectors"] = {
-                "default_configured_data_connector_name": {
+                "connection_string": self.make_connection_string(),
+            },
+            "data_connectors": {
+                "default_configured_asset_sql_data_connector": {
+                    "module_name": "great_expectations.datasource.data_connector",
                     "class_name": "ConfiguredAssetSqlDataConnector",
-                    "include_schema_name": "false",
+                    "assets": {
+                        f"{self.data_asset_name}": {
+                            "module_name": "great_expectations.datasource.data_connector.asset",
+                            "class_name": "Asset",
+                            "schema_name": f"{self.conn.schema}"
+                        },
+                    },
                 },
-            }
-        # A dataframe or SQL query is passed
-        elif self.runtime_data_source:
-            datasource_config["default_datasource"]["execution_engine"] = {
-                "class_name": self.execution_engine,
-            }
-            datasource_config["default_datasource"]["data_connectors"] = {
-                "default_runtime_data_connector_name": {
-                    "class_name": "RuntimeDataConnector",
-                    "batch_identifiers": ["default_identifier_name"],
-                },
-            }
-        else:
-            raise ValueError("Unrecognized, or lack of, runtime datasource passed.")
-        return datasource_config
-
-    def build_runtime_env(self) -> Dict[str, Any]:
-        """Builds the runtime_environment dict that overwrites all other configs."""
-        runtime_env: Dict[str, Any] = {}
-        runtime_env["datasources"] = self.build_runtime_datasources()
-        return runtime_env
-
-    def default_batch_request_dict(self) -> Dict[str, Any]:
-        """Builds a default batch request for a default checkpoint."""
-        data_connector_name = (
-            "default_runtime_data_connector_name"
-            if self.runtime_data_source
-            else "default_inferred_data_connector_name"
-        )
-        batch_request = {
-            "datasource_name": "default_datasource",
-            "data_connector_name": data_connector_name,
-            "data_asset_name": self.data_asset_name,
+            },
         }
 
-        # Note: this code for BigQuery was removed in the previous PR, want to confirm it's no longer needed
-        # BigQuery needs a temp table to run on; it is assumed the table will
-        # be named the same as the data asset but with an added _temp suffix
-        #if self.conn_type == "gcpbigquery":
-        #    self.batch_request_extra["batch_spec_passthrough"] = {
-        #        "bigquery_temp_table": f"{self.data_asset_name}_temp"
-        #    }
-        #batch_request.update(self.batch_request_extra)
+        return datasource_config
 
-        return batch_request
+    def build_configured_sql_datasource_batch_request(self):
+        batch_request = {
+            "datasource_name": f"{self.conn.name}_datasource",
+            "data_connector_name": "default_configured_asset_sql_data_connector",
+            "data_asset_name": f"{self.data_asset_name}",
+        }
+        return BatchRequest(**batch_request)
+
+    def build_runtime_sql_datasource_config_from_conn_id(self):
+        datasource_config = {
+            "name": f"{self.conn.name}_datasource",
+            "module_name": "great_expectations.datasource",
+            "class_name": "Datasource",
+            "execution_engine": {
+                "module_name": "great_expectations.execution_engine",
+                "class_name": "SqlAlchemyExecutionEngine",
+                "connection_string": self.make_connection_string(),
+            },
+            "data_connectors": {
+                "default_runtime_data_connector": {
+                    "module_name": "great_expectations.datasource.data_connector",
+                    "class_name": "RuntimeDataConnector",
+                    "batch_identifiers": [
+                        "query_string"
+                    ]
+                },
+            },
+        }
+
+        return datasource_config
+
+    def build_runtime_sql_datasource_batch_request(self):
+        batch_request = {
+            "datasource_name": f"{self.conn.name}_datasource",
+            "data_connector_name": "default_runtime_data_connector",
+            "data_asset_name": f"{self.data_asset_name}",
+            "runtime_parameters": {"query": f"{self.query_to_validate}"},
+            "batch_identifiers": {"query_string": f"{self.query_to_validate}"},
+        }
+        return RuntimeBatchRequest(**batch_request)
+
+
+    def build_runtime_pandas_datasource(self):
+        datasource_config = {
+            "name": f"{self.conn.name}_datasource",
+            "module_name": "great_expectations.datasource",
+            "class_name": "Datasource",
+            "execution_engine": {
+                "module_name": "great_expectations.execution_engine",
+                "class_name": f"{self.execution_engine}",
+            },
+            "data_connectors": {
+                "default_runtime_connector": {
+                    "module_name": "great_expectations.datasource.data_connector",
+                    "class_name": "RuntimeDataConnector",
+                    "batch_identifiers": [
+                        "my_batch_identifier"
+                    ]
+                },
+            },
+        }
+
+        return datasource_config
+
+    def build_runtime_pandas_datasource_batch_request(self):
+        batch_request = {
+            "datasource_name": f"{self.conn.name}_datasource",
+            "data_connector_name": "default_runtime_data_connector",
+            "data_asset_name": f"{self.data_asset_name}",
+            "runtime_parameters": {"batch_data": self.dataframe_to_validate},
+            "batch_identifiers": {"my_batch_identifier": "something_useful"},  # TODO: Is there something useful for this?
+        }
+        return RuntimeBatchRequest(**batch_request)
+
+    def build_runtime_datasources(self) -> tuple[Dict[str, Any]]:
+        """Builds datasources at runtime based on Airflow connections or for use with a dataframe."""
+        if self.dataframe_to_validate is not None:
+            datasource_config = self.build_runtime_pandas_datasource()
+            batch_request = self.build_runtime_pandas_datasource_batch_request()
+
+        elif self.query_to_validate:
+            datasource_config = self.build_runtime_sql_datasource_config_from_conn_id()
+            batch_request = self.build_runtime_sql_datasource_batch_request()
+
+        elif self.conn:
+            datasource_config = self.build_configured_sql_datasource_config_from_conn_id()
+            batch_request = self.build_configured_sql_datasource_batch_request()
+
+        else:
+            raise ValueError("Unrecognized, or lack of, runtime or conn_id datasource passed.")
+        return datasource_config, batch_request
+
+
+    def build_runtime_env(self) -> tuple[Dict[str, Any]]:
+        """Builds the runtime_environment dict that overwrites all other configs."""
+        runtime_env: Dict[str, Any] = {}
+        runtime_env["datasources"], batch_request = self.build_runtime_datasources()
+        return runtime_env, batch_request
+
 
     def build_default_action_list(self) -> List[Dict[str, Any]]:
         """Builds a default action list for a default checkpoint."""
@@ -313,7 +387,6 @@ class GreatExpectationsOperator(BaseOperator):
 
     def build_default_checkpoint_config(self) -> CheckpointConfig:
         """Builds a default checkpoint with default values."""
-        validations = [{"batch_request": self.default_batch_request_dict}]
         self.run_name = (
             self.run_name
             if self.run_name
@@ -331,7 +404,7 @@ class GreatExpectationsOperator(BaseOperator):
             action_list=self.build_default_action_list(),
             evaluation_parameters={},
             runtime_configuration={},
-            validations=validations,
+            validations=None,
             profilers=[],
             ge_cloud_id=None,
             expectation_suite_ge_cloud_id=None,
@@ -347,7 +420,7 @@ class GreatExpectationsOperator(BaseOperator):
         self.conn_type = self.conn.conn_type if self.conn else None
 
         self.log.info("Instantiating Data Context...")
-        runtime_env: Dict[str, Any] = self.build_runtime_env() if self.data_asset_name else {}
+        runtime_env, batch_request = self.build_runtime_env() if self.data_asset_name else {}
         if self.data_context_root_dir:
             self.data_context = ge.data_context.DataContext(
                 context_root_dir=self.data_context_root_dir, runtime_environment=runtime_env
@@ -376,10 +449,14 @@ class GreatExpectationsOperator(BaseOperator):
             )
 
         self.log.info("Running Checkpoint...")
-        if self.checkpoint_kwargs:
+
+        if batch_request:
+            result = self.checkpoint.run(batch_request=batch_request)
+        elif self.checkpoint_kwargs:
             result = self.checkpoint.run(**self.checkpoint_kwargs)
         else:
             result = self.checkpoint.run()
+
         self.log.info("GE Checkpoint Run Result:\n%s", result)
         self.handle_result(result)
 
@@ -423,52 +500,4 @@ class GreatExpectationsOperator(BaseOperator):
         else:
             self.log.info("Validation with Great Expectations successful.")
 
-    def build_configured_sql_datasource_config_from_conn_id(self):
-        datasource_config = {
-            "name": f"{self.conn.name}_datasource",
-            "module_name": "great_expectations.datasource",
-            "class_name": "Datasource",
-            "execution_engine": {
-                "module_name": "great_expectations.execution_engine",
-                "class_name": "SqlAlchemyExecutionEngine",
-                "connection_string": self.make_connection_string(),
-            },
-            "data_connectors": {
-                "default_configured_connector": {
-                    "module_name": "great_expectations.datasource.data_connector",
-                    "class_name": "ConfiguredAssetSqlDataConnector",
-                    "assets": {
-                        f"{self.data_asset_name}": {
-                            "module_name": "great_expectations.datasource.data_connector.asset",
-                            "class_name": "Asset",
-                            "include_schema_name": True,
-                        },
-                    },
-                },
-            },
-        }
 
-        return datasource_config
-
-    def build_runtime_sql_datasource_config_from_conn_id(self):
-        datasource_config = {
-            "name": f"{self.conn.name}_datasource",
-            "module_name": "great_expectations.datasource",
-            "class_name": "Datasource",
-            "execution_engine": {
-                "module_name": "great_expectations.execution_engine",
-                "class_name": "SqlAlchemyExecutionEngine",
-                "connection_string": self.make_connection_string(),
-            },
-            "data_connectors": {
-                "default_runtime_connector": {
-                    "module_name": "great_expectations.datasource.data_connector",
-                    "class_name": "RuntimeDataConnector",
-                    "batch_identifiers": [
-                        "query_text"
-                    ]
-                },
-            },
-        }
-
-        return datasource_config
