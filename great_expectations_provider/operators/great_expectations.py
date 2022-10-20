@@ -107,7 +107,7 @@ class GreatExpectationsOperator(BaseOperator):
         execution_engine: Optional[str] = None,
         expectation_suite_name: Optional[str] = None,
         data_asset_name: Optional[str] = None,
-        data_context_root_dir: Optional[Union[str, bytes, os.PathLike[Any]]] = None,
+        data_context_root_dir: Optional[Union[str, bytes, os.PathLike]] = None,
         data_context_config: Optional[DataContextConfig] = None,
         dataframe_to_validate: Optional[DataFrame] = None, # should we allow a Spark DataFrame as well?
         query_to_validate: Optional[str] = None,
@@ -150,7 +150,7 @@ class GreatExpectationsOperator(BaseOperator):
             )
 
         # Check that only one of the arguments is passed to set a data context
-        if not (self.data_context_root_dir ^ self.data_context_config):
+        if not (bool(self.data_context_root_dir) ^ bool(self.data_context_config)):
             raise ValueError("Exactly one of data_context_root_dir or data_context_config must be specified.")
 
         if self.dataframe_to_validate and self.conn_id:
@@ -228,7 +228,8 @@ class GreatExpectationsOperator(BaseOperator):
                         f"{self.data_asset_name}": {
                             "module_name": "great_expectations.datasource.data_connector.asset",
                             "class_name": "Asset",
-                            "schema_name": f"{self.conn.schema}"
+                            "schema_name": f"{self.conn.schema}",
+                            "batch_identifiers": ["airflow_run_id"]
                         },
                     },
                 },
@@ -242,6 +243,7 @@ class GreatExpectationsOperator(BaseOperator):
             "datasource_name": f"{self.conn.name}_datasource",
             "data_connector_name": "default_configured_asset_sql_data_connector",
             "data_asset_name": f"{self.data_asset_name}",
+            "batch_identifiers": {"airflow_run_id": f"{{ task_instance_key_str }}"}
         }
         return BatchRequest(**batch_request)
 
@@ -260,7 +262,8 @@ class GreatExpectationsOperator(BaseOperator):
                     "module_name": "great_expectations.datasource.data_connector",
                     "class_name": "RuntimeDataConnector",
                     "batch_identifiers": [
-                        "query_string"
+                        "query_string",
+                        "airflow_run_id"
                     ]
                 },
             },
@@ -274,7 +277,7 @@ class GreatExpectationsOperator(BaseOperator):
             "data_connector_name": "default_runtime_data_connector",
             "data_asset_name": f"{self.data_asset_name}",
             "runtime_parameters": {"query": f"{self.query_to_validate}"},
-            "batch_identifiers": {"query_string": f"{self.query_to_validate}"},
+            "batch_identifiers": {"query_string": f"{self.query_to_validate}", "airflow_run_id": f"{{ task_instance_key_str }}"}, 
         }
         return RuntimeBatchRequest(**batch_request)
 
@@ -293,7 +296,7 @@ class GreatExpectationsOperator(BaseOperator):
                     "module_name": "great_expectations.datasource.data_connector",
                     "class_name": "RuntimeDataConnector",
                     "batch_identifiers": [
-                        "my_batch_identifier"
+                        "airflow_run_id"
                     ]
                 },
             },
@@ -307,11 +310,11 @@ class GreatExpectationsOperator(BaseOperator):
             "data_connector_name": "default_runtime_data_connector",
             "data_asset_name": f"{self.data_asset_name}",
             "runtime_parameters": {"batch_data": self.dataframe_to_validate},
-            "batch_identifiers": {"my_batch_identifier": "something_useful"},  # TODO: Is there something useful for this?
+            "batch_identifiers": {"airflow_run_id": f"{{ task_instance_key_str }}"},
         }
         return RuntimeBatchRequest(**batch_request)
 
-    def build_runtime_datasources(self) -> tuple[Dict[str, Any]]:
+    def build_runtime_datasources(self) -> tuple([Dict[str, Any]]):
         """Builds datasources at runtime based on Airflow connections or for use with a dataframe."""
         if self.dataframe_to_validate is not None:
             datasource_config = self.build_runtime_pandas_datasource()
@@ -330,7 +333,7 @@ class GreatExpectationsOperator(BaseOperator):
         return datasource_config, batch_request
 
 
-    def build_runtime_env(self) -> tuple[Dict[str, Any]]:
+    def build_runtime_env(self) -> tuple([Dict[str, Any]]):
         """Builds the runtime_environment dict that overwrites all other configs."""
         runtime_env: Dict[str, Any] = {}
         runtime_env["datasources"], batch_request = self.build_runtime_datasources()
@@ -420,7 +423,7 @@ class GreatExpectationsOperator(BaseOperator):
         self.conn_type = self.conn.conn_type if self.conn else None
 
         self.log.info("Instantiating Data Context...")
-        runtime_env, batch_request = self.build_runtime_env() if self.data_asset_name else {}
+        runtime_env, batch_request = self.build_runtime_env() if self.data_asset_name else ({}, {})
         if self.data_context_root_dir:
             self.data_context = ge.data_context.DataContext(
                 context_root_dir=self.data_context_root_dir, runtime_environment=runtime_env
