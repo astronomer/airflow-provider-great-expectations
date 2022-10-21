@@ -251,7 +251,7 @@ def test_great_expectations_operator__checkpoint_config_with_substituted_expecta
 
 def test_great_expectations_operator__raises_error_without_data_context():
     with pytest.raises(ValueError):
-        operator = GreatExpectationsOperator(
+        GreatExpectationsOperator(
             task_id="task_id", checkpoint_name="taxi.pass.chk"
         )
 
@@ -260,7 +260,7 @@ def test_great_expectations_operator__raises_error_with_data_context_root_dir_an
     in_memory_data_context_config,
 ):
     with pytest.raises(ValueError):
-        operator = GreatExpectationsOperator(
+        GreatExpectationsOperator(
             task_id="task_id",
             data_context_config=in_memory_data_context_config,
             data_context_root_dir=ge_root_dir,
@@ -272,7 +272,7 @@ def test_great_expectations_operator__raises_error_without_checkpoint(
     in_memory_data_context_config,
 ):
     with pytest.raises(ValueError):
-        operator = GreatExpectationsOperator(
+        GreatExpectationsOperator(
             task_id="task_id",
             data_context_config=in_memory_data_context_config,
         )
@@ -282,13 +282,71 @@ def test_great_expectations_operator__raises_error_with_checkpoint_name_and_chec
     in_memory_data_context_config,
 ):
     with pytest.raises(ValueError):
-        operator = GreatExpectationsOperator(
+        GreatExpectationsOperator(
             task_id="task_id",
             data_context_config=in_memory_data_context_config,
             data_context_root_dir=ge_root_dir,
             checkpoint_name="taxi.pass.chk",
         )
+
+
+def test_great_expectations_operator__raises_error_with_dataframe_and_query(
+    in_memory_data_context_config,
+):
+    with pytest.raises(ValueError):
+        GreatExpectationsOperator(
+            task_id="task_id",
+            data_context_config=in_memory_data_context_config,
+            data_asset_name="test_runtime_data_asset",
+            dataframe_to_validate=pd.DataFrame({}),
+            query_to_validate="SELECT * FROM db;"
+        )
+
+
+def test_great_expectations_operator__raises_error_with_dataframe_and_conn_id(
+    in_memory_data_context_config,
+):
+    with pytest.raises(ValueError):
+        GreatExpectationsOperator(
+            task_id="task_id",
+            data_context_config=in_memory_data_context_config,
+            data_asset_name="test_runtime_data_asset",
+            dataframe_to_validate=pd.DataFrame({}),
+            conn_id="postgres"
+        )
+
+
+def test_great_expectations_operator__raises_error_with_query_and_no_conn_id(
+    in_memory_data_context_config,
+):
+    with pytest.raises(ValueError):
+        GreatExpectationsOperator(
+            task_id="task_id",
+            data_context_config=in_memory_data_context_config,
+            data_asset_name="test_runtime_data_asset",
+            query_to_validate="SELECT * FROM db;"
+        )
         
+
+def test_great_expectations_operator__raises_error_with_runtime_datasource_no_data_asset_name(
+    in_memory_data_context_config,
+):
+    with pytest.raises(ValueError):
+        GreatExpectationsOperator(
+            task_id="task_id",
+            data_context_config=in_memory_data_context_config,
+            query_to_validate="SELECT * FROM db;"
+        )
+        GreatExpectationsOperator(
+            task_id="task_id",
+            data_context_config=in_memory_data_context_config,
+            dataframe_to_validate=pd.DataFrame({})
+        )
+        GreatExpectationsOperator(
+            task_id="task_id",
+            data_context_config=in_memory_data_context_config,
+            conn_id="postgres"
+        )
 
 def test_great_expectations_operator__invalid_checkpoint_name():
     operator = GreatExpectationsOperator(

@@ -166,7 +166,7 @@ class GreatExpectationsOperator(BaseOperator):
 
         # A data asset name is also used to determine if a runtime env will be used; if it is not passed in,
         # then the data asset name is assumed to be configured in the data context passed in.
-        if (self.dataframe_to_validate or self.dataframe_to_validate or self.conn_id) and not self.data_asset_name:
+        if (self.dataframe_to_validate or self.query_to_validate or self.conn_id) and not self.data_asset_name:
             raise ValueError("A data_asset_name must be specified with a runtime_data_source or conn_id.")
 
         # Check that at most one of the arguments is passed to set a checkpoint
@@ -188,7 +188,7 @@ class GreatExpectationsOperator(BaseOperator):
         """Builds connection strings based off existing Airflow connections. Only supports necessary extras."""
         uri_string = ""
         if not self.conn:
-            raise ValueError("No conn passed to operator.")
+            raise ValueError(f"Connections does not exist in Airflow for conn_id: {self.conn_id}")
         if self.conn_type in ("redshift", "postgres", "mysql", "mssql"):
             odbc_connector = ""
             if self.conn_type in ("redshift", "postgres"):
@@ -487,12 +487,12 @@ class GreatExpectationsOperator(BaseOperator):
             if self.validation_failure_callback:
                 self.validation_failure_callback(result)
             if self.fail_task_on_validation_failure:
-                statistics = result.statistics
-                results = result.results
+                #statistics = result.statistics
+                #results = result.results
                 raise AirflowException(
                     "Validation with Great Expectations failed.\n"
-                    f"Stats: {str(statistics)}\n"
-                    f"Results: {str(results)}"
+                    #f"Stats: {str(statistics)}\n"
+                    #f"Results: {str(results)}"
                 )
             else:
                 self.log.warning(
