@@ -487,12 +487,21 @@ class GreatExpectationsOperator(BaseOperator):
             if self.validation_failure_callback:
                 self.validation_failure_callback(result)
             if self.fail_task_on_validation_failure:
-                statistics = result.statistics
-                results = result.results
+                result_list = []
+                for key, value in result.run_results.items():
+                    result_information = {}
+                    result_information["statistics"] = value["validation_result"].statistics
+                    result_information["expectation_suite_name"] = value["validation_result"].meta["expectation_suite_name"]
+                    result_information["batch_definition"] = value["validation_result"].meta["active_batch_definition"]
+                    result_list.append(result_information)
+                    result_list.append("\n")
+
+                if len(result_list) < 3:
+                    result_list = result_list[0]
+
                 raise AirflowException(
                     "Validation with Great Expectations failed.\n"
-                    f"Stats: {str(statistics)}\n"
-                    f"Results: {str(results)}"
+                    f"Results\n {result_list}"
                 )
             else:
                 self.log.warning(
