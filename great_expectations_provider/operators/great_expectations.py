@@ -183,6 +183,7 @@ class GreatExpectationsOperator(BaseOperator):
 
         if type(self.checkpoint_config) == CheckpointConfig:
             self.checkpoint_config = self.checkpoint_config.to_json_dict()
+            self.checkpoint_config = {k: v for k,v in self.checkpoint_config.items() if v}
 
     def make_connection_string(self) -> str:
         """Builds connection strings based off existing Airflow connections. Only supports necessary extras."""
