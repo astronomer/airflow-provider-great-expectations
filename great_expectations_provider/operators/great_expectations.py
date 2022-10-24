@@ -213,7 +213,7 @@ class GreatExpectationsOperator(BaseOperator):
 
     def build_configured_sql_datasource_config_from_conn_id(self):
         datasource_config = {
-            "name": f"{self.conn.name}_datasource",
+            "name": f"{self.conn.conn_id}_datasource",
             "module_name": "great_expectations.datasource",
             "class_name": "Datasource",
             "execution_engine": {
@@ -241,16 +241,15 @@ class GreatExpectationsOperator(BaseOperator):
 
     def build_configured_sql_datasource_batch_request(self):
         batch_request = {
-            "datasource_name": f"{self.conn.name}_datasource",
+            "datasource_name": f"{self.conn.conn_id}_datasource",
             "data_connector_name": "default_configured_asset_sql_data_connector",
             "data_asset_name": f"{self.data_asset_name}",
-            "batch_identifiers": {"airflow_run_id": f"{{ task_instance_key_str }}"}
         }
         return BatchRequest(**batch_request)
 
     def build_runtime_sql_datasource_config_from_conn_id(self):
         datasource_config = {
-            "name": f"{self.conn.name}_datasource",
+            "name": f"{self.conn.conn_id}_datasource",
             "module_name": "great_expectations.datasource",
             "class_name": "Datasource",
             "execution_engine": {
@@ -274,7 +273,7 @@ class GreatExpectationsOperator(BaseOperator):
 
     def build_runtime_sql_datasource_batch_request(self):
         batch_request = {
-            "datasource_name": f"{self.conn.name}_datasource",
+            "datasource_name": f"{self.conn.conn_id}_datasource",
             "data_connector_name": "default_runtime_data_connector",
             "data_asset_name": f"{self.data_asset_name}",
             "runtime_parameters": {"query": f"{self.query_to_validate}"},
@@ -285,7 +284,7 @@ class GreatExpectationsOperator(BaseOperator):
 
     def build_runtime_pandas_datasource(self):
         datasource_config = {
-            "name": f"{self.conn.name}_datasource",
+            "name": f"{self.conn.conn_id}_datasource",
             "module_name": "great_expectations.datasource",
             "class_name": "Datasource",
             "execution_engine": {
@@ -307,7 +306,7 @@ class GreatExpectationsOperator(BaseOperator):
 
     def build_runtime_pandas_datasource_batch_request(self):
         batch_request = {
-            "datasource_name": f"{self.conn.name}_datasource",
+            "datasource_name": f"{self.conn.conn_id}_datasource",
             "data_connector_name": "default_runtime_data_connector",
             "data_asset_name": f"{self.data_asset_name}",
             "runtime_parameters": {"batch_data": self.dataframe_to_validate},
