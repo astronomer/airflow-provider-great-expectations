@@ -395,7 +395,7 @@ class GreatExpectationsOperator(BaseOperator):
             if self.run_name
             else f"{self.task_id}_{datetime.now().strftime('%Y-%m-%d::%H:%M:%S')}"
         )
-        return CheckpointConfig(
+        self.checkpoint_config = CheckpointConfig(
             name=self.checkpoint_name,
             config_version=1.0,
             template_name=None,
@@ -411,7 +411,9 @@ class GreatExpectationsOperator(BaseOperator):
             profilers=[],
             ge_cloud_id=None,
             expectation_suite_ge_cloud_id=None,
-        )
+        ).to_json_dict()
+        self.checkpoint_config = {k: v for k,v in self.checkpoint_config.items() if v}
+        return self.checkpoint_config
 
     def execute(self, context: "Context") -> Union[CheckpointResult, Dict[str, Any]]:
         """
@@ -446,7 +448,7 @@ class GreatExpectationsOperator(BaseOperator):
         else:
             self.checkpoint_name = f"{self.data_asset_name}.{self.expectation_suite_name}.chk"
             self.checkpoint = instantiate_class_from_config(
-                config=self.build_default_checkpoint_config().to_json_dict(),
+                config=self.build_default_checkpoint_config(),
                 runtime_environment={"data_context": self.data_context},
                 config_defaults={"module_name": "great_expectations.checkpoint"},
             )
