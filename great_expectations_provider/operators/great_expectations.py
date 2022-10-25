@@ -28,7 +28,9 @@ from airflow.models import BaseOperator, BaseOperatorLink, XCom
 from great_expectations.checkpoint import Checkpoint
 from great_expectations.checkpoint.types.checkpoint_result import CheckpointResult
 from great_expectations.core.batch import BatchRequest, RuntimeBatchRequest
-from great_expectations.datasource.simple_sqlalchemy_datasource import SimpleSqlalchemyDatasource
+from great_expectations.datasource.simple_sqlalchemy_datasource import (
+    SimpleSqlalchemyDatasource,
+)
 from great_expectations.datasource.pandas_datasource import PandasDatasource
 from great_expectations.data_context import BaseDataContext
 from great_expectations.data_context.types.base import (
@@ -111,12 +113,16 @@ class GreatExpectationsOperator(BaseOperator):
         data_asset_name: Optional[str] = None,
         data_context_root_dir: Optional[Union[str, bytes, os.PathLike]] = None,
         data_context_config: Optional[DataContextConfig] = None,
-        dataframe_to_validate: Optional[DataFrame] = None, # should we allow a Spark DataFrame as well?
+        dataframe_to_validate: Optional[
+            DataFrame
+        ] = None,  # should we allow a Spark DataFrame as well?
         query_to_validate: Optional[str] = None,
         checkpoint_name: Optional[str] = None,
         checkpoint_config: Optional[CheckpointConfig] = None,
         checkpoint_kwargs: Optional[Dict[str, Any]] = None,
-        validation_failure_callback: Optional[Callable[[CheckpointResult], None]] = None,
+        validation_failure_callback: Optional[
+            Callable[[CheckpointResult], None]
+        ] = None,
         fail_task_on_validation_failure: bool = True,
         return_json_dict: bool = False,
         use_open_lineage: bool = True,
@@ -132,7 +138,9 @@ class GreatExpectationsOperator(BaseOperator):
             execution_engine if execution_engine else "PandasExecutionEngine"
         )
         self.expectation_suite_name: Optional[str] = expectation_suite_name
-        self.data_context_root_dir: Optional[Union[str, bytes, os.PathLike[Any]]] = data_context_root_dir
+        self.data_context_root_dir: Optional[
+            Union[str, bytes, os.PathLike[Any]]
+        ] = data_context_root_dir
         self.data_context_config: DataContextConfig = data_context_config
         self.dataframe_to_validate: Optional[DataFrame] = dataframe_to_validate
         self.query_to_validate: Optional[str] = query_to_validate
@@ -141,8 +149,12 @@ class GreatExpectationsOperator(BaseOperator):
             checkpoint_config if checkpoint_config else {}
         )
         self.checkpoint_kwargs: Optional[Dict[str, Any]] = checkpoint_kwargs
-        self.fail_task_on_validation_failure: Optional[bool] = fail_task_on_validation_failure
-        self.validation_failure_callback: Optional[Callable[[CheckpointResult], None]] = validation_failure_callback
+        self.fail_task_on_validation_failure: Optional[
+            bool
+        ] = fail_task_on_validation_failure
+        self.validation_failure_callback: Optional[
+            Callable[[CheckpointResult], None]
+        ] = validation_failure_callback
         self.return_json_dict: bool = return_json_dict
         self.use_open_lineage = use_open_lineage
 
@@ -153,7 +165,9 @@ class GreatExpectationsOperator(BaseOperator):
 
         # Check that only one of the arguments is passed to set a data context
         if not (bool(self.data_context_root_dir) ^ bool(self.data_context_config)):
-            raise ValueError("Exactly one of data_context_root_dir or data_context_config must be specified.")
+            raise ValueError(
+                "Exactly one of data_context_root_dir or data_context_config must be specified."
+            )
 
         if self.dataframe_to_validate and self.conn_id:
             raise ValueError(
@@ -168,8 +182,12 @@ class GreatExpectationsOperator(BaseOperator):
 
         # A data asset name is also used to determine if a runtime env will be used; if it is not passed in,
         # then the data asset name is assumed to be configured in the data context passed in.
-        if (self.dataframe_to_validate or self.query_to_validate or self.conn_id) and not self.data_asset_name:
-            raise ValueError("A data_asset_name must be specified with a runtime_data_source or conn_id.")
+        if (
+            self.dataframe_to_validate or self.query_to_validate or self.conn_id
+        ) and not self.data_asset_name:
+            raise ValueError(
+                "A data_asset_name must be specified with a runtime_data_source or conn_id."
+            )
 
         # Check that at most one of the arguments is passed to set a checkpoint
         if self.checkpoint_name and self.checkpoint_config:
@@ -178,20 +196,27 @@ class GreatExpectationsOperator(BaseOperator):
                 " specified, the default Checkpoint is used."
             )
 
-        if not (self.checkpoint_name or self.checkpoint_config) and not self.expectation_suite_name:
+        if (
+            not (self.checkpoint_name or self.checkpoint_config)
+            and not self.expectation_suite_name
+        ):
             raise ValueError(
                 "An expectation_suite_name must be supplied if neither checkpoint_name nor checkpoint_config are."
             )
 
         if type(self.checkpoint_config) == CheckpointConfig:
             self.checkpoint_config = self.checkpoint_config.to_json_dict()
-            self.checkpoint_config = {k: v for k,v in self.checkpoint_config.items() if v}
+            self.checkpoint_config = {
+                k: v for k, v in self.checkpoint_config.items() if v
+            }
 
     def make_connection_string(self) -> str:
         """Builds connection strings based off existing Airflow connections. Only supports necessary extras."""
         uri_string = ""
         if not self.conn:
-            raise ValueError(f"Connections does not exist in Airflow for conn_id: {self.conn_id}")
+            raise ValueError(
+                f"Connections does not exist in Airflow for conn_id: {self.conn_id}"
+            )
         if self.conn_type in ("redshift", "postgres", "mysql", "mssql"):
             odbc_connector = ""
             if self.conn_type in ("redshift", "postgres"):
@@ -212,8 +237,9 @@ class GreatExpectationsOperator(BaseOperator):
             raise ValueError(f"Conn type: {self.conn_type} is not supported.")
         return uri_string
 
-
-    def build_configured_sql_datasource_config_from_conn_id(self) -> SimpleSqlalchemyDatasource:
+    def build_configured_sql_datasource_config_from_conn_id(
+        self,
+    ) -> SimpleSqlalchemyDatasource:
         conn_str = self.make_connection_string()
         datasource_config = {
             "name": f"{self.conn.conn_id}_datasource",
@@ -234,7 +260,7 @@ class GreatExpectationsOperator(BaseOperator):
                             "module_name": "great_expectations.datasource.data_connector.asset",
                             "class_name": "Asset",
                             "schema_name": f"{self.conn.schema}",
-                            "batch_identifiers": ["airflow_run_id"]
+                            "batch_identifiers": ["airflow_run_id"],
                         },
                     },
                 },
@@ -242,7 +268,6 @@ class GreatExpectationsOperator(BaseOperator):
         }
 
         return SimpleSqlalchemyDatasource(**datasource_config)
-
 
     def build_configured_sql_datasource_batch_request(self):
         batch_request = {
@@ -252,8 +277,9 @@ class GreatExpectationsOperator(BaseOperator):
         }
         return BatchRequest(**batch_request)
 
-
-    def build_runtime_sql_datasource_config_from_conn_id(self) -> SimpleSqlalchemyDatasource:
+    def build_runtime_sql_datasource_config_from_conn_id(
+        self,
+    ) -> SimpleSqlalchemyDatasource:
         datasource_config = {
             "name": f"{self.conn.conn_id}_datasource",
             "module_name": "great_expectations.datasource",
@@ -267,16 +293,12 @@ class GreatExpectationsOperator(BaseOperator):
                 "default_runtime_data_connector": {
                     "module_name": "great_expectations.datasource.data_connector",
                     "class_name": "RuntimeDataConnector",
-                    "batch_identifiers": [
-                        "query_string",
-                        "airflow_run_id"
-                    ]
+                    "batch_identifiers": ["query_string", "airflow_run_id"],
                 },
             },
         }
 
         return SimpleSqlalchemyDatasource(**datasource_config)
-
 
     def build_runtime_sql_datasource_batch_request(self):
         batch_request = {
@@ -284,10 +306,12 @@ class GreatExpectationsOperator(BaseOperator):
             "data_connector_name": "default_runtime_data_connector",
             "data_asset_name": f"{self.data_asset_name}",
             "runtime_parameters": {"query": f"{self.query_to_validate}"},
-            "batch_identifiers": {"query_string": f"{self.query_to_validate}", "airflow_run_id": f"{{ task_instance_key_str }}"}, 
+            "batch_identifiers": {
+                "query_string": f"{self.query_to_validate}",
+                "airflow_run_id": f"{{ task_instance_key_str }}",
+            },
         }
         return RuntimeBatchRequest(**batch_request)
-
 
     def build_runtime_pandas_datasource(self) -> PandasDatasource:
         datasource_config = {
@@ -302,15 +326,12 @@ class GreatExpectationsOperator(BaseOperator):
                 "default_runtime_connector": {
                     "module_name": "great_expectations.datasource.data_connector",
                     "class_name": "RuntimeDataConnector",
-                    "batch_identifiers": [
-                        "airflow_run_id"
-                    ]
+                    "batch_identifiers": ["airflow_run_id"],
                 },
             },
         }
 
         return PandasDatasource(**datasource_config)
-
 
     def build_runtime_pandas_datasource_batch_request(self):
         batch_request = {
@@ -321,7 +342,6 @@ class GreatExpectationsOperator(BaseOperator):
             "batch_identifiers": {"airflow_run_id": f"{{ task_instance_key_str }}"},
         }
         return RuntimeBatchRequest(**batch_request)
-
 
     def build_runtime_datasources(self) -> tuple([Dict[str, Any]]):
         """Builds datasources at runtime based on Airflow connections or for use with a dataframe."""
@@ -335,16 +355,16 @@ class GreatExpectationsOperator(BaseOperator):
             datasource = self.build_configured_sql_datasource_config_from_conn_id()
             batch_request = self.build_configured_sql_datasource_batch_request()
         else:
-            raise ValueError("Unrecognized, or lack of, runtime or conn_id datasource passed.")
+            raise ValueError(
+                "Unrecognized, or lack of, runtime or conn_id datasource passed."
+            )
         return datasource, batch_request
-
 
     def build_runtime_env(self) -> tuple([Dict[str, Any]]):
         """Builds the runtime_environment dict that overwrites all other configs."""
         runtime_env: Dict[str, Any] = {}
         runtime_env["datasources"], batch_request = self.build_runtime_datasources()
         return runtime_env, batch_request
-
 
     def build_default_action_list(self) -> List[Dict[str, Any]]:
         """Builds a default action list for a default checkpoint."""
@@ -364,7 +384,8 @@ class GreatExpectationsOperator(BaseOperator):
         ]
 
         if (
-            os.getenv("AIRFLOW__LINEAGE__BACKEND") == "openlineage.lineage_backend.OpenLineageBackend"
+            os.getenv("AIRFLOW__LINEAGE__BACKEND")
+            == "openlineage.lineage_backend.OpenLineageBackend"
             and self.use_open_lineage
         ):
             self.log.info(
@@ -418,7 +439,7 @@ class GreatExpectationsOperator(BaseOperator):
             ge_cloud_id=None,
             expectation_suite_ge_cloud_id=None,
         ).to_json_dict()
-        self.checkpoint_config = {k: v for k,v in self.checkpoint_config.items() if v}
+        self.checkpoint_config = {k: v for k, v in self.checkpoint_config.items() if v}
         return self.checkpoint_config
 
     def execute(self, context: "Context") -> Union[CheckpointResult, Dict[str, Any]]:
@@ -431,9 +452,13 @@ class GreatExpectationsOperator(BaseOperator):
         self.conn_type = self.conn.conn_type if self.conn else None
 
         self.log.info("Instantiating Data Context...")
-        datasource, batch_request = self.build_runtime_env() if self.data_asset_name else ({}, {})
+        datasource, batch_request = (
+            self.build_runtime_env() if self.data_asset_name else ({}, {})
+        )
         if self.data_context_root_dir:
-            self.data_context = ge.data_context.DataContext(context_root_dir=self.data_context_root_dir)
+            self.data_context = ge.data_context.DataContext(
+                context_root_dir=self.data_context_root_dir
+            )
         else:
             self.data_context = BaseDataContext(project_config=self.data_context_config)
         self.data_context._cached_datasources[datasource.name] = datasource
@@ -441,7 +466,9 @@ class GreatExpectationsOperator(BaseOperator):
         self.log.info("Creating Checkpoint...")
         self.checkpoint: Checkpoint
         if self.checkpoint_name:
-            self.checkpoint = self.data_context.get_checkpoint(name=self.checkpoint_name)
+            self.checkpoint = self.data_context.get_checkpoint(
+                name=self.checkpoint_name
+            )
         elif self.checkpoint_config:
             self.checkpoint = instantiate_class_from_config(
                 config=self.checkpoint_config,
@@ -449,7 +476,9 @@ class GreatExpectationsOperator(BaseOperator):
                 config_defaults={"module_name": "great_expectations.checkpoint"},
             )
         else:
-            self.checkpoint_name = f"{self.data_asset_name}.{self.expectation_suite_name}.chk"
+            self.checkpoint_name = (
+                f"{self.data_asset_name}.{self.expectation_suite_name}.chk"
+            )
             self.checkpoint = instantiate_class_from_config(
                 config=self.build_default_checkpoint_config(),
                 runtime_environment={"data_context": self.data_context},
@@ -495,9 +524,15 @@ class GreatExpectationsOperator(BaseOperator):
                 result_list = []
                 for key, value in result.run_results.items():
                     result_information = {}
-                    result_information["statistics"] = value["validation_result"].statistics
-                    result_information["expectation_suite_name"] = value["validation_result"].meta["expectation_suite_name"]
-                    result_information["batch_definition"] = value["validation_result"].meta["active_batch_definition"]
+                    result_information["statistics"] = value[
+                        "validation_result"
+                    ].statistics
+                    result_information["expectation_suite_name"] = value[
+                        "validation_result"
+                    ].meta["expectation_suite_name"]
+                    result_information["batch_definition"] = value[
+                        "validation_result"
+                    ].meta["active_batch_definition"]
                     result_list.append(result_information)
                     result_list.append("\n")
 
