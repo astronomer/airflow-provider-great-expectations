@@ -154,8 +154,9 @@ class GreatExpectationsOperator(BaseOperator):
         ] = validation_failure_callback
         self.return_json_dict: bool = return_json_dict
         self.use_open_lineage = use_open_lineage
+        self.is_dataframe = True if self.dataframe_to_validate is not None else False
 
-        if self.dataframe_to_validate is not None and self.query_to_validate:
+        if self.is_dataframe and self.query_to_validate:
             raise ValueError(
                 "Exactly one, or neither, of dataframe_to_validate or query_to_validate may be specified."
             )
@@ -166,7 +167,7 @@ class GreatExpectationsOperator(BaseOperator):
                 "Exactly one of data_context_root_dir or data_context_config must be specified."
             )
 
-        if self.dataframe_to_validate is not None and self.conn_id:
+        if self.is_dataframe and self.conn_id:
             raise ValueError(
                 "Exactly one, or neither, of dataframe_to_validate or conn_id may be specified. If neither is"
                 " specified, the data_context_root_dir is used to find the data source."
@@ -180,7 +181,7 @@ class GreatExpectationsOperator(BaseOperator):
         # A data asset name is also used to determine if a runtime env will be used; if it is not passed in,
         # then the data asset name is assumed to be configured in the data context passed in.
         if (
-            self.dataframe_to_validate is not None or self.query_to_validate or self.conn_id
+            self.is_dataframe or self.query_to_validate or self.conn_id
         ) and not self.data_asset_name:
             raise ValueError(
                 "A data_asset_name must be specified with a runtime_data_source or conn_id."
@@ -334,7 +335,7 @@ class GreatExpectationsOperator(BaseOperator):
 
     def build_runtime_datasources(self) -> tuple([Dict[str, Any]]):
         """Builds datasources at runtime based on Airflow connections or for use with a dataframe."""
-        if self.dataframe_to_validate:
+        if self.is_dataframe:
             datasource = self.build_runtime_pandas_datasource()
             batch_request = self.build_runtime_pandas_datasource_batch_request()
         elif self.query_to_validate:
