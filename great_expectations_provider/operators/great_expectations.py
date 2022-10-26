@@ -155,7 +155,7 @@ class GreatExpectationsOperator(BaseOperator):
         self.return_json_dict: bool = return_json_dict
         self.use_open_lineage = use_open_lineage
 
-        if self.dataframe_to_validate and self.query_to_validate:
+        if self.dataframe_to_validate is not None and self.query_to_validate:
             raise ValueError(
                 "Exactly one, or neither, of dataframe_to_validate or query_to_validate may be specified."
             )
@@ -166,7 +166,7 @@ class GreatExpectationsOperator(BaseOperator):
                 "Exactly one of data_context_root_dir or data_context_config must be specified."
             )
 
-        if self.dataframe_to_validate and self.conn_id:
+        if self.dataframe_to_validate is not None and self.conn_id:
             raise ValueError(
                 "Exactly one, or neither, of dataframe_to_validate or conn_id may be specified. If neither is"
                 " specified, the data_context_root_dir is used to find the data source."
@@ -180,7 +180,7 @@ class GreatExpectationsOperator(BaseOperator):
         # A data asset name is also used to determine if a runtime env will be used; if it is not passed in,
         # then the data asset name is assumed to be configured in the data context passed in.
         if (
-            self.dataframe_to_validate or self.query_to_validate or self.conn_id
+            self.dataframe_to_validate is not None or self.query_to_validate or self.conn_id
         ) and not self.data_asset_name:
             raise ValueError(
                 "A data_asset_name must be specified with a runtime_data_source or conn_id."
