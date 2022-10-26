@@ -382,7 +382,7 @@ class GreatExpectationsOperator(BaseOperator):
             if not (openlineage_host and openlineage_api_key and openlineage_namespace):
                 raise ValueError(
                     "Could not find one of OpenLineage host, API Key, or Namespace environment variables."
-                    f"\nHost: {openlineage_host}\nAPI Key: {openlineage_api_key}\nNamespace: {openlineage_namespace}"
+                    f"\nHost: {openlineage_host}\nAPI Key: *****\nNamespace: {openlineage_namespace}"
                 )
             action_list.append(
                 {
