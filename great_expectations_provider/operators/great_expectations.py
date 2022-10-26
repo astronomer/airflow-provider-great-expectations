@@ -373,7 +373,7 @@ class GreatExpectationsOperator(BaseOperator):
         ):
             self.log.info(
                 "Found OpenLineage Connection, automatically connecting... "
-                "\nThis behavior may be turned off by setting use_open_lineage to False."
+                "(This behavior may be turned off by setting use_open_lineage to False.)"
             )
             openlineage_host = os.getenv("OPENLINEAGE_URL")
             openlineage_api_key = os.getenv("OPENLINEAGE_API_KEY")
