@@ -445,7 +445,9 @@ class GreatExpectationsOperator(BaseOperator):
             )
         else:
             self.data_context = BaseDataContext(project_config=self.data_context_config)
-        self.data_context.datasources[datasource.name] = datasource
+
+        if datasource:
+            self.data_context.datasources[datasource.name] = datasource
 
         self.log.info("Creating Checkpoint...")
         self.checkpoint: Checkpoint
