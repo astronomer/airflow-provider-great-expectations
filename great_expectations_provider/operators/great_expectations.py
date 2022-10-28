@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 import great_expectations as ge
 from airflow.exceptions import AirflowException
 from airflow.hooks.base import BaseHook
-from airflow.models import BaseOperator, BaseOperatorLink, XCom
+from airflow.models import BaseOperator, XCom
 from great_expectations.checkpoint import Checkpoint
 from great_expectations.checkpoint.types.checkpoint_result import CheckpointResult
 from great_expectations.core.batch import BatchRequest, RuntimeBatchRequest
@@ -39,15 +39,6 @@ from pandas import DataFrame
 
 if TYPE_CHECKING:
     from airflow.utils.context import Context
-
-
-class GreatExpectationsRunLink(BaseOperatorLink):
-    """Constructs a link to Great Expectations data docs site."""
-
-    name = "Data Docs"
-
-    def get_link(self, operator, *, kwargs) -> str:
-        return operator.data_context.get_docs_sites_urls()
 
 
 class GreatExpectationsOperator(BaseOperator):
@@ -99,8 +90,6 @@ class GreatExpectationsOperator(BaseOperator):
     ui_color = "#AFEEEE"
     ui_fgcolor = "#000000"
 
-    operator_extra_links = (GreatExpectationsRunLink(),)
-
     def __init__(
         self,
         run_name: Optional[str] = None,
@@ -138,7 +127,7 @@ class GreatExpectationsOperator(BaseOperator):
         self.data_context_root_dir: Optional[
             Union[str, bytes, os.PathLike[Any]]
         ] = data_context_root_dir
-        self.data_context_config: DataContextConfig = data_context_config
+        self.data_context_config: Optional[DataContextConfig] = data_context_config
         self.dataframe_to_validate: Optional[DataFrame] = dataframe_to_validate
         self.query_to_validate: Optional[str] = query_to_validate
         self.checkpoint_name: Optional[str] = checkpoint_name
@@ -478,6 +467,9 @@ class GreatExpectationsOperator(BaseOperator):
         else:
             result = self.checkpoint.run()
 
+        data_docs_site = self.data_context.get_docs_sites_urls()[0]["site_url"]
+        self.log.info(f"Pushing site to XCom: {data_docs_site}")
+        context["ti"].xcom_push(key="data_docs_url", value=data_docs_site)
         self.log.info("GE Checkpoint Run Result:\n%s", result)
         self.handle_result(result)
 
@@ -535,3 +527,4 @@ class GreatExpectationsOperator(BaseOperator):
                 )
         else:
             self.log.info("Validation with Great Expectations successful.")
+
