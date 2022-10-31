@@ -458,6 +458,41 @@ def test_great_expectations_operator__works_with_simple_checkpoint_and_checkpoin
     assert result["success"]
 
 
+def test_great_expectations_operator__validate_pandas_dataframe_with_no_datasource_pass(
+    in_memory_data_context_config
+):
+    df = pd.read_csv("../../include/data/yellow_tripdata_sample_2019-01.csv")
+
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        data_asset_name="test_dataframe",
+        dataframe_to_validate=df,
+        expectation_suite_name="taxi.demo"
+    )
+    result = operator.execute(context={})
+
+    assert result["success"]
+
+
+def test_great_expectations_operator__validate_pandas_dataframe_with_no_datasource_fail(
+    in_memory_data_context_config
+):
+    df = pd.read_csv("../../include/data/yellow_tripdata_sample_2019-01.csv").truncate(after=8000)
+    
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        data_asset_name="test_dataframe",
+        dataframe_to_validate=df,
+        expectation_suite_name="taxi.demo",
+        fail_task_on_validation_failure=False
+    )
+    result = operator.execute(context={})
+
+    assert not result["success"]
+
+
 def test_great_expectations_operator__make_connection_string_redshift():
     test_conn_str = "postgresql+psycopg2://user:password@connection:5439/schema"
     operator = GreatExpectationsOperator(
@@ -620,3 +655,4 @@ def test_great_expectations_operator__make_connection_string_raise_error():
     operator.conn_type = operator.conn.conn_type
     with pytest.raises(ValueError):
         operator.make_connection_string()
+
