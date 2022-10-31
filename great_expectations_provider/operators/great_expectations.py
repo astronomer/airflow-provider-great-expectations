@@ -27,7 +27,11 @@ from airflow.hooks.base import BaseHook
 from airflow.models import BaseOperator, BaseOperatorLink, XCom
 from great_expectations.checkpoint import Checkpoint
 from great_expectations.checkpoint.types.checkpoint_result import CheckpointResult
-from great_expectations.core.batch import BatchRequest, RuntimeBatchRequest, BatchRequestBase
+from great_expectations.core.batch import (
+    BatchRequest,
+    RuntimeBatchRequest,
+    BatchRequestBase,
+)
 from great_expectations.datasource.new_datasource import Datasource
 from great_expectations.data_context import BaseDataContext
 from great_expectations.data_context.types.base import (
@@ -51,12 +55,15 @@ class GreatExpectationsDataDocsLink(BaseOperatorLink):
     def get_link(self, operator, *, ti_key) -> str:
         if ti_key is not None:
             return XCom.get_value(key="data_docs_url", ti_key=ti_key)
-        return XCom.get_one(
+        return (
+            XCom.get_one(
                 dag_id=ti_key.dag_id,
                 task_id=ti_key.task_id,
                 run_id=ti_key.run_id,
-                key="data_docs_url"
-            ) or ""
+                key="data_docs_url",
+            )
+            or ""
+        )
 
 
 class GreatExpectationsOperator(BaseOperator):
@@ -270,7 +277,7 @@ class GreatExpectationsOperator(BaseOperator):
                     },
                 },
             },
-            "data_context_root_directory": self.data_context_root_dir
+            "data_context_root_directory": self.data_context_root_dir,
         }
         return Datasource(**datasource_config)
 
@@ -299,7 +306,7 @@ class GreatExpectationsOperator(BaseOperator):
                     "batch_identifiers": ["query_string", "airflow_run_id"],
                 },
             },
-            "data_context_root_directory": self.data_context_root_dir
+            "data_context_root_directory": self.data_context_root_dir,
         }
         return Datasource(**datasource_config)
 
@@ -330,7 +337,7 @@ class GreatExpectationsOperator(BaseOperator):
                     "batch_identifiers": ["airflow_run_id"],
                 },
             },
-            "data_context_root_directory": self.data_context_root_dir
+            "data_context_root_directory": self.data_context_root_dir,
         }
         return Datasource(**datasource_config)
 
@@ -551,4 +558,3 @@ class GreatExpectationsOperator(BaseOperator):
                 )
         else:
             self.log.info("Validation with Great Expectations successful.")
-
