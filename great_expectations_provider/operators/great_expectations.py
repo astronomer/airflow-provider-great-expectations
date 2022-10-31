@@ -408,7 +408,7 @@ class GreatExpectationsOperator(BaseOperator):
             )
         return action_list
 
-    def build_default_checkpoint_config(self) -> CheckpointConfig:
+    def build_default_checkpoint_config(self):
         """Builds a default checkpoint with default values."""
         self.run_name = (
             self.run_name
@@ -433,7 +433,6 @@ class GreatExpectationsOperator(BaseOperator):
             expectation_suite_ge_cloud_id=None,
         ).to_json_dict()
         self.checkpoint_config = {k: v for k, v in self.checkpoint_config.items() if v}
-        return self.checkpoint_config
 
     def execute(self, context: "Context") -> Union[CheckpointResult, Dict[str, Any]]:
         """
@@ -474,8 +473,9 @@ class GreatExpectationsOperator(BaseOperator):
             self.checkpoint_name = (
                 f"{self.data_asset_name}.{self.expectation_suite_name}.chk"
             )
+            self.build_default_checkpoint_config()
             self.checkpoint = instantiate_class_from_config(
-                config=self.build_default_checkpoint_config(),
+                config=self.checkpoint_config,
                 runtime_environment={"data_context": self.data_context},
                 config_defaults={"module_name": "great_expectations.checkpoint"},
             )
