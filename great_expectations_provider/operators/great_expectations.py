@@ -499,7 +499,7 @@ class GreatExpectationsOperator(BaseOperator):
         self.log.debug(f"Pushing site to XCom: {data_docs_site}")
         try:
             context["ti"].xcom_push(key="data_docs_url", value=data_docs_site)
-        except RuntimeError:
+        except KeyError:
             self.log.debug("Could not push data_docs_url to XCom.")
         self.log.info("GE Checkpoint Run Result:\n%s", result)
         self.handle_result(result)
