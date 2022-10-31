@@ -27,7 +27,7 @@ from airflow.hooks.base import BaseHook
 from airflow.models import BaseOperator, BaseOperatorLink, XCom
 from great_expectations.checkpoint import Checkpoint
 from great_expectations.checkpoint.types.checkpoint_result import CheckpointResult
-from great_expectations.core.batch import BatchRequest, RuntimeBatchRequest
+from great_expectations.core.batch import BatchRequest, RuntimeBatchRequest, BatchRequestBase
 from great_expectations.datasource.new_datasource import Datasource
 from great_expectations.data_context import BaseDataContext
 from great_expectations.data_context.types.base import (
@@ -164,6 +164,8 @@ class GreatExpectationsOperator(BaseOperator):
         self.return_json_dict: bool = return_json_dict
         self.use_open_lineage = use_open_lineage
         self.is_dataframe = True if self.dataframe_to_validate is not None else False
+        self.datasource: Optional[Datasource] = None
+        self.batch_request: Optional[BatchRequestBase] = None
 
         if self.is_dataframe and self.query_to_validate:
             raise ValueError(
@@ -342,22 +344,21 @@ class GreatExpectationsOperator(BaseOperator):
         }
         return RuntimeBatchRequest(**batch_request)
 
-    def build_runtime_datasources(self) -> tuple([Dict[str, Any]]):
+    def build_runtime_datasources(self):
         """Builds datasources at runtime based on Airflow connections or for use with a dataframe."""
         if self.is_dataframe:
-            datasource = self.build_runtime_pandas_datasource()
-            batch_request = self.build_runtime_pandas_datasource_batch_request()
+            self.datasource = self.build_runtime_pandas_datasource()
+            self.batch_request = self.build_runtime_pandas_datasource_batch_request()
         elif self.query_to_validate:
-            datasource = self.build_runtime_sql_datasource_config_from_conn_id()
-            batch_request = self.build_runtime_sql_datasource_batch_request()
+            self.datasource = self.build_runtime_sql_datasource_config_from_conn_id()
+            self.batch_request = self.build_runtime_sql_datasource_batch_request()
         elif self.conn:
-            datasource = self.build_configured_sql_datasource_config_from_conn_id()
-            batch_request = self.build_configured_sql_datasource_batch_request()
+            self.datasource = self.build_configured_sql_datasource_config_from_conn_id()
+            self.batch_request = self.build_configured_sql_datasource_batch_request()
         else:
             raise ValueError(
                 "Unrecognized, or lack of, runtime or conn_id datasource passed."
             )
-        return (datasource, batch_request)
 
     def build_default_action_list(self) -> List[Dict[str, Any]]:
         """Builds a default action list for a default checkpoint."""
@@ -444,18 +445,16 @@ class GreatExpectationsOperator(BaseOperator):
         self.conn_type = self.conn.conn_type if self.conn else None
 
         self.log.info("Instantiating Data Context...")
-        datasource, batch_request = (
-            self.build_runtime_datasources() if self.data_asset_name else ({}, {})
-        )
+        if self.data_asset_name:
+            self.build_runtime_datasources()
         if self.data_context_root_dir:
             self.data_context = ge.data_context.DataContext(
                 context_root_dir=self.data_context_root_dir
             )
         else:
             self.data_context = BaseDataContext(project_config=self.data_context_config)
-
-        if datasource:
-            self.data_context.datasources[datasource.name] = datasource
+        if self.datasource:
+            self.data_context.datasources[self.datasource.name] = self.datasource
 
         self.log.info("Creating Checkpoint...")
         self.checkpoint: Checkpoint
@@ -482,16 +481,19 @@ class GreatExpectationsOperator(BaseOperator):
 
         self.log.info("Running Checkpoint...")
 
-        if batch_request:
-            result = self.checkpoint.run(batch_request=batch_request)
+        if self.batch_request:
+            result = self.checkpoint.run(batch_request=self.batch_request)
         elif self.checkpoint_kwargs:
             result = self.checkpoint.run(**self.checkpoint_kwargs)
         else:
             result = self.checkpoint.run()
 
         data_docs_site = self.data_context.get_docs_sites_urls()[0]["site_url"]
-        self.log.info(f"Pushing site to XCom: {data_docs_site}")
-        context["ti"].xcom_push(key="data_docs_url", value=data_docs_site)
+        self.log.debug(f"Pushing site to XCom: {data_docs_site}")
+        try:
+            context["ti"].xcom_push(key="data_docs_url", value=data_docs_site)
+        except RuntimeError:
+            self.log.debug("Could not push data_docs_url to XCom.")
         self.log.info("GE Checkpoint Run Result:\n%s", result)
         self.handle_result(result)
 
@@ -520,7 +522,7 @@ class GreatExpectationsOperator(BaseOperator):
                 self.validation_failure_callback(result)
             if self.fail_task_on_validation_failure:
                 result_list = []
-                for key, value in result.run_results.items():
+                for _, value in result.run_results.items():
                     result_information = {}
                     result_information["statistics"] = value[
                         "validation_result"
