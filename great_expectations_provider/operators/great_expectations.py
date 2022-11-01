@@ -226,33 +226,6 @@ class GreatExpectationsOperator(BaseOperator):
                 k: v for k, v in self.checkpoint_config.items() if v
             }
 
-    def make_connection_string(self) -> str:
-        """Builds connection strings based off existing Airflow connections. Only supports necessary extras."""
-        uri_string = ""
-        if not self.conn:
-            raise ValueError(
-                f"Connections does not exist in Airflow for conn_id: {self.conn_id}"
-            )
-        if self.conn_type in ("redshift", "postgres", "mysql", "mssql"):
-            odbc_connector = ""
-            if self.conn_type in ("redshift", "postgres"):
-                odbc_connector = "postgresql+psycopg2"
-            elif self.conn_type == "mysql":
-                odbc_connector = "mysql"
-            else:
-                odbc_connector = "mssql+pyodbc"
-            uri_string = f"{odbc_connector}://{self.conn.login}:{self.conn.password}@{self.conn.host}:{self.conn.port}/{self.conn.schema}"  # noqa
-        elif self.conn_type == "snowflake":
-            uri_string = f"snowflake://{self.conn.login}:{self.conn.password}@{self.conn.extra_dejson['extra__snowflake__account']}.{self.conn.extra_dejson['extra__snowflake__region']}/{self.conn.extra_dejson['extra__snowflake__database']}/{self.conn.schema}?warehouse={self.conn.extra_dejson['extra__snowflake__warehouse']}&role={self.conn.extra_dejson['extra__snowflake__role']}"  # noqa
-        elif self.conn_type == "gcpbigquery":
-            uri_string = f"{self.conn.host}{self.conn.schema}"
-        elif self.conn_type == "sqlite":
-            uri_string = f"sqlite:///{self.conn.host}"
-        # TODO: Add Athena and Trino support if possible
-        else:
-            raise ValueError(f"Conn type: {self.conn_type} is not supported.")
-        return uri_string
-
     def build_configured_sql_datasource_config_from_conn_id(
         self,
     ) -> Datasource:
@@ -261,7 +234,7 @@ class GreatExpectationsOperator(BaseOperator):
             "execution_engine": {
                 "module_name": "great_expectations.execution_engine",
                 "class_name": "SqlAlchemyExecutionEngine",
-                "connection_string": self.make_connection_string(),
+                "connection_string": self.conn.get_uri(),
             },
             "data_connectors": {
                 "default_configured_asset_sql_data_connector": {
@@ -297,7 +270,7 @@ class GreatExpectationsOperator(BaseOperator):
             "execution_engine": {
                 "module_name": "great_expectations.execution_engine",
                 "class_name": "SqlAlchemyExecutionEngine",
-                "connection_string": self.make_connection_string(),
+                "connection_string": self.conn.get_uri(),
             },
             "data_connectors": {
                 "default_runtime_data_connector": {
