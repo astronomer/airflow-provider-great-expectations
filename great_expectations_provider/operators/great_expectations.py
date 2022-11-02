@@ -230,7 +230,7 @@ class GreatExpectationsOperator(BaseOperator):
         self,
     ) -> Datasource:
         datasource_config = {
-            "name": f"{self.conn.conn_id}_datasource",
+            "name": f"{self.conn.conn_id}_configured_datasource",
             "execution_engine": {
                 "module_name": "great_expectations.execution_engine",
                 "class_name": "SqlAlchemyExecutionEngine",
@@ -250,7 +250,6 @@ class GreatExpectationsOperator(BaseOperator):
                     },
                 },
             },
-            "data_context_root_directory": self.data_context_root_dir,
         }
         return Datasource(**datasource_config)
 
@@ -266,7 +265,7 @@ class GreatExpectationsOperator(BaseOperator):
         self,
     ) -> Datasource:
         datasource_config = {
-            "name": f"{self.conn.conn_id}_datasource",
+            "name": f"{self.conn.conn_id}_runtime_datasource",
             "execution_engine": {
                 "module_name": "great_expectations.execution_engine",
                 "class_name": "SqlAlchemyExecutionEngine",

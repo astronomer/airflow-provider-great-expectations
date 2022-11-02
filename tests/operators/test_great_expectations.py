@@ -23,6 +23,7 @@ from airflow.models.connection import Connection
 from great_expectations.core.batch import BatchRequest, RuntimeBatchRequest
 from great_expectations.data_context.types.base import (CheckpointConfig,
                                                         DataContextConfig)
+from great_expectations.datasource import Datasource
 from great_expectations.exceptions.exceptions import CheckpointNotFoundError
 
 from great_expectations_provider.operators.great_expectations import \
@@ -173,6 +174,51 @@ def in_memory_checkpoint_config():
     )
     return checkpoint_config
 
+@pytest.fixture()
+def constructed_sql_runtime_datasource():
+    return {
+            "name": f"postgres_conn_runtime_datasource",
+            "id": None,
+            "execution_engine": {
+                "module_name": "great_expectations.execution_engine",
+                "class_name": "SqlAlchemyExecutionEngine",
+                "connection_string": "sqlite:///host",
+            },
+            "data_connectors": {
+                "default_runtime_data_connector": {
+                    "module_name": "great_expectations.datasource.data_connector",
+                    "class_name": "RuntimeDataConnector",
+                    "batch_identifiers": ["query_string", "airflow_run_id"],
+                    },
+                },
+            }
+
+
+@pytest.fixture()
+def constructed_sql_configured_datasource():
+    return {
+            "name": f"postgres_conn_configured_datasource",
+            "id": None,
+            "execution_engine": {
+                "module_name": "great_expectations.execution_engine",
+                "class_name": "SqlAlchemyExecutionEngine",
+                "connection_string": "sqlite:///host",
+            },
+            "data_connectors": {
+                "default_configured_asset_sql_data_connector": {
+                    "module_name": "great_expectations.datasource.data_connector",
+                    "class_name": "ConfiguredAssetSqlDataConnector",
+                    "assets": {
+                        f"my_postgres_table": {
+                            "module_name": "great_expectations.datasource.data_connector.asset",
+                            "class_name": "Asset",
+                            "schema_name": f"my_schema",
+                            "batch_identifiers": ["airflow_run_id"],
+                        },
+                    },
+                },
+            },
+        }
 
 def test_great_expectations_operator__context_root_dir_and_checkpoint_name_pass():
     operator = GreatExpectationsOperator(
@@ -491,3 +537,71 @@ def test_great_expectations_operator__validate_pandas_dataframe_with_no_datasour
     result = operator.execute(context={})
 
     assert not result["success"]
+
+
+def test_build_configured_sql_datasource_config_from_conn_id(
+        in_memory_data_context_config,
+        constructed_sql_configured_datasource,
+        monkeypatch
+):
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        data_asset_name="my_postgres_table",
+        conn_id="postgres_conn",
+        expectation_suite_name="taxi.demo"
+    )
+    def get_uri():
+        return "sqlite:///host"
+
+    conn = mock.Mock(conn_id="postgres_conn", schema="my_schema", get_uri=get_uri)
+    operator.conn = conn
+    monkeypatch.setattr(operator, "conn", conn)
+
+    constructed_datasource = operator.build_configured_sql_datasource_config_from_conn_id()
+
+    assert isinstance(constructed_datasource, Datasource)
+
+    assert constructed_datasource.config == constructed_sql_configured_datasource
+
+
+def test_build_runtime_sql_datasource_config_from_conn_id(
+        in_memory_data_context_config,
+        constructed_sql_runtime_datasource,
+        monkeypatch
+):
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        data_asset_name="my_postgres_table",
+        query_to_validate="select * from my_table limit 10",
+        conn_id="postgres_conn",
+        expectation_suite_name="taxi.demo"
+    )
+    def get_uri():
+        return "sqlite:///host"
+
+    conn = mock.Mock(conn_id="postgres_conn", schema="my_schema", get_uri=get_uri)
+    operator.conn = conn
+    monkeypatch.setattr(operator, "conn", conn)
+
+    constructed_datasource = operator.build_runtime_sql_datasource_config_from_conn_id()
+
+    assert isinstance(constructed_datasource, Datasource)
+
+    assert constructed_datasource.config == constructed_sql_runtime_datasource
+
+
+def test_build_configured_sql_datasource_batch_request():
+    pass
+
+
+def test_build_runtime_sql_datasource_batch_request():
+    pass
+
+
+def test_build_runtime_pandas_datasource_batch_request():
+    pass
+
+def test_build_default_checkpoint_config():
+    pass
