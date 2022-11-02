@@ -461,7 +461,7 @@ def test_great_expectations_operator__works_with_simple_checkpoint_and_checkpoin
 def test_great_expectations_operator__validate_pandas_dataframe_with_no_datasource_pass(
     in_memory_data_context_config
 ):
-    df = pd.read_csv("../../include/data/yellow_tripdata_sample_2019-01.csv")
+    df = pd.read_csv(f"{data_dir}/yellow_tripdata_sample_2019-01.csv")
 
     operator = GreatExpectationsOperator(
         task_id="task_id",
@@ -478,7 +478,7 @@ def test_great_expectations_operator__validate_pandas_dataframe_with_no_datasour
 def test_great_expectations_operator__validate_pandas_dataframe_with_no_datasource_fail(
     in_memory_data_context_config
 ):
-    df = pd.read_csv("../../include/data/yellow_tripdata_sample_2019-01.csv").truncate(after=8000)
+    df = pd.read_csv(f"{data_dir}/yellow_tripdata_sample_2019-01.csv").truncate(after=8000)
     
     operator = GreatExpectationsOperator(
         task_id="task_id",
@@ -491,168 +491,3 @@ def test_great_expectations_operator__validate_pandas_dataframe_with_no_datasour
     result = operator.execute(context={})
 
     assert not result["success"]
-
-
-def test_great_expectations_operator__make_connection_string_redshift():
-    test_conn_str = "postgresql+psycopg2://user:password@connection:5439/schema"
-    operator = GreatExpectationsOperator(
-            task_id="task_id",
-            data_context_config=in_memory_data_context_config,
-            data_asset_name="test_runtime_data_asset",
-            conn_id="redshift_default",
-            query_to_validate="SELECT * FROM db;",
-            expectation_suite_name="suite"
-        )
-    operator.conn = Connection(
-        conn_id="redshift_default",
-        conn_type="redshift",
-        host="connection",
-        login="user",
-        password="password",
-        schema="schema",
-        port=5439
-    )
-    operator.conn_type = operator.conn.conn_type
-    assert operator.make_connection_string() == test_conn_str
-
-
-def test_great_expectations_operator__make_connection_string_postgres():
-    test_conn_str = "postgresql+psycopg2://user:password@connection:5439/schema"
-    operator = GreatExpectationsOperator(
-            task_id="task_id",
-            data_context_config=in_memory_data_context_config,
-            data_asset_name="test_runtime_data_asset",
-            conn_id="postgres_default",
-            query_to_validate="SELECT * FROM db;",
-            expectation_suite_name="suite"
-        )
-    operator.conn = Connection(
-        conn_id="postgres_default",
-        conn_type="postgres",
-        host="connection",
-        login="user",
-        password="password",
-        schema="schema",
-        port=5439
-    )
-    operator.conn_type = operator.conn.conn_type
-    assert operator.make_connection_string() == test_conn_str
-
-
-def test_great_expectations_operator__make_connection_string_mysql():
-    test_conn_str = "mysql://user:password@connection:5439/schema"
-    operator = GreatExpectationsOperator(
-            task_id="task_id",
-            data_context_config=in_memory_data_context_config,
-            data_asset_name="test_runtime_data_asset",
-            conn_id="mysql_default",
-            query_to_validate="SELECT * FROM db;",
-            expectation_suite_name="suite"
-        )
-    operator.conn = Connection(
-        conn_id="mysql_default",
-        conn_type="mysql",
-        host="connection",
-        login="user",
-        password="password",
-        schema="schema",
-        port=5439
-    )
-    operator.conn_type = operator.conn.conn_type
-    assert operator.make_connection_string() == test_conn_str
-
-
-def test_great_expectations_operator__make_connection_string_mssql():
-    test_conn_str = "mssql+pyodbc://user:password@connection:5439/schema"
-    operator = GreatExpectationsOperator(
-            task_id="task_id",
-            data_context_config=in_memory_data_context_config,
-            data_asset_name="test_runtime_data_asset",
-            conn_id="mssql_default",
-            query_to_validate="SELECT * FROM db;",
-            expectation_suite_name="suite"
-        )
-    operator.conn = Connection(
-        conn_id="mssql_default",
-        conn_type="mssql",
-        host="connection",
-        login="user",
-        password="password",
-        schema="schema",
-        port=5439
-    )
-    operator.conn_type = operator.conn.conn_type
-    assert operator.make_connection_string() == test_conn_str
-
-
-def test_great_expectations_operator__make_connection_string_snowflake():
-    test_conn_str = "snowflake://user:password@account.region-east-1/database/schema?warehouse=warehouse&role=role"
-    operator = GreatExpectationsOperator(
-            task_id="task_id",
-            data_context_config=in_memory_data_context_config,
-            data_asset_name="test_runtime_data_asset",
-            conn_id="snowflake_default",
-            query_to_validate="SELECT * FROM db;",
-            expectation_suite_name="suite"
-        )
-    operator.conn = Connection(
-        conn_id="snowflake_default",
-        conn_type="snowflake",
-        host="connection",
-        login="user",
-        password="password",
-        schema="schema",
-        port=5439,
-        extra={
-            "extra__snowflake__role": "role",
-            "extra__snowflake__warehouse": "warehouse",
-            "extra__snowflake__database": "database",
-            "extra__snowflake__region": "region-east-1",
-            "extra__snowflake__account": "account"
-        }
-    )
-    operator.conn_type = operator.conn.conn_type
-    assert operator.make_connection_string() == test_conn_str
-
-
-def test_great_expectations_operator__make_connection_string_sqlite():
-    test_conn_str = "sqlite:///host"
-    operator = GreatExpectationsOperator(
-            task_id="task_id",
-            data_context_config=in_memory_data_context_config,
-            data_asset_name="test_runtime_data_asset",
-            conn_id="mssql_default",
-            query_to_validate="SELECT * FROM db;",
-            expectation_suite_name="suite"
-        )
-    operator.conn = Connection(
-        conn_id="sqlite_default",
-        conn_type="sqlite",
-        host="host",
-    )
-    operator.conn_type = operator.conn.conn_type
-    assert operator.make_connection_string() == test_conn_str
-
-
-def test_great_expectations_operator__make_connection_string_raise_error():
-    operator = GreatExpectationsOperator(
-            task_id="task_id",
-            data_context_config=in_memory_data_context_config,
-            data_asset_name="test_runtime_data_asset",
-            conn_id="unsupported_conn",
-            query_to_validate="SELECT * FROM db;",
-            expectation_suite_name="suite"
-        )
-    operator.conn = Connection(
-        conn_id="unsupported_conn",
-        conn_type="unsupported_conn",
-        host="connection",
-        login="user",
-        password="password",
-        schema="schema",
-        port=5439
-    )
-    operator.conn_type = operator.conn.conn_type
-    with pytest.raises(ValueError):
-        operator.make_connection_string()
-
