@@ -255,7 +255,7 @@ class GreatExpectationsOperator(BaseOperator):
 
     def build_configured_sql_datasource_batch_request(self):
         batch_request = {
-            "datasource_name": f"{self.conn.conn_id}_datasource",
+            "datasource_name": f"{self.conn.conn_id}_configured_sql_datasource",
             "data_connector_name": "default_configured_asset_sql_data_connector",
             "data_asset_name": f"{self.data_asset_name}",
         }
@@ -284,7 +284,7 @@ class GreatExpectationsOperator(BaseOperator):
 
     def build_runtime_sql_datasource_batch_request(self):
         batch_request = {
-            "datasource_name": f"{self.conn.conn_id}_datasource",
+            "datasource_name": f"{self.conn.conn_id}_runtime_sql_datasource",
             "data_connector_name": "default_runtime_data_connector",
             "data_asset_name": f"{self.data_asset_name}",
             "runtime_parameters": {"query": f"{self.query_to_validate}"},
@@ -297,7 +297,7 @@ class GreatExpectationsOperator(BaseOperator):
 
     def build_runtime_pandas_datasource(self) -> Datasource:
         datasource_config = {
-            "name": f"{self.data_asset_name}_datasource",
+            "name": f"{self.data_asset_name}_runtime_pandas_datasource",
             "execution_engine": {
                 "module_name": "great_expectations.execution_engine",
                 "class_name": f"{self.execution_engine}",
@@ -315,7 +315,7 @@ class GreatExpectationsOperator(BaseOperator):
 
     def build_runtime_pandas_datasource_batch_request(self):
         batch_request = {
-            "datasource_name": f"{self.data_asset_name}_datasource",
+            "datasource_name": f"{self.data_asset_name}_runtime_pandas_datasource",
             "data_connector_name": "default_runtime_connector",
             "data_asset_name": f"{self.data_asset_name}",
             "runtime_parameters": {"batch_data": self.dataframe_to_validate},
@@ -395,7 +395,7 @@ class GreatExpectationsOperator(BaseOperator):
             if self.run_name
             else f"{self.task_id}_{datetime.now().strftime('%Y-%m-%d::%H:%M:%S')}"
         )
-        self.checkpoint_config = CheckpointConfig(
+        checkpoint_config = CheckpointConfig(
             name=self.checkpoint_name,
             config_version=1.0,
             template_name=None,
@@ -412,7 +412,9 @@ class GreatExpectationsOperator(BaseOperator):
             ge_cloud_id=None,
             expectation_suite_ge_cloud_id=None,
         ).to_json_dict()
-        self.checkpoint_config = {k: v for k, v in self.checkpoint_config.items() if v}
+        filtered_config = {k: v for k, v in checkpoint_config.items() if v}
+
+        return filtered_config
 
     def execute(self, context: "Context") -> Union[CheckpointResult, Dict[str, Any]]:
         """
@@ -451,7 +453,7 @@ class GreatExpectationsOperator(BaseOperator):
             self.checkpoint_name = (
                 f"{self.data_asset_name}.{self.expectation_suite_name}.chk"
             )
-            self.build_default_checkpoint_config()
+            self.checkpoint_config = self.build_default_checkpoint_config()
             self.checkpoint = instantiate_class_from_config(
                 config=self.checkpoint_config,
                 runtime_environment={"data_context": self.data_context},

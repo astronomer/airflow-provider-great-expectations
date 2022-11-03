@@ -177,7 +177,7 @@ def in_memory_checkpoint_config():
 @pytest.fixture()
 def constructed_sql_runtime_datasource():
     return {
-            "name": f"postgres_conn_runtime_datasource",
+            "name": f"sqlite_conn_runtime_datasource",
             "id": None,
             "execution_engine": {
                 "module_name": "great_expectations.execution_engine",
@@ -197,7 +197,7 @@ def constructed_sql_runtime_datasource():
 @pytest.fixture()
 def constructed_sql_configured_datasource():
     return {
-            "name": f"postgres_conn_configured_datasource",
+            "name": f"sqlite_conn_configured_datasource",
             "id": None,
             "execution_engine": {
                 "module_name": "great_expectations.execution_engine",
@@ -209,7 +209,7 @@ def constructed_sql_configured_datasource():
                     "module_name": "great_expectations.datasource.data_connector",
                     "class_name": "ConfiguredAssetSqlDataConnector",
                     "assets": {
-                        f"my_postgres_table": {
+                        f"my_sqlite_table": {
                             "module_name": "great_expectations.datasource.data_connector.asset",
                             "class_name": "Asset",
                             "schema_name": f"my_schema",
@@ -219,6 +219,41 @@ def constructed_sql_configured_datasource():
                 },
             },
         }
+
+@pytest.fixture()
+def mock_airflow_conn():
+    def get_uri():
+        return "sqlite:///host"
+
+    conn = mock.Mock(conn_id="sqlite_conn", schema="my_schema", get_uri=get_uri)
+    return conn
+
+
+@pytest.fixture()
+def runtime_sql_operator(in_memory_data_context_config):
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        data_asset_name="my_sqlite_table",
+        query_to_validate="select * from my_table limit 10",
+        conn_id="sqlite_conn",
+        expectation_suite_name="taxi.demo"
+    )
+    return operator
+
+
+@pytest.fixture()
+def configured_sql_operator(in_memory_data_context_config):
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        data_asset_name="my_sqlite_table",
+        conn_id="sqlite_conn",
+        expectation_suite_name="taxi.demo",
+        run_name="my_run"
+    )
+    return operator
+
 
 def test_great_expectations_operator__context_root_dir_and_checkpoint_name_pass():
     operator = GreatExpectationsOperator(
@@ -359,7 +394,7 @@ def test_great_expectations_operator__raises_error_with_dataframe_and_conn_id(
             data_context_config=in_memory_data_context_config,
             data_asset_name="test_runtime_data_asset",
             dataframe_to_validate=pd.DataFrame({}),
-            conn_id="postgres"
+            conn_id="sqlite"
         )
 
 
@@ -392,7 +427,7 @@ def test_great_expectations_operator__raises_error_with_runtime_datasource_no_da
         GreatExpectationsOperator(
             task_id="task_id",
             data_context_config=in_memory_data_context_config,
-            conn_id="postgres"
+            conn_id="sqlite"
         )
 
 def test_great_expectations_operator__invalid_checkpoint_name():
@@ -514,7 +549,8 @@ def test_great_expectations_operator__validate_pandas_dataframe_with_no_datasour
         data_context_config=in_memory_data_context_config,
         data_asset_name="test_dataframe",
         dataframe_to_validate=df,
-        expectation_suite_name="taxi.demo"
+        expectation_suite_name="taxi.demo",
+        fail_task_on_validation_failure=False
     )
     result = operator.execute(context={})
 
@@ -524,13 +560,13 @@ def test_great_expectations_operator__validate_pandas_dataframe_with_no_datasour
 def test_great_expectations_operator__validate_pandas_dataframe_with_no_datasource_fail(
     in_memory_data_context_config
 ):
-    df = pd.read_csv(f"{data_dir}/yellow_tripdata_sample_2019-01.csv").truncate(after=8000)
-    
+    smaller_df = pd.read_csv(f"{data_dir}/yellow_tripdata_sample_2019-01.csv").truncate(after=8000)
+
     operator = GreatExpectationsOperator(
         task_id="task_id",
         data_context_config=in_memory_data_context_config,
         data_asset_name="test_dataframe",
-        dataframe_to_validate=df,
+        dataframe_to_validate=smaller_df,
         expectation_suite_name="taxi.demo",
         fail_task_on_validation_failure=False
     )
@@ -542,23 +578,14 @@ def test_great_expectations_operator__validate_pandas_dataframe_with_no_datasour
 def test_build_configured_sql_datasource_config_from_conn_id(
         in_memory_data_context_config,
         constructed_sql_configured_datasource,
+        mock_airflow_conn,
+        configured_sql_operator,
         monkeypatch
 ):
-    operator = GreatExpectationsOperator(
-        task_id="task_id",
-        data_context_config=in_memory_data_context_config,
-        data_asset_name="my_postgres_table",
-        conn_id="postgres_conn",
-        expectation_suite_name="taxi.demo"
-    )
-    def get_uri():
-        return "sqlite:///host"
+    configured_sql_operator.conn = mock_airflow_conn
+    monkeypatch.setattr(configured_sql_operator, "conn", mock_airflow_conn)
 
-    conn = mock.Mock(conn_id="postgres_conn", schema="my_schema", get_uri=get_uri)
-    operator.conn = conn
-    monkeypatch.setattr(operator, "conn", conn)
-
-    constructed_datasource = operator.build_configured_sql_datasource_config_from_conn_id()
+    constructed_datasource = configured_sql_operator.build_configured_sql_datasource_config_from_conn_id()
 
     assert isinstance(constructed_datasource, Datasource)
 
@@ -568,40 +595,124 @@ def test_build_configured_sql_datasource_config_from_conn_id(
 def test_build_runtime_sql_datasource_config_from_conn_id(
         in_memory_data_context_config,
         constructed_sql_runtime_datasource,
+        mock_airflow_conn,
+        runtime_sql_operator,
         monkeypatch
 ):
-    operator = GreatExpectationsOperator(
-        task_id="task_id",
-        data_context_config=in_memory_data_context_config,
-        data_asset_name="my_postgres_table",
-        query_to_validate="select * from my_table limit 10",
-        conn_id="postgres_conn",
-        expectation_suite_name="taxi.demo"
-    )
-    def get_uri():
-        return "sqlite:///host"
 
-    conn = mock.Mock(conn_id="postgres_conn", schema="my_schema", get_uri=get_uri)
-    operator.conn = conn
-    monkeypatch.setattr(operator, "conn", conn)
+    runtime_sql_operator.conn = mock_airflow_conn
+    monkeypatch.setattr(runtime_sql_operator, "conn", mock_airflow_conn)
 
-    constructed_datasource = operator.build_runtime_sql_datasource_config_from_conn_id()
+    constructed_datasource = runtime_sql_operator.build_runtime_sql_datasource_config_from_conn_id()
 
     assert isinstance(constructed_datasource, Datasource)
 
     assert constructed_datasource.config == constructed_sql_runtime_datasource
 
 
-def test_build_configured_sql_datasource_batch_request():
-    pass
+def test_build_configured_sql_datasource_batch_request(
+        configured_sql_operator,
+        mock_airflow_conn,
+        monkeypatch
+):
+    configured_sql_operator.conn = mock_airflow_conn
+    monkeypatch.setattr(configured_sql_operator, "conn", mock_airflow_conn)
+    batch_request = configured_sql_operator.build_configured_sql_datasource_batch_request()
+
+    assert isinstance(batch_request, BatchRequest)
+
+    assert batch_request.to_json_dict() == {
+        "datasource_name": f"sqlite_conn_configured_sql_datasource",
+        "data_connector_name": "default_configured_asset_sql_data_connector",
+        "data_asset_name": f"my_sqlite_table",
+        "batch_spec_passthrough": None,
+        "data_connector_query": None,
+        "limit": None,
+    }
 
 
-def test_build_runtime_sql_datasource_batch_request():
-    pass
+def test_build_runtime_sql_datasource_batch_request(
+        runtime_sql_operator,
+        mock_airflow_conn,
+        monkeypatch
+):
+    runtime_sql_operator.conn = mock_airflow_conn
+    monkeypatch.setattr(runtime_sql_operator, "conn", mock_airflow_conn)
+    batch_request = runtime_sql_operator.build_runtime_sql_datasource_batch_request()
+
+    assert isinstance(batch_request, RuntimeBatchRequest)
+
+    assert batch_request.to_json_dict() == {
+        "datasource_name": f"sqlite_conn_runtime_sql_datasource",
+        "data_connector_name": "default_runtime_data_connector",
+        "data_asset_name": f"my_sqlite_table",
+        "batch_spec_passthrough": None,
+        'runtime_parameters': {'query': 'select * from my_table limit 10'},
+        'batch_identifiers': {
+            'airflow_run_id': '{ task_instance_key_str }',
+            'query_string': 'select * from my_table limit 10'
+        }
+    }
 
 
-def test_build_runtime_pandas_datasource_batch_request():
-    pass
+def test_build_runtime_pandas_datasource_batch_request(
+        mock_airflow_conn,
+        monkeypatch
+):
+    df = pd.read_csv(f"{data_dir}/yellow_tripdata_sample_2019-01.csv")
 
-def test_build_default_checkpoint_config():
-    pass
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        data_asset_name="test_dataframe",
+        dataframe_to_validate=df,
+        expectation_suite_name="taxi.demo",
+        fail_task_on_validation_failure=False
+    )
+
+    batch_request = operator.build_runtime_pandas_datasource_batch_request()
+    assert batch_request.to_json_dict() == {
+        "datasource_name": "test_dataframe_runtime_pandas_datasource",
+        "data_connector_name": "default_runtime_connector",
+        "data_asset_name": "test_dataframe",
+        "batch_spec_passthrough": None,
+        "runtime_parameters": {"batch_data": "<class 'pandas.core.frame.DataFrame'>"},
+        "batch_identifiers": {
+            "airflow_run_id": "{ task_instance_key_str }",
+        }
+    }
+
+
+def test_build_default_checkpoint_config(
+        configured_sql_operator
+):
+    checkpoint_config = configured_sql_operator.build_default_checkpoint_config()
+    assert isinstance(checkpoint_config, dict)
+    assert checkpoint_config == {
+      "action_list": [
+        {
+          "name": "store_validation_result",
+          "action": {
+            "class_name": "StoreValidationResultAction"
+          }
+        },
+        {
+          "name": "store_evaluation_params",
+          "action": {
+            "class_name": "StoreEvaluationParametersAction"
+          }
+        },
+        {
+          "name": "update_data_docs",
+          "action": {
+            "class_name": "UpdateDataDocsAction",
+            "site_names": []
+          }
+        }
+      ],
+      "class_name": "Checkpoint",
+      "config_version": 1.0,
+      "expectation_suite_name": "taxi.demo",
+      "module_name": "great_expectations.checkpoint",
+      "run_name_template": "my_run",
+    }
