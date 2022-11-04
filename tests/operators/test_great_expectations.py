@@ -182,7 +182,7 @@ def in_memory_checkpoint_config():
 @pytest.fixture()
 def constructed_sql_runtime_datasource():
     return {
-        "name": f"sqlite_conn_runtime_datasource",
+        "name": "sqlite_conn_runtime_sql_datasource",
         "id": None,
         "execution_engine": {
             "module_name": "great_expectations.execution_engine",
@@ -202,7 +202,7 @@ def constructed_sql_runtime_datasource():
 @pytest.fixture()
 def constructed_sql_configured_datasource():
     return {
-        "name": f"sqlite_conn_configured_datasource",
+        "name": "sqlite_conn_configured_sql_datasource",
         "id": None,
         "execution_engine": {
             "module_name": "great_expectations.execution_engine",
@@ -214,10 +214,10 @@ def constructed_sql_configured_datasource():
                 "module_name": "great_expectations.datasource.data_connector",
                 "class_name": "ConfiguredAssetSqlDataConnector",
                 "assets": {
-                    f"my_sqlite_table": {
+                    "my_sqlite_table": {
                         "module_name": "great_expectations.datasource.data_connector.asset",
                         "class_name": "Asset",
-                        "schema_name": f"my_schema",
+                        "schema_name": "my_schema",
                         "batch_identifiers": ["airflow_run_id"],
                     },
                 },
@@ -678,9 +678,9 @@ def test_build_runtime_pandas_datasource_batch_request(mock_airflow_conn, monkey
         fail_task_on_validation_failure=False,
     )
 
-    batch_request = operator.build_runtime_pandas_datasource_batch_request()
+    batch_request = operator.build_runtime_datasource_batch_request()
     assert batch_request.to_json_dict() == {
-        "datasource_name": "test_dataframe_runtime_pandas_datasource",
+        "datasource_name": "test_dataframe_runtime_datasource",
         "data_connector_name": "default_runtime_connector",
         "data_asset_name": "test_dataframe",
         "batch_spec_passthrough": None,
@@ -714,6 +714,11 @@ def test_build_default_checkpoint_config(configured_sql_operator):
         "expectation_suite_name": "taxi.demo",
         "module_name": "great_expectations.checkpoint",
         "run_name_template": "my_run",
+        "batch_request": {},
+        "evaluation_parameters": {},
+        "profilers": [],
+        "runtime_configuration": {},
+        "validations": [],
     }
 
 
