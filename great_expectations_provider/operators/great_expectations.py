@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 import great_expectations as ge
 from airflow.exceptions import AirflowException
 from airflow.hooks.base import BaseHook
-from airflow.models import BaseOperator, BaseOperatorLink, XCom
+from airflow.models import BaseOperator, BaseOperatorLink, Connection, XCom
 from great_expectations.checkpoint import Checkpoint
 from great_expectations.checkpoint.types.checkpoint_result import CheckpointResult
 from great_expectations.core.batch import (
@@ -223,19 +223,48 @@ class GreatExpectationsOperator(BaseOperator):
                 "An expectation_suite_name must be supplied if neither checkpoint_name nor checkpoint_config are."
             )
 
-        isinstance(self.checkpoint_config, CheckpointConfig):
+        if isinstance(self.checkpoint_config, CheckpointConfig):
             self.checkpoint_config = deep_filter_properties_iterable(properties=self.checkpoint_config.to_dict())
+
+
+    def make_connection_string(self) -> str:
+        """Builds connection strings based off existing Airflow connections. Only supports necessary extras."""
+        uri_string = ""
+        if not self.conn:
+            raise ValueError(
+                f"Connections does not exist in Airflow for conn_id: {self.conn_id}"
+            )
+        conn_type = self.conn.conn_type
+        if conn_type in ("redshift", "postgres", "mysql", "mssql"):
+            odbc_connector = ""
+            if conn_type in ("redshift", "postgres"):
+                odbc_connector = "postgresql+psycopg2"
+            elif conn_type == "mysql":
+                odbc_connector = "mysql"
+            else:
+                odbc_connector = "mssql+pyodbc"
+            uri_string = f"{odbc_connector}://{self.conn.login}:{self.conn.password}@{self.conn.host}:{self.conn.port}/{self.conn.schema}"  # noqa
+        elif conn_type == "snowflake":
+            uri_string = f"snowflake://{self.conn.login}:{self.conn.password}@{self.conn.extra_dejson['extra__snowflake__account']}.{self.conn.extra_dejson['extra__snowflake__region']}/{self.conn.extra_dejson['extra__snowflake__database']}/{self.conn.schema}?warehouse={self.conn.extra_dejson['extra__snowflake__warehouse']}&role={self.conn.extra_dejson['extra__snowflake__role']}"  # noqa
+        elif conn_type == "gcpbigquery":
+            uri_string = f"{self.conn.host}{self.conn.schema}"
+        elif conn_type == "sqlite":
+            uri_string = f"sqlite:///{self.conn.host}"
+        # TODO: Add Athena and Trino support if possible
+        else:
+            raise ValueError(f"Conn type: {conn_type} is not supported.")
+        return uri_string
 
 
     def build_configured_sql_datasource_config_from_conn_id(
         self,
     ) -> Datasource:
         datasource_config = {
-            "name": f"{self.conn.conn_id}_configured_datasource",
+            "name": f"{self.conn.conn_id}_configured_sql_datasource",
             "execution_engine": {
                 "module_name": "great_expectations.execution_engine",
                 "class_name": "SqlAlchemyExecutionEngine",
-                "connection_string": self.conn.get_uri(),
+                "connection_string": self.make_connection_string(),
             },
             "data_connectors": {
                 "default_configured_asset_sql_data_connector": {
@@ -266,11 +295,11 @@ class GreatExpectationsOperator(BaseOperator):
         self,
     ) -> Datasource:
         datasource_config = {
-            "name": f"{self.conn.conn_id}_runtime_datasource",
+            "name": f"{self.conn.conn_id}_runtime_sql_datasource",
             "execution_engine": {
                 "module_name": "great_expectations.execution_engine",
                 "class_name": "SqlAlchemyExecutionEngine",
-                "connection_string": self.conn.get_uri(),
+                "connection_string": self.make_connection_string(),
             },
             "data_connectors": {
                 "default_runtime_data_connector": {
@@ -326,15 +355,19 @@ class GreatExpectationsOperator(BaseOperator):
 
     def build_runtime_datasources(self):
         """Builds datasources at runtime based on Airflow connections or for use with a dataframe."""
+        self.conn = BaseHook.get_connection(self.conn_id) if self.conn_id else None
         if self.is_dataframe:
             self.datasource = self.build_runtime_pandas_datasource()
             self.batch_request = self.build_runtime_pandas_datasource_batch_request()
-        elif self.query_to_validate:
-            self.datasource = self.build_runtime_sql_datasource_config_from_conn_id()
-            self.batch_request = self.build_runtime_sql_datasource_batch_request()
-        elif self.conn:
-            self.datasource = self.build_configured_sql_datasource_config_from_conn_id()
-            self.batch_request = self.build_configured_sql_datasource_batch_request()
+        elif isinstance(self.conn, Connection):
+            if self.query_to_validate:
+                self.datasource = self.build_runtime_sql_datasource_config_from_conn_id()
+                self.batch_request = self.build_runtime_sql_datasource_batch_request()
+            elif self.conn:
+                self.datasource = self.build_configured_sql_datasource_config_from_conn_id()
+                self.batch_request = self.build_configured_sql_datasource_batch_request()
+            else:
+                raise ValueError("Unrecognized, or lack of, runtime query or Airflow connection passed.")
         else:
             raise ValueError(
                 "Unrecognized, or lack of, runtime or conn_id datasource passed."
@@ -423,8 +456,6 @@ class GreatExpectationsOperator(BaseOperator):
         runs the resulting checkpoint.
         """
         self.log.info("Running validation with Great Expectations...")
-        self.conn = BaseHook.get_connection(self.conn_id) if self.conn_id else None
-        self.conn_type = self.conn.conn_type if self.conn else None
 
         self.log.info("Instantiating Data Context...")
         if self.data_asset_name:
