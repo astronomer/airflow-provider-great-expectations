@@ -21,13 +21,16 @@ import pytest
 from airflow.exceptions import AirflowException
 from airflow.models.connection import Connection
 from great_expectations.core.batch import BatchRequest, RuntimeBatchRequest
-from great_expectations.data_context.types.base import (CheckpointConfig,
-                                                        DataContextConfig)
+from great_expectations.data_context.types.base import (
+    CheckpointConfig,
+    DataContextConfig,
+)
 from great_expectations.datasource import Datasource
 from great_expectations.exceptions.exceptions import CheckpointNotFoundError
 
-from great_expectations_provider.operators.great_expectations import \
-    GreatExpectationsOperator
+from great_expectations_provider.operators.great_expectations import (
+    GreatExpectationsOperator,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +39,7 @@ base_path = Path(__file__).parents[2]
 data_dir = os.path.join(base_path, "include", "data")
 
 ge_root_dir = os.path.join(base_path, "include", "great_expectations")
+
 
 @pytest.fixture()
 def in_memory_data_context_config():
@@ -174,58 +178,59 @@ def in_memory_checkpoint_config():
     )
     return checkpoint_config
 
+
 @pytest.fixture()
 def constructed_sql_runtime_datasource():
     return {
-            "name": f"sqlite_conn_runtime_datasource",
-            "id": None,
-            "execution_engine": {
-                "module_name": "great_expectations.execution_engine",
-                "class_name": "SqlAlchemyExecutionEngine",
-                "connection_string": "sqlite:///host",
+        "name": f"sqlite_conn_runtime_datasource",
+        "id": None,
+        "execution_engine": {
+            "module_name": "great_expectations.execution_engine",
+            "class_name": "SqlAlchemyExecutionEngine",
+            "connection_string": "sqlite:///host",
+        },
+        "data_connectors": {
+            "default_runtime_data_connector": {
+                "module_name": "great_expectations.datasource.data_connector",
+                "class_name": "RuntimeDataConnector",
+                "batch_identifiers": ["query_string", "airflow_run_id"],
             },
-            "data_connectors": {
-                "default_runtime_data_connector": {
-                    "module_name": "great_expectations.datasource.data_connector",
-                    "class_name": "RuntimeDataConnector",
-                    "batch_identifiers": ["query_string", "airflow_run_id"],
-                    },
-                },
-            }
+        },
+    }
 
 
 @pytest.fixture()
 def constructed_sql_configured_datasource():
     return {
-            "name": f"sqlite_conn_configured_datasource",
-            "id": None,
-            "execution_engine": {
-                "module_name": "great_expectations.execution_engine",
-                "class_name": "SqlAlchemyExecutionEngine",
-                "connection_string": "sqlite:///host",
-            },
-            "data_connectors": {
-                "default_configured_asset_sql_data_connector": {
-                    "module_name": "great_expectations.datasource.data_connector",
-                    "class_name": "ConfiguredAssetSqlDataConnector",
-                    "assets": {
-                        f"my_sqlite_table": {
-                            "module_name": "great_expectations.datasource.data_connector.asset",
-                            "class_name": "Asset",
-                            "schema_name": f"my_schema",
-                            "batch_identifiers": ["airflow_run_id"],
-                        },
+        "name": f"sqlite_conn_configured_datasource",
+        "id": None,
+        "execution_engine": {
+            "module_name": "great_expectations.execution_engine",
+            "class_name": "SqlAlchemyExecutionEngine",
+            "connection_string": "sqlite:///host",
+        },
+        "data_connectors": {
+            "default_configured_asset_sql_data_connector": {
+                "module_name": "great_expectations.datasource.data_connector",
+                "class_name": "ConfiguredAssetSqlDataConnector",
+                "assets": {
+                    f"my_sqlite_table": {
+                        "module_name": "great_expectations.datasource.data_connector.asset",
+                        "class_name": "Asset",
+                        "schema_name": f"my_schema",
+                        "batch_identifiers": ["airflow_run_id"],
                     },
                 },
             },
-        }
+        },
+    }
+
 
 @pytest.fixture()
 def mock_airflow_conn():
-    def get_uri():
-        return "sqlite:///host"
-
-    conn = mock.Mock(conn_id="sqlite_conn", schema="my_schema", get_uri=get_uri)
+    conn = mock.Mock(
+        conn_id="sqlite_conn", schema="my_schema", host="host", conn_type="sqlite"
+    )
     return conn
 
 
@@ -237,7 +242,7 @@ def runtime_sql_operator(in_memory_data_context_config):
         data_asset_name="my_sqlite_table",
         query_to_validate="select * from my_table limit 10",
         conn_id="sqlite_conn",
-        expectation_suite_name="taxi.demo"
+        expectation_suite_name="taxi.demo",
     )
     return operator
 
@@ -250,7 +255,7 @@ def configured_sql_operator(in_memory_data_context_config):
         data_asset_name="my_sqlite_table",
         conn_id="sqlite_conn",
         expectation_suite_name="taxi.demo",
-        run_name="my_run"
+        run_name="my_run",
     )
     return operator
 
@@ -333,9 +338,7 @@ def test_great_expectations_operator__checkpoint_config_with_substituted_expecta
 
 def test_great_expectations_operator__raises_error_without_data_context():
     with pytest.raises(ValueError):
-        GreatExpectationsOperator(
-            task_id="task_id", checkpoint_name="taxi.pass.chk"
-        )
+        GreatExpectationsOperator(task_id="task_id", checkpoint_name="taxi.pass.chk")
 
 
 def test_great_expectations_operator__raises_error_with_data_context_root_dir_and_data_context_config(
@@ -381,7 +384,7 @@ def test_great_expectations_operator__raises_error_with_dataframe_and_query(
             data_context_config=in_memory_data_context_config,
             data_asset_name="test_runtime_data_asset",
             dataframe_to_validate=pd.DataFrame({}),
-            query_to_validate="SELECT * FROM db;"
+            query_to_validate="SELECT * FROM db;",
         )
 
 
@@ -394,7 +397,7 @@ def test_great_expectations_operator__raises_error_with_dataframe_and_conn_id(
             data_context_config=in_memory_data_context_config,
             data_asset_name="test_runtime_data_asset",
             dataframe_to_validate=pd.DataFrame({}),
-            conn_id="sqlite"
+            conn_id="sqlite",
         )
 
 
@@ -406,9 +409,9 @@ def test_great_expectations_operator__raises_error_with_query_and_no_conn_id(
             task_id="task_id",
             data_context_config=in_memory_data_context_config,
             data_asset_name="test_runtime_data_asset",
-            query_to_validate="SELECT * FROM db;"
+            query_to_validate="SELECT * FROM db;",
         )
-        
+
 
 def test_great_expectations_operator__raises_error_with_runtime_datasource_no_data_asset_name(
     in_memory_data_context_config,
@@ -417,18 +420,19 @@ def test_great_expectations_operator__raises_error_with_runtime_datasource_no_da
         GreatExpectationsOperator(
             task_id="task_id",
             data_context_config=in_memory_data_context_config,
-            query_to_validate="SELECT * FROM db;"
+            query_to_validate="SELECT * FROM db;",
         )
         GreatExpectationsOperator(
             task_id="task_id",
             data_context_config=in_memory_data_context_config,
-            dataframe_to_validate=pd.DataFrame({})
+            dataframe_to_validate=pd.DataFrame({}),
         )
         GreatExpectationsOperator(
             task_id="task_id",
             data_context_config=in_memory_data_context_config,
-            conn_id="sqlite"
+            conn_id="sqlite",
         )
+
 
 def test_great_expectations_operator__invalid_checkpoint_name():
     operator = GreatExpectationsOperator(
@@ -486,7 +490,7 @@ def test_great_expectations_operator__return_json_dict():
         task_id="task_id",
         data_context_root_dir=ge_root_dir,
         checkpoint_name="taxi.pass.chk",
-        return_json_dict=True
+        return_json_dict=True,
     )
     result = operator.execute(context={})
     logger.info(result)
@@ -495,18 +499,18 @@ def test_great_expectations_operator__return_json_dict():
 
 
 def test_great_expectations_operator__custom_expectation_plugin():
-    from include.great_expectations.plugins.expectations.expect_column_values_to_be_alphabetical \
-        import ExpectColumnValuesToBeAlphabetical
-    from include.great_expectations.object_configs.example_runtime_batch_request_for_plugin_expectation \
-        import runtime_batch_request
+    from include.great_expectations.plugins.expectations.expect_column_values_to_be_alphabetical import (
+        ExpectColumnValuesToBeAlphabetical,
+    )
+    from include.great_expectations.object_configs.example_runtime_batch_request_for_plugin_expectation import (
+        runtime_batch_request,
+    )
 
     operator = GreatExpectationsOperator(
         task_id="task_id",
         data_context_root_dir=ge_root_dir,
         checkpoint_name="plugin_expectation_checkpoint.chk",
-        checkpoint_kwargs={
-            "validations": [{"batch_request": runtime_batch_request}]
-        }
+        checkpoint_kwargs={"validations": [{"batch_request": runtime_batch_request}]},
     )
     result = operator.execute(context={})
     logger.info(result)
@@ -529,10 +533,11 @@ def test_great_expectations_operator__works_with_simple_checkpoint_and_checkpoin
         task_id="task_id",
         data_context_config=in_memory_data_context_config,
         checkpoint_name="simple.chk",
-        checkpoint_kwargs={"validations": [{
-            "batch_request": batch_request,
-            "expectation_suite_name": "taxi.demo"
-        }]},
+        checkpoint_kwargs={
+            "validations": [
+                {"batch_request": batch_request, "expectation_suite_name": "taxi.demo"}
+            ]
+        },
     )
     result = operator.execute(context={})  # should fail the suite
     logger.info(result)
@@ -540,7 +545,7 @@ def test_great_expectations_operator__works_with_simple_checkpoint_and_checkpoin
 
 
 def test_great_expectations_operator__validate_pandas_dataframe_with_no_datasource_pass(
-    in_memory_data_context_config
+    in_memory_data_context_config,
 ):
     df = pd.read_csv(f"{data_dir}/yellow_tripdata_sample_2019-01.csv")
 
@@ -550,17 +555,21 @@ def test_great_expectations_operator__validate_pandas_dataframe_with_no_datasour
         data_asset_name="test_dataframe",
         dataframe_to_validate=df,
         expectation_suite_name="taxi.demo",
-        fail_task_on_validation_failure=False
+        execution_engine="PandasExecutionEngine",
+        fail_task_on_validation_failure=False,
     )
+    assert operator.is_dataframe
     result = operator.execute(context={})
 
     assert result["success"]
 
 
 def test_great_expectations_operator__validate_pandas_dataframe_with_no_datasource_fail(
-    in_memory_data_context_config
+    in_memory_data_context_config,
 ):
-    smaller_df = pd.read_csv(f"{data_dir}/yellow_tripdata_sample_2019-01.csv").truncate(after=8000)
+    smaller_df = pd.read_csv(f"{data_dir}/yellow_tripdata_sample_2019-01.csv").truncate(
+        after=8000
+    )
 
     operator = GreatExpectationsOperator(
         task_id="task_id",
@@ -568,7 +577,8 @@ def test_great_expectations_operator__validate_pandas_dataframe_with_no_datasour
         data_asset_name="test_dataframe",
         dataframe_to_validate=smaller_df,
         expectation_suite_name="taxi.demo",
-        fail_task_on_validation_failure=False
+        execution_engine="PandasExecutionEngine",
+        fail_task_on_validation_failure=False,
     )
     result = operator.execute(context={})
 
@@ -576,34 +586,36 @@ def test_great_expectations_operator__validate_pandas_dataframe_with_no_datasour
 
 
 def test_build_configured_sql_datasource_config_from_conn_id(
-        in_memory_data_context_config,
-        constructed_sql_configured_datasource,
-        mock_airflow_conn,
-        configured_sql_operator,
-        monkeypatch
+    in_memory_data_context_config,
+    constructed_sql_configured_datasource,
+    mock_airflow_conn,
+    configured_sql_operator,
+    monkeypatch,
 ):
     configured_sql_operator.conn = mock_airflow_conn
     monkeypatch.setattr(configured_sql_operator, "conn", mock_airflow_conn)
-
-    constructed_datasource = configured_sql_operator.build_configured_sql_datasource_config_from_conn_id()
+    constructed_datasource = (
+        configured_sql_operator.build_configured_sql_datasource_config_from_conn_id()
+    )
 
     assert isinstance(constructed_datasource, Datasource)
-
     assert constructed_datasource.config == constructed_sql_configured_datasource
 
 
 def test_build_runtime_sql_datasource_config_from_conn_id(
-        in_memory_data_context_config,
-        constructed_sql_runtime_datasource,
-        mock_airflow_conn,
-        runtime_sql_operator,
-        monkeypatch
+    in_memory_data_context_config,
+    constructed_sql_runtime_datasource,
+    mock_airflow_conn,
+    runtime_sql_operator,
+    monkeypatch,
 ):
 
     runtime_sql_operator.conn = mock_airflow_conn
     monkeypatch.setattr(runtime_sql_operator, "conn", mock_airflow_conn)
 
-    constructed_datasource = runtime_sql_operator.build_runtime_sql_datasource_config_from_conn_id()
+    constructed_datasource = (
+        runtime_sql_operator.build_runtime_sql_datasource_config_from_conn_id()
+    )
 
     assert isinstance(constructed_datasource, Datasource)
 
@@ -611,13 +623,13 @@ def test_build_runtime_sql_datasource_config_from_conn_id(
 
 
 def test_build_configured_sql_datasource_batch_request(
-        configured_sql_operator,
-        mock_airflow_conn,
-        monkeypatch
+    configured_sql_operator, mock_airflow_conn, monkeypatch
 ):
     configured_sql_operator.conn = mock_airflow_conn
     monkeypatch.setattr(configured_sql_operator, "conn", mock_airflow_conn)
-    batch_request = configured_sql_operator.build_configured_sql_datasource_batch_request()
+    batch_request = (
+        configured_sql_operator.build_configured_sql_datasource_batch_request()
+    )
 
     assert isinstance(batch_request, BatchRequest)
 
@@ -632,9 +644,7 @@ def test_build_configured_sql_datasource_batch_request(
 
 
 def test_build_runtime_sql_datasource_batch_request(
-        runtime_sql_operator,
-        mock_airflow_conn,
-        monkeypatch
+    runtime_sql_operator, mock_airflow_conn, monkeypatch
 ):
     runtime_sql_operator.conn = mock_airflow_conn
     monkeypatch.setattr(runtime_sql_operator, "conn", mock_airflow_conn)
@@ -647,18 +657,15 @@ def test_build_runtime_sql_datasource_batch_request(
         "data_connector_name": "default_runtime_data_connector",
         "data_asset_name": f"my_sqlite_table",
         "batch_spec_passthrough": None,
-        'runtime_parameters': {'query': 'select * from my_table limit 10'},
-        'batch_identifiers': {
-            'airflow_run_id': '{ task_instance_key_str }',
-            'query_string': 'select * from my_table limit 10'
-        }
+        "runtime_parameters": {"query": "select * from my_table limit 10"},
+        "batch_identifiers": {
+            "airflow_run_id": "{ task_instance_key_str }",
+            "query_string": "select * from my_table limit 10",
+        },
     }
 
 
-def test_build_runtime_pandas_datasource_batch_request(
-        mock_airflow_conn,
-        monkeypatch
-):
+def test_build_runtime_pandas_datasource_batch_request(mock_airflow_conn, monkeypatch):
     df = pd.read_csv(f"{data_dir}/yellow_tripdata_sample_2019-01.csv")
 
     operator = GreatExpectationsOperator(
@@ -667,7 +674,8 @@ def test_build_runtime_pandas_datasource_batch_request(
         data_asset_name="test_dataframe",
         dataframe_to_validate=df,
         expectation_suite_name="taxi.demo",
-        fail_task_on_validation_failure=False
+        execution_engine="PandasExecutionEngine",
+        fail_task_on_validation_failure=False,
     )
 
     batch_request = operator.build_runtime_pandas_datasource_batch_request()
@@ -679,40 +687,195 @@ def test_build_runtime_pandas_datasource_batch_request(
         "runtime_parameters": {"batch_data": "<class 'pandas.core.frame.DataFrame'>"},
         "batch_identifiers": {
             "airflow_run_id": "{ task_instance_key_str }",
-        }
+        },
     }
 
 
-def test_build_default_checkpoint_config(
-        configured_sql_operator
-):
+def test_build_default_checkpoint_config(configured_sql_operator):
     checkpoint_config = configured_sql_operator.build_default_checkpoint_config()
     assert isinstance(checkpoint_config, dict)
     assert checkpoint_config == {
-      "action_list": [
-        {
-          "name": "store_validation_result",
-          "action": {
-            "class_name": "StoreValidationResultAction"
-          }
-        },
-        {
-          "name": "store_evaluation_params",
-          "action": {
-            "class_name": "StoreEvaluationParametersAction"
-          }
-        },
-        {
-          "name": "update_data_docs",
-          "action": {
-            "class_name": "UpdateDataDocsAction",
-            "site_names": []
-          }
-        }
-      ],
-      "class_name": "Checkpoint",
-      "config_version": 1.0,
-      "expectation_suite_name": "taxi.demo",
-      "module_name": "great_expectations.checkpoint",
-      "run_name_template": "my_run",
+        "action_list": [
+            {
+                "name": "store_validation_result",
+                "action": {"class_name": "StoreValidationResultAction"},
+            },
+            {
+                "name": "store_evaluation_params",
+                "action": {"class_name": "StoreEvaluationParametersAction"},
+            },
+            {
+                "name": "update_data_docs",
+                "action": {"class_name": "UpdateDataDocsAction", "site_names": []},
+            },
+        ],
+        "class_name": "Checkpoint",
+        "config_version": 1.0,
+        "expectation_suite_name": "taxi.demo",
+        "module_name": "great_expectations.checkpoint",
+        "run_name_template": "my_run",
     }
+
+
+def test_great_expectations_operator__make_connection_string_redshift():
+    test_conn_str = "postgresql+psycopg2://user:password@connection:5439/schema"
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        data_asset_name="test_runtime_data_asset",
+        conn_id="redshift_default",
+        query_to_validate="SELECT * FROM db;",
+        expectation_suite_name="suite",
+    )
+    operator.conn = Connection(
+        conn_id="redshift_default",
+        conn_type="redshift",
+        host="connection",
+        login="user",
+        password="password",
+        schema="schema",
+        port=5439,
+    )
+    operator.conn_type = operator.conn.conn_type
+    assert operator.make_connection_string() == test_conn_str
+
+
+def test_great_expectations_operator__make_connection_string_postgres():
+    test_conn_str = "postgresql+psycopg2://user:password@connection:5439/schema"
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        data_asset_name="test_runtime_data_asset",
+        conn_id="postgres_default",
+        query_to_validate="SELECT * FROM db;",
+        expectation_suite_name="suite",
+    )
+    operator.conn = Connection(
+        conn_id="postgres_default",
+        conn_type="postgres",
+        host="connection",
+        login="user",
+        password="password",
+        schema="schema",
+        port=5439,
+    )
+    operator.conn_type = operator.conn.conn_type
+    assert operator.make_connection_string() == test_conn_str
+
+
+def test_great_expectations_operator__make_connection_string_mysql():
+    test_conn_str = "mysql://user:password@connection:5439/schema"
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        data_asset_name="test_runtime_data_asset",
+        conn_id="mysql_default",
+        query_to_validate="SELECT * FROM db;",
+        expectation_suite_name="suite",
+    )
+    operator.conn = Connection(
+        conn_id="mysql_default",
+        conn_type="mysql",
+        host="connection",
+        login="user",
+        password="password",
+        schema="schema",
+        port=5439,
+    )
+    operator.conn_type = operator.conn.conn_type
+    assert operator.make_connection_string() == test_conn_str
+
+
+def test_great_expectations_operator__make_connection_string_mssql():
+    test_conn_str = "mssql+pyodbc://user:password@connection:5439/schema"
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        data_asset_name="test_runtime_data_asset",
+        conn_id="mssql_default",
+        query_to_validate="SELECT * FROM db;",
+        expectation_suite_name="suite",
+    )
+    operator.conn = Connection(
+        conn_id="mssql_default",
+        conn_type="mssql",
+        host="connection",
+        login="user",
+        password="password",
+        schema="schema",
+        port=5439,
+    )
+    operator.conn_type = operator.conn.conn_type
+    assert operator.make_connection_string() == test_conn_str
+
+
+def test_great_expectations_operator__make_connection_string_snowflake():
+    test_conn_str = "snowflake://user:password@account.region-east-1/database/schema?warehouse=warehouse&role=role"
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        data_asset_name="test_runtime_data_asset",
+        conn_id="snowflake_default",
+        query_to_validate="SELECT * FROM db;",
+        expectation_suite_name="suite",
+    )
+    operator.conn = Connection(
+        conn_id="snowflake_default",
+        conn_type="snowflake",
+        host="connection",
+        login="user",
+        password="password",
+        schema="schema",
+        port=5439,
+        extra={
+            "extra__snowflake__role": "role",
+            "extra__snowflake__warehouse": "warehouse",
+            "extra__snowflake__database": "database",
+            "extra__snowflake__region": "region-east-1",
+            "extra__snowflake__account": "account",
+        },
+    )
+    operator.conn_type = operator.conn.conn_type
+    assert operator.make_connection_string() == test_conn_str
+
+
+def test_great_expectations_operator__make_connection_string_sqlite():
+    test_conn_str = "sqlite:///host"
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        data_asset_name="test_runtime_data_asset",
+        conn_id="mssql_default",
+        query_to_validate="SELECT * FROM db;",
+        expectation_suite_name="suite",
+    )
+    operator.conn = Connection(
+        conn_id="sqlite_default",
+        conn_type="sqlite",
+        host="host",
+    )
+    operator.conn_type = operator.conn.conn_type
+    assert operator.make_connection_string() == test_conn_str
+
+
+def test_great_expectations_operator__make_connection_string_raise_error():
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        data_asset_name="test_runtime_data_asset",
+        conn_id="unsupported_conn",
+        query_to_validate="SELECT * FROM db;",
+        expectation_suite_name="suite",
+    )
+    operator.conn = Connection(
+        conn_id="unsupported_conn",
+        conn_type="unsupported_conn",
+        host="connection",
+        login="user",
+        password="password",
+        schema="schema",
+        port=5439,
+    )
+    operator.conn_type = operator.conn.conn_type
+    with pytest.raises(ValueError):
+        operator.make_connection_string()

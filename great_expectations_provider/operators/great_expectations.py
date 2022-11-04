@@ -206,7 +206,9 @@ class GreatExpectationsOperator(BaseOperator):
 
         # If a dataframe is specified, the execution engine must be specified as well
         if self.is_dataframe and not self.execution_engine:
-            raise ValueError("An execution_engine must be specified if a dataframe is passed.")
+            raise ValueError(
+                "An execution_engine must be specified if a dataframe is passed."
+            )
 
         # Check that at most one of the arguments is passed to set a checkpoint
         if self.checkpoint_name and self.checkpoint_config:
@@ -224,8 +226,9 @@ class GreatExpectationsOperator(BaseOperator):
             )
 
         if isinstance(self.checkpoint_config, CheckpointConfig):
-            self.checkpoint_config = deep_filter_properties_iterable(properties=self.checkpoint_config.to_dict())
-
+            self.checkpoint_config = deep_filter_properties_iterable(
+                properties=self.checkpoint_config.to_dict()
+            )
 
     def make_connection_string(self) -> str:
         """Builds connection strings based off existing Airflow connections. Only supports necessary extras."""
@@ -254,7 +257,6 @@ class GreatExpectationsOperator(BaseOperator):
         else:
             raise ValueError(f"Conn type: {conn_type} is not supported.")
         return uri_string
-
 
     def build_configured_sql_datasource_config_from_conn_id(
         self,
@@ -361,13 +363,21 @@ class GreatExpectationsOperator(BaseOperator):
             self.batch_request = self.build_runtime_datasource_batch_request()
         elif isinstance(self.conn, Connection):
             if self.query_to_validate:
-                self.datasource = self.build_runtime_sql_datasource_config_from_conn_id()
+                self.datasource = (
+                    self.build_runtime_sql_datasource_config_from_conn_id()
+                )
                 self.batch_request = self.build_runtime_sql_datasource_batch_request()
             elif self.conn:
-                self.datasource = self.build_configured_sql_datasource_config_from_conn_id()
-                self.batch_request = self.build_configured_sql_datasource_batch_request()
+                self.datasource = (
+                    self.build_configured_sql_datasource_config_from_conn_id()
+                )
+                self.batch_request = (
+                    self.build_configured_sql_datasource_batch_request()
+                )
             else:
-                raise ValueError("Unrecognized, or lack of, runtime query or Airflow connection passed.")
+                raise ValueError(
+                    "Unrecognized, or lack of, runtime query or Airflow connection passed."
+                )
         else:
             raise ValueError(
                 "Unrecognized, or lack of, runtime or conn_id datasource passed."
