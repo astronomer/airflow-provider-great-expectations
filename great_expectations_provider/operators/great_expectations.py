@@ -139,8 +139,8 @@ class GreatExpectationsOperator(BaseOperator):
         fail_task_on_validation_failure: bool = True,
         return_json_dict: bool = False,
         use_open_lineage: bool = True,
-        *args: Any,
-        **kwargs: Any,
+        *args,
+        **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
 
