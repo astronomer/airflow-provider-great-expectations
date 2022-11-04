@@ -325,9 +325,9 @@ class GreatExpectationsOperator(BaseOperator):
         }
         return RuntimeBatchRequest(**batch_request)
 
-    def build_runtime_pandas_datasource(self) -> Datasource:
+    def build_runtime_datasource(self) -> Datasource:
         datasource_config = {
-            "name": f"{self.data_asset_name}_runtime_pandas_datasource",
+            "name": f"{self.data_asset_name}_runtime_datasource",
             "execution_engine": {
                 "module_name": "great_expectations.execution_engine",
                 "class_name": f"{self.execution_engine}",
@@ -343,9 +343,9 @@ class GreatExpectationsOperator(BaseOperator):
         }
         return Datasource(**datasource_config)
 
-    def build_runtime_pandas_datasource_batch_request(self):
+    def build_runtime_datasource_batch_request(self):
         batch_request = {
-            "datasource_name": f"{self.data_asset_name}_runtime_pandas_datasource",
+            "datasource_name": f"{self.data_asset_name}_runtime_datasource",
             "data_connector_name": "default_runtime_connector",
             "data_asset_name": f"{self.data_asset_name}",
             "runtime_parameters": {"batch_data": self.dataframe_to_validate},
@@ -357,8 +357,8 @@ class GreatExpectationsOperator(BaseOperator):
         """Builds datasources at runtime based on Airflow connections or for use with a dataframe."""
         self.conn = BaseHook.get_connection(self.conn_id) if self.conn_id else None
         if self.is_dataframe:
-            self.datasource = self.build_runtime_pandas_datasource()
-            self.batch_request = self.build_runtime_pandas_datasource_batch_request()
+            self.datasource = self.build_runtime_datasource()
+            self.batch_request = self.build_runtime_datasource_batch_request()
         elif isinstance(self.conn, Connection):
             if self.query_to_validate:
                 self.datasource = self.build_runtime_sql_datasource_config_from_conn_id()
