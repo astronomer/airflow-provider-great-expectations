@@ -147,9 +147,7 @@ class GreatExpectationsOperator(BaseOperator):
         self.data_asset_name: Optional[str] = data_asset_name
         self.run_name: Optional[str] = run_name
         self.conn_id: Optional[str] = conn_id
-        self.execution_engine: Optional[str] = (
-            execution_engine if execution_engine else "PandasExecutionEngine"
-        )
+        self.execution_engine: Optional[str] = execution_engine
         self.expectation_suite_name: Optional[str] = expectation_suite_name
         self.data_context_root_dir: Optional[
             Union[str, bytes, os.PathLike[Any]]
@@ -300,7 +298,7 @@ class GreatExpectationsOperator(BaseOperator):
             "name": f"{self.data_asset_name}_runtime_pandas_datasource",
             "execution_engine": {
                 "module_name": "great_expectations.execution_engine",
-                "class_name": f"{self.execution_engine}",
+                "class_name": "PandasExecutionEngine",
             },
             "data_connectors": {
                 "default_runtime_connector": {
