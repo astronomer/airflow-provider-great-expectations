@@ -426,8 +426,7 @@ class GreatExpectationsOperator(BaseOperator):
         """Builds a default checkpoint with default values."""
         self.run_name = (
             self.run_name
-            if self.run_name
-            else f"{self.task_id}_{datetime.now().strftime('%Y-%m-%d::%H:%M:%S')}"
+            or f"{self.task_id}_{datetime.now().strftime('%Y-%m-%d::%H:%M:%S')}"
         )
         checkpoint_config = CheckpointConfig(
             name=self.checkpoint_name,
@@ -446,11 +445,11 @@ class GreatExpectationsOperator(BaseOperator):
             ge_cloud_id=None,
             expectation_suite_ge_cloud_id=None,
         ).to_json_dict()
-        filtered_config = {k: v for k, v in checkpoint_config.items() if v}
+        filtered_config = deep_filter_properties_iterable(checkpoint_config)
 
         return filtered_config
 
-    def execute(self, context: "Context") -> Union[CheckpointResult, Dict[str, Any]]:
+    def execute(self, context: Context) -> Union[CheckpointResult, Dict[str, Any]]:
         """
         Determines whether a checkpoint exists or need to be built, then
         runs the resulting checkpoint.
