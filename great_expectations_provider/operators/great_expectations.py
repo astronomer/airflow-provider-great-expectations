@@ -459,7 +459,7 @@ class GreatExpectationsOperator(BaseOperator):
 
         return filtered_config
 
-    def execute(self, context: Context) -> Union[CheckpointResult, Dict[str, Any]]:
+    def execute(self, context: "Context") -> Union[CheckpointResult, Dict[str, Any]]:
         """
         Determines whether a checkpoint exists or need to be built, then
         runs the resulting checkpoint.
