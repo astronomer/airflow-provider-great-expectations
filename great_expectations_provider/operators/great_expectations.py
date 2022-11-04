@@ -148,9 +148,7 @@ class GreatExpectationsOperator(BaseOperator):
         self.data_asset_name: Optional[str] = data_asset_name
         self.run_name: Optional[str] = run_name
         self.conn_id: Optional[str] = conn_id
-        self.execution_engine: Optional[str] = (
-            execution_engine if execution_engine else "PandasExecutionEngine"
-        )
+        self.execution_engine: Optional[str] = execution_engine
         self.expectation_suite_name: Optional[str] = expectation_suite_name
         self.data_context_root_dir: Optional[
             Union[str, bytes, os.PathLike[Any]]
@@ -205,6 +203,10 @@ class GreatExpectationsOperator(BaseOperator):
             raise ValueError(
                 "A data_asset_name must be specified with a runtime_data_source or conn_id."
             )
+
+        # If a dataframe is specified, the execution engine must be specified as well
+        if self.is_dataframe and not self.execution_engine:
+            raise ValueError("An execution_engine must be specified if a dataframe is passed.")
 
         # Check that at most one of the arguments is passed to set a checkpoint
         if self.checkpoint_name and self.checkpoint_config:
