@@ -39,6 +39,7 @@ from great_expectations.data_context.types.base import (
     DataContextConfig,
 )
 from great_expectations.data_context.util import instantiate_class_from_config
+from great_expectations.util import deep_filter_properties_iterable
 from pandas import DataFrame
 
 if TYPE_CHECKING:
@@ -220,11 +221,9 @@ class GreatExpectationsOperator(BaseOperator):
                 "An expectation_suite_name must be supplied if neither checkpoint_name nor checkpoint_config are."
             )
 
-        if type(self.checkpoint_config) == CheckpointConfig:
-            self.checkpoint_config = self.checkpoint_config.to_json_dict()
-            self.checkpoint_config = {
-                k: v for k, v in self.checkpoint_config.items() if v
-            }
+        isinstance(self.checkpoint_config, CheckpointConfig):
+            self.checkpoint_config = deep_filter_properties_iterable(properties=self.checkpoint_config.to_dict())
+
 
     def build_configured_sql_datasource_config_from_conn_id(
         self,
