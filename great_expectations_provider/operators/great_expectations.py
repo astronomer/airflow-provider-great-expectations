@@ -358,20 +358,21 @@ class GreatExpectationsOperator(BaseOperator):
     def build_runtime_datasources(self):
         """Builds datasources at runtime based on Airflow connections or for use with a dataframe."""
         self.conn = BaseHook.get_connection(self.conn_id) if self.conn_id else None
+        batch_request = None
         if self.is_dataframe:
             self.datasource = self.build_runtime_datasource()
-            self.batch_request = self.build_runtime_datasource_batch_request()
+            batch_request = self.build_runtime_datasource_batch_request()
         elif isinstance(self.conn, Connection):
             if self.query_to_validate:
                 self.datasource = (
                     self.build_runtime_sql_datasource_config_from_conn_id()
                 )
-                self.batch_request = self.build_runtime_sql_datasource_batch_request()
+                batch_request = self.build_runtime_sql_datasource_batch_request()
             elif self.conn:
                 self.datasource = (
                     self.build_configured_sql_datasource_config_from_conn_id()
                 )
-                self.batch_request = (
+                batch_request = (
                     self.build_configured_sql_datasource_batch_request()
                 )
             else:
@@ -382,6 +383,8 @@ class GreatExpectationsOperator(BaseOperator):
             raise ValueError(
                 "Unrecognized, or lack of, runtime or conn_id datasource passed."
             )
+        if not self.checkpoint_kwargs:
+            self.batch_request = batch_request
 
     def build_default_action_list(self) -> List[Dict[str, Any]]:
         """Builds a default action list for a default checkpoint."""
