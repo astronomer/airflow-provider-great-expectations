@@ -479,6 +479,9 @@ class GreatExpectationsOperator(BaseOperator):
         else:
             self.data_context = BaseDataContext(project_config=self.data_context_config)
         if self.datasource:
+            # Add the datasource after the data context is created because in the case of
+            # loading from a file, we'd have to write the datasource to file, and we want
+            # this to be a temporary datasource only used at runtime.
             self.data_context.datasources[self.datasource.name] = self.datasource
 
         self.log.info("Creating Checkpoint...")
