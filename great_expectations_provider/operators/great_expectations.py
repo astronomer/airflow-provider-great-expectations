@@ -458,7 +458,7 @@ class GreatExpectationsOperator(BaseOperator):
             ge_cloud_id=None,
             expectation_suite_ge_cloud_id=None,
         ).to_json_dict()
-        filtered_config = deep_filter_properties_iterable(checkpoint_config)
+        filtered_config = deep_filter_properties_iterable(properties=checkpoint_config)
 
         return filtered_config
 
@@ -517,7 +517,6 @@ class GreatExpectationsOperator(BaseOperator):
             result = self.checkpoint.run()
 
         data_docs_site = self.data_context.get_docs_sites_urls()[0]["site_url"]
-        self.log.debug(f"Pushing site to XCom: {data_docs_site}")
         try:
             context["ti"].xcom_push(key="data_docs_url", value=data_docs_site)
         except KeyError:
