@@ -3,7 +3,7 @@
 ## Upcoming 
 * (please add here)
 
-## 0.1.6
+## 0.2.0
 * [FEATURE] Enable the use of a default Checkpoint when a Checkpoint is not supplied, with the option to use the OpenLineage Validation Action
 * [FEATURE] Add support to use Airflow connection information instead of separate Great Expectation Datasources.
 * [FEATURE] For cloud-store Data Docs, provide a link to Data Docs from Airflow
