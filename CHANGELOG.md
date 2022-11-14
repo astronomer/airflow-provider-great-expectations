@@ -3,6 +3,9 @@
 ## Upcoming 
 * (please add here)
 
+## 0.2.1
+* [BUGFIX] Add back in removed template fields
+
 ## 0.2.0
 * [FEATURE] Enable the use of a default Checkpoint when a Checkpoint is not supplied, with the option to use the OpenLineage Validation Action
 * [FEATURE] Add support to use Airflow connection information instead of separate Great Expectation Datasources.
