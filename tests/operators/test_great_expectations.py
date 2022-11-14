@@ -271,6 +271,16 @@ def test_great_expectations_operator__assert_template_fields_exist():
     assert "data_context_root_dir" in operator.template_fields
     assert "checkpoint_name" in operator.template_fields
     assert "checkpoint_kwargs" in operator.template_fields
+    assert "query_to_validate" in operator.template_fields
+
+
+def test_great_expectations_operator__assert_template_ext_exist():
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_root_dir=ge_root_dir,
+        checkpoint_name="taxi.pass.chk",
+    )
+    assert ".sql" in operator.template_ext
 
 
 def test_great_expectations_operator__context_root_dir_and_checkpoint_name_pass():
