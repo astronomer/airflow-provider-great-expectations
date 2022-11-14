@@ -115,7 +115,13 @@ class GreatExpectationsOperator(BaseOperator):
 
     ui_color = "#AFEEEE"
     ui_fgcolor = "#000000"
-
+    template_fields = (
+        "run_name",
+        "conn_id",
+        "data_context_root_dir",
+        "checkpoint_name",
+        "checkpoint_kwargs",
+    )
     operator_extra_links = (GreatExpectationsDataDocsLink(),)
 
     def __init__(
