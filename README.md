@@ -1,12 +1,12 @@
 # Apache Airflow Provider for Great Expectations
 A set of Airflow operators for [Great Expectations](https://greatexpectations.io/), a Python library for testing and validating data.
 
-### Version Warning:  
+### Version Warning:
 Due to apply_default decorator removal, this version of the provider requires Airflow 2.1.0+. If your Airflow version is < 2.1.0, and you want to install this provider version, first upgrade Airflow to at least version 2.1.0. Otherwise, your Airflow package version will be upgraded automatically, and you will have to manually run airflow upgrade db to complete the migration.
 
-### Notes on compatibility 
+### Notes on compatibility
 * This operator currently works with the Great Expectations V3 Batch Request API only. If you would like to use the operator in conjunction with the V2 Batch Kwargs API, you must use a version below 0.1.0
-* This operator uses Great Expectations Checkpoints instead of the former ValidationOperators. 
+* This operator uses Great Expectations Checkpoints instead of the former ValidationOperators.
 * Because of the above, this operator requires Great Expectations >=v0.13.9, which is pinned in the requirements.txt starting with release 0.0.5.
 * Great Expectations version 0.13.8 contained a bug that would make this operator not work.
 * Great Expectations version 0.13.7 and below will work with version 0.0.4 of this operator and below.
@@ -32,7 +32,7 @@ Depending on your use-case, you might need to add `ENV AIRFLOW__CORE__ENABLE_XCO
 
 The operator requires a DataContext to run which can be specified either as:
    1. A path to a directory in which a yaml-based DataContext configuration is located
-   2. A Great Expectations DataContextConfig object 
+   2. A Great Expectations DataContextConfig object
 
 Additonally a Checkpoint may be supplied, which can be specified either as:
    1. The name of a Checkpoint already located in the Checkpoint Store of the specified DataContext
@@ -43,7 +43,7 @@ The operator also enables you to pass in a Python dictionary containing kwargs w
 
 ## Modules
 
-[Great Expectations Base Operator](https://github.com/great-expectations/airflow-provider-great-expectations/blob/main/great_expectations_provider/operators/great_expectations.py): A base operator for Great Expectations. Import into your DAG via: 
+[Great Expectations Base Operator](https://github.com/great-expectations/airflow-provider-great-expectations/blob/main/great_expectations_provider/operators/great_expectations.py): A base operator for Great Expectations. Import into your DAG via:
 
 ```
 from great_expectations_provider.operators.great_expectations import GreatExpectationsOperator

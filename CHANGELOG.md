@@ -1,6 +1,6 @@
 # Apache Airflow Provider for Great Expectations
-    
-## Upcoming 
+
+## Upcoming
 * (please add here)
 
 ## 0.2.2
@@ -25,7 +25,7 @@
 ## 0.1.3
 * [FEATURE] Improve performance by moving DataContext and Checkpoint initialization to Operator.execute() - thanks @denimalpaca
 
-## 0.1.2 
+## 0.1.2
 * [BUGFIX] Fix error with the instantiation of a Checkpoint from a CheckpointConfig
 
 ## 0.1.1
@@ -49,13 +49,13 @@
 * [BUGFIX] Addressed a bug whereby the fail_task_on_validation_failure in the BigQuery operator was being shadowed by the parent class.
 * [ENHANCEMENT] Add support for validation operators when running LegacyCheckpoints with the GreatExpectationsOperator
 * [DOCS] Fixed typos in documentation - thanks @armandduijn and @sunkickr!
-* [MAINTENANCE] Make some improvements to the package by updating setup.py dependencies, exposing the example_dags within that, and adding an __init__.py to the example DAG directory - thanks @petedejoy and @pgzmnk! 
+* [MAINTENANCE] Make some improvements to the package by updating setup.py dependencies, exposing the example_dags within that, and adding an __init__.py to the example DAG directory - thanks @petedejoy and @pgzmnk!
 
 ## 0.0.6
-* [BUGFIX] Update setup.py with appropriate versions 
+* [BUGFIX] Update setup.py with appropriate versions
 
 ## 0.0.5
-* [BREAKING] Updated GreatExpectations operator to work with class-based Checkpoints (Great Expectations >= 0.13.9)  
+* [BREAKING] Updated GreatExpectations operator to work with class-based Checkpoints (Great Expectations >= 0.13.9)
 * [ENHANCEMENT] Restructured project, provider metadata, examples, added "how to run" steps to README, and added tests
 
 ## 0.0.4
