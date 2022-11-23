@@ -1,55 +1,15 @@
-import json
 import operator
-from typing import Any, Dict, Optional, Tuple
 
 import pandas
 
-from great_expectations.core import ExpectationConfiguration
-
-#!!! This giant block of imports should be something simpler, such as:
+# !!! This giant block of imports should be something simpler, such as:
 # from great_exepectations.helpers.expectation_creation import *
-from great_expectations.execution_engine import (
-    ExecutionEngine,
-    PandasExecutionEngine,
-    SparkDFExecutionEngine,
-    SqlAlchemyExecutionEngine,
-)
-from great_expectations.execution_engine.execution_engine import (
-    MetricDomainTypes,
-    MetricPartialFunctionTypes,
-)
-from great_expectations.expectations.expectation import (
-    ColumnMapExpectation,
-    Expectation,
-    ExpectationConfiguration,
-)
-from great_expectations.expectations.metrics import (
-    ColumnMapMetricProvider,
-    column_condition_partial,
-)
-from great_expectations.expectations.metrics.import_manager import F, Window, sparktypes
+from great_expectations.execution_engine import PandasExecutionEngine
+from great_expectations.expectations.expectation import ColumnMapExpectation
 from great_expectations.expectations.metrics.map_metric import (
     ColumnMapMetricProvider,
     column_condition_partial,
 )
-from great_expectations.expectations.metrics.metric_provider import (
-    metric_partial,
-    metric_value,
-)
-from great_expectations.expectations.metrics.table_metrics.table_column_types import (
-    ColumnTypes,
-)
-from great_expectations.expectations.registry import (
-    _registered_expectations,
-    _registered_metrics,
-    _registered_renderers,
-)
-from great_expectations.expectations.util import render_evaluation_parameter_string
-from great_expectations.render.renderer.renderer import renderer
-from great_expectations.render.types import RenderedStringTemplateContent
-from great_expectations.render.util import num_to_str, substitute_none_for_missing
-from great_expectations.validator.validation_graph import MetricConfiguration
-from great_expectations.validator.validator import Validator
 
 
 # This class defines a Metric to support your Expectation
@@ -82,14 +42,13 @@ class ColumnValuesAreAlphabetical(ColumnMapMetricProvider):
 
         output = [True]  # first value is automatically in order
         for i in range(1, column_length):
-            if (
-                column_lower[i] and column_lower[i - 1]
-            ):  # make sure we aren't comparing Nones
+            if column_lower[i] and column_lower[i - 1]:  # make sure we aren't comparing Nones
                 output.append(compare_function(column_lower[i - 1], column_lower[i]))
             else:
                 output.append(None)
 
         return pandas.Series(output)
+
 
 # This class defines the Expectation itself
 # The main business logic for calculation lives here.
@@ -264,6 +223,7 @@ class ExpectColumnValuesToBeAlphabetical(ColumnMapExpectation):
 
     # This dictionary contains default values for any parameters that should have default values
     default_kwarg_values = {}
+
 
 if __name__ == "__main__":
     diagnostics_report = ExpectColumnValuesToBeAlphabetical().print_diagnostic_checklist()
