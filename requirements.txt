@@ -1,5 +1,0 @@
---index-url https://pypi.python.org/simple/
-# Install the target package and its dependencies
--e .
-# Install pytest for optional use in unit tests
-pytest~=6.2
