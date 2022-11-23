@@ -13,11 +13,15 @@ concurrency:
 jobs:
   Run-Unit-tests:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: [ 3.7, 3.8, 3.9, 3.10 ]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
         with:
-          python-version: '3.9'
+          python-version: '${{ matrix.python }}'
           architecture: 'x64'
       - run: pip install -r requirements.txt
       - run: pytest --junit-xml=test-report/report.xml tests
