@@ -511,14 +511,14 @@ def test_great_expectations_operator__return_json_dict():
 
 def test_great_expectations_operator__custom_expectation_plugin():
     import sys
-    sys.path.append(ge_root_dir)
 
-    from plugins.expectations.expect_column_values_to_be_alphabetical import (
-        ExpectColumnValuesToBeAlphabetical,
-    )
+    sys.path.append(ge_root_dir)
 
     from object_configs.example_runtime_batch_request_for_plugin_expectation import (
         runtime_batch_request,
+    )
+    from plugins.expectations.expect_column_values_to_be_alphabetical import (  # noqa: F401
+        ExpectColumnValuesToBeAlphabetical,
     )
 
     operator = GreatExpectationsOperator(
