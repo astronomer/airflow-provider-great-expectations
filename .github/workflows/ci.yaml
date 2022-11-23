@@ -23,6 +23,11 @@ jobs:
         with:
           python-version: '${{ matrix.python }}'
           architecture: 'x64'
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+          key: ${{ runner.os }}-${{ hashFiles('setup.cfg') }}
       - run: pip install -U pip wheel
-      - run: pip install -r requirements.txt
+      - run: pip install -e '.[tests]'
       - run: pytest --junit-xml=test-report/report.xml tests

@@ -100,7 +100,7 @@ $ python -m venv --prompt my-af-ge-venv .venv
 $ . .venv/bin/activate
 
 # Install the package and testing dependencies:
-(my-af-ge-venv) $ pip install -r requirements.txt
+(my-af-ge-venv) $ pip install -e '.[tests]'
 ```
 
 ### Running Unit, Integration, and Functional Tests

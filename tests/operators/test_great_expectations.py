@@ -13,7 +13,6 @@ and tests can be run with, for instance::
 import logging
 import os
 import unittest.mock as mock
-from contextlib import contextmanager
 from pathlib import Path
 import pandas as pd
 
@@ -523,10 +522,14 @@ def test_great_expectations_operator__return_json_dict():
 
 
 def test_great_expectations_operator__custom_expectation_plugin():
-    from include.great_expectations.plugins.expectations.expect_column_values_to_be_alphabetical import (
+    import sys
+    sys.path.append(ge_root_dir)
+
+    from plugins.expectations.expect_column_values_to_be_alphabetical import (
         ExpectColumnValuesToBeAlphabetical,
     )
-    from include.great_expectations.object_configs.example_runtime_batch_request_for_plugin_expectation import (
+
+    from object_configs.example_runtime_batch_request_for_plugin_expectation import (
         runtime_batch_request,
     )
 
