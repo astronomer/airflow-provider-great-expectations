@@ -1,6 +1,7 @@
-from great_expectations.data_context.types.base import DataContextConfig
 import os
 from pathlib import Path
+
+from great_expectations.data_context.types.base import DataContextConfig
 
 base_path = Path(__file__).parents[2]
 data_dir = os.path.join(base_path, "data")
@@ -35,9 +36,7 @@ example_data_context_config = DataContextConfig(
                 "class_name": "Datasource",
             }
         },
-        "config_variables_file_path": os.path.join(
-            ge_root_dir, "uncommitted", "config_variables.yml"
-        ),
+        "config_variables_file_path": os.path.join(ge_root_dir, "uncommitted", "config_variables.yml"),
         "stores": {
             "expectations_store": {
                 "class_name": "ExpectationsStore",
@@ -50,9 +49,7 @@ example_data_context_config = DataContextConfig(
                 "class_name": "ValidationsStore",
                 "store_backend": {
                     "class_name": "TupleFilesystemStoreBackend",
-                    "base_directory": os.path.join(
-                        ge_root_dir, "uncommitted", "validations"
-                    ),
+                    "base_directory": os.path.join(ge_root_dir, "uncommitted", "validations"),
                 },
             },
             "evaluation_parameter_store": {"class_name": "EvaluationParameterStore"},
@@ -75,9 +72,7 @@ example_data_context_config = DataContextConfig(
                 "show_how_to_buttons": True,
                 "store_backend": {
                     "class_name": "TupleFilesystemStoreBackend",
-                    "base_directory": os.path.join(
-                        ge_root_dir, "uncommitted", "data_docs", "local_site"
-                    ),
+                    "base_directory": os.path.join(ge_root_dir, "uncommitted", "data_docs", "local_site"),
                 },
                 "site_index_builder": {"class_name": "DefaultSiteIndexBuilder"},
             }

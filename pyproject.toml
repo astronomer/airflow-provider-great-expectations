@@ -3,15 +3,8 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.black]
-line-length = 110
+line-length = 119
 target-version = ['py39']
-
-[tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "--tb=short --cov-report=xml"
-testpaths = [
-    "tests",
-]
 
 [tool.isort]
 profile = "black"

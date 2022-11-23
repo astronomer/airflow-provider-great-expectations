@@ -32,3 +32,34 @@ repos:
       - id: remove-crlf
       - id: forbid-tabs
       - id: remove-tabs
+
+  - repo: https://github.com/psf/black
+    rev: 22.8.0
+    hooks:
+      - id: black
+
+  - repo: https://github.com/asottile/blacken-docs
+    rev: v1.12.1
+    hooks:
+      - id: blacken-docs
+        additional_dependencies: [black==22.8.0]
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.10.1
+    hooks:
+      - id: isort
+        args: ["--profile=black"]
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 5.0.4
+    hooks:
+      - id: flake8
+        additional_dependencies:
+          - flake8-builtins
+          - flake8-comprehensions
+          - flake8-colors
+          - flake8-rst-docstrings
+          - flake8-assertive
+          - flake8-typing-imports
+          - flake8-logging-format
+          - flake8-bugbear

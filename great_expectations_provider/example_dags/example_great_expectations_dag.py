@@ -3,28 +3,24 @@ A DAG that demonstrates use of the operators in this provider package.
 """
 
 import os
-import pandas as pd
 from datetime import datetime
 from pathlib import Path
 
+import pandas as pd
 from airflow import DAG
 from airflow.models.baseoperator import chain
 
 from great_expectations_provider.operators.great_expectations import (
     GreatExpectationsOperator,
 )
-
-from include.great_expectations.object_configs.example_data_context_config import (
-    example_data_context_config,
-)
 from include.great_expectations.object_configs.example_checkpoint_config import (
     example_checkpoint_config,
 )
+from include.great_expectations.object_configs.example_data_context_config import (
+    example_data_context_config,
+)
 from include.great_expectations.object_configs.example_runtime_batch_request_for_plugin_expectation import (
     runtime_batch_request,
-)
-from include.great_expectations.plugins.expectations.expect_column_values_to_be_alphabetical import (
-    ExpectColumnValuesToBeAlphabetical,
 )
 
 base_path = Path(__file__).parents[2]

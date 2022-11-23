@@ -14,8 +14,8 @@ import logging
 import os
 import unittest.mock as mock
 from pathlib import Path
-import pandas as pd
 
+import pandas as pd
 import pytest
 from airflow.exceptions import AirflowException
 from airflow.models.connection import Connection
@@ -71,9 +71,7 @@ def in_memory_data_context_config():
                     "class_name": "Datasource",
                 }
             },
-            "config_variables_file_path": os.path.join(
-                ge_root_dir, "uncommitted", "config_variables.yml"
-            ),
+            "config_variables_file_path": os.path.join(ge_root_dir, "uncommitted", "config_variables.yml"),
             "stores": {
                 "expectations_store": {
                     "class_name": "ExpectationsStore",
@@ -86,14 +84,10 @@ def in_memory_data_context_config():
                     "class_name": "ValidationsStore",
                     "store_backend": {
                         "class_name": "TupleFilesystemStoreBackend",
-                        "base_directory": os.path.join(
-                            ge_root_dir, "uncommitted", "validations"
-                        ),
+                        "base_directory": os.path.join(ge_root_dir, "uncommitted", "validations"),
                     },
                 },
-                "evaluation_parameter_store": {
-                    "class_name": "EvaluationParameterStore"
-                },
+                "evaluation_parameter_store": {"class_name": "EvaluationParameterStore"},
                 "checkpoint_store": {
                     "class_name": "CheckpointStore",
                     "store_backend": {
@@ -113,9 +107,7 @@ def in_memory_data_context_config():
                     "show_how_to_buttons": True,
                     "store_backend": {
                         "class_name": "TupleFilesystemStoreBackend",
-                        "base_directory": os.path.join(
-                            ge_root_dir, "uncommitted", "data_docs", "local_site"
-                        ),
+                        "base_directory": os.path.join(ge_root_dir, "uncommitted", "data_docs", "local_site"),
                     },
                     "site_index_builder": {"class_name": "DefaultSiteIndexBuilder"},
                 }
@@ -227,9 +219,7 @@ def constructed_sql_configured_datasource():
 
 @pytest.fixture()
 def mock_airflow_conn():
-    conn = mock.Mock(
-        conn_id="sqlite_conn", schema="my_schema", host="host", conn_type="sqlite"
-    )
+    conn = mock.Mock(conn_id="sqlite_conn", schema="my_schema", host="host", conn_type="sqlite")
     return conn
 
 
@@ -320,7 +310,7 @@ def test_great_expectations_operator__data_context_config_and_checkpoint_config_
     assert result["success"]
 
 
-def test_great_expectations_operator__checkpoint_config_and_checkpoint_kwargs_substituted_batch_request_works_and_fails(
+def test_checkpoint_config_and_checkpoint_kwargs_substituted_batch_request_works_and_fails(
     in_memory_data_context_config, in_memory_checkpoint_config
 ):
     failing_batch_request = BatchRequest(
@@ -489,9 +479,7 @@ def test_great_expectations_operator__validation_failure_logs_warning(caplog):
     caplog.clear()
     result = operator.execute(context={})
     assert result["success"] is False
-    assert ("my_test_logger", logging.WARNING) in (
-        (r.name, r.levelno) for r in caplog.records
-    )
+    assert ("my_test_logger", logging.WARNING) in ((r.name, r.levelno) for r in caplog.records)
 
 
 def test_great_expectations_operator__validation_failure_callback():
@@ -523,14 +511,14 @@ def test_great_expectations_operator__return_json_dict():
 
 def test_great_expectations_operator__custom_expectation_plugin():
     import sys
-    sys.path.append(ge_root_dir)
 
-    from plugins.expectations.expect_column_values_to_be_alphabetical import (
-        ExpectColumnValuesToBeAlphabetical,
-    )
+    sys.path.append(ge_root_dir)
 
     from object_configs.example_runtime_batch_request_for_plugin_expectation import (
         runtime_batch_request,
+    )
+    from plugins.expectations.expect_column_values_to_be_alphabetical import (  # noqa: F401
+        ExpectColumnValuesToBeAlphabetical,
     )
 
     operator = GreatExpectationsOperator(
@@ -560,11 +548,7 @@ def test_great_expectations_operator__works_with_simple_checkpoint_and_checkpoin
         task_id="task_id",
         data_context_config=in_memory_data_context_config,
         checkpoint_name="simple.chk",
-        checkpoint_kwargs={
-            "validations": [
-                {"batch_request": batch_request, "expectation_suite_name": "taxi.demo"}
-            ]
-        },
+        checkpoint_kwargs={"validations": [{"batch_request": batch_request, "expectation_suite_name": "taxi.demo"}]},
     )
     result = operator.execute(context={})  # should fail the suite
     logger.info(result)
@@ -594,9 +578,7 @@ def test_great_expectations_operator__validate_pandas_dataframe_with_no_datasour
 def test_great_expectations_operator__validate_pandas_dataframe_with_no_datasource_fail(
     in_memory_data_context_config,
 ):
-    smaller_df = pd.read_csv(f"{data_dir}/yellow_tripdata_sample_2019-01.csv").truncate(
-        after=8000
-    )
+    smaller_df = pd.read_csv(f"{data_dir}/yellow_tripdata_sample_2019-01.csv").truncate(after=8000)
 
     operator = GreatExpectationsOperator(
         task_id="task_id",
@@ -621,9 +603,7 @@ def test_build_configured_sql_datasource_config_from_conn_id(
 ):
     configured_sql_operator.conn = mock_airflow_conn
     monkeypatch.setattr(configured_sql_operator, "conn", mock_airflow_conn)
-    constructed_datasource = (
-        configured_sql_operator.build_configured_sql_datasource_config_from_conn_id()
-    )
+    constructed_datasource = configured_sql_operator.build_configured_sql_datasource_config_from_conn_id()
 
     assert isinstance(constructed_datasource, Datasource)
     assert constructed_datasource.config == constructed_sql_configured_datasource
@@ -640,39 +620,31 @@ def test_build_runtime_sql_datasource_config_from_conn_id(
     runtime_sql_operator.conn = mock_airflow_conn
     monkeypatch.setattr(runtime_sql_operator, "conn", mock_airflow_conn)
 
-    constructed_datasource = (
-        runtime_sql_operator.build_runtime_sql_datasource_config_from_conn_id()
-    )
+    constructed_datasource = runtime_sql_operator.build_runtime_sql_datasource_config_from_conn_id()
 
     assert isinstance(constructed_datasource, Datasource)
 
     assert constructed_datasource.config == constructed_sql_runtime_datasource
 
 
-def test_build_configured_sql_datasource_batch_request(
-    configured_sql_operator, mock_airflow_conn, monkeypatch
-):
+def test_build_configured_sql_datasource_batch_request(configured_sql_operator, mock_airflow_conn, monkeypatch):
     configured_sql_operator.conn = mock_airflow_conn
     monkeypatch.setattr(configured_sql_operator, "conn", mock_airflow_conn)
-    batch_request = (
-        configured_sql_operator.build_configured_sql_datasource_batch_request()
-    )
+    batch_request = configured_sql_operator.build_configured_sql_datasource_batch_request()
 
     assert isinstance(batch_request, BatchRequest)
 
     assert batch_request.to_json_dict() == {
-        "datasource_name": f"sqlite_conn_configured_sql_datasource",
+        "datasource_name": "sqlite_conn_configured_sql_datasource",
         "data_connector_name": "default_configured_asset_sql_data_connector",
-        "data_asset_name": f"my_sqlite_table",
+        "data_asset_name": "my_sqlite_table",
         "batch_spec_passthrough": None,
         "data_connector_query": None,
         "limit": None,
     }
 
 
-def test_build_runtime_sql_datasource_batch_request(
-    runtime_sql_operator, mock_airflow_conn, monkeypatch
-):
+def test_build_runtime_sql_datasource_batch_request(runtime_sql_operator, mock_airflow_conn, monkeypatch):
     runtime_sql_operator.conn = mock_airflow_conn
     monkeypatch.setattr(runtime_sql_operator, "conn", mock_airflow_conn)
     batch_request = runtime_sql_operator.build_runtime_sql_datasource_batch_request()
@@ -680,13 +652,13 @@ def test_build_runtime_sql_datasource_batch_request(
     assert isinstance(batch_request, RuntimeBatchRequest)
 
     assert batch_request.to_json_dict() == {
-        "datasource_name": f"sqlite_conn_runtime_sql_datasource",
+        "datasource_name": "sqlite_conn_runtime_sql_datasource",
         "data_connector_name": "default_runtime_data_connector",
-        "data_asset_name": f"my_sqlite_table",
+        "data_asset_name": "my_sqlite_table",
         "batch_spec_passthrough": None,
         "runtime_parameters": {"query": "select * from my_table limit 10"},
         "batch_identifiers": {
-            "airflow_run_id": "{ task_instance_key_str }",
+            "airflow_run_id": "{{ task_instance_key_str }}",
             "query_string": "select * from my_table limit 10",
         },
     }
@@ -713,7 +685,7 @@ def test_build_runtime_pandas_datasource_batch_request(mock_airflow_conn, monkey
         "batch_spec_passthrough": None,
         "runtime_parameters": {"batch_data": "<class 'pandas.core.frame.DataFrame'>"},
         "batch_identifiers": {
-            "airflow_run_id": "{ task_instance_key_str }",
+            "airflow_run_id": "{{ task_instance_key_str }}",
         },
     }
 
