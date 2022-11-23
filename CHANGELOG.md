@@ -3,6 +3,9 @@
 ## Upcoming 
 * (please add here)
 
+## 0.2.2
+* [BUGFIX] Fix template extension bug (#64)
+
 ## 0.2.1
 * [BUGFIX] Add back in removed template fields
 
