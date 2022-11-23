@@ -280,7 +280,8 @@ def test_great_expectations_operator__assert_template_ext_exist():
         data_context_root_dir=ge_root_dir,
         checkpoint_name="taxi.pass.chk",
     )
-    assert ".sql" in operator.template_ext
+    for ext in operator.template_ext:
+        assert ext == ".sql"
 
 
 def test_great_expectations_operator__context_root_dir_and_checkpoint_name_pass():
