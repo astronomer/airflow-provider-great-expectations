@@ -11,9 +11,9 @@ Due to apply_default decorator removal, this version of the provider requires Ai
 * Great Expectations version 0.13.8 contained a bug that would make this operator not work.
 * Great Expectations version 0.13.7 and below will work with version 0.0.4 of this operator and below.
 
-This package has been most recently unit tested with `apache-airflow=2.1.2` and `great-expectation=0.13.44`.
+This package has been most recently unit tested with `apache-airflow=2.4.3` and `great-expectation=0.15.34`.
 
-[comment]: <> (The example DAG has been most recently tested in the `quay.io/astronomer/ap-airflow:2.2.2-onbuild` Docker image using the [Astro CLI]&#40;https://www.astronomer.io/docs/cloud/stable/develop/cli-quickstart&#41;, with `great-expectation=0.13.48` and `SQLAlchemy=1.3.24`)
+[comment]: <> (The example DAG has been most recently tested in the `quay.io/astronomer/astro-runtime:6.0.4` Docker image using the [Astro CLI]&#40;https://www.astronomer.io/docs/cloud/stable/develop/cli-quickstart&#41;, with `great-expectation=0.15.34` and `SQLAlchemy=1.4.44`)
 
 **Formerly, there was a separate operator for BigQuery, to facilitate the use of GCP stores. This functionality is now baked into the core Great Expectations library, so the generic Operator will work with any back-end and SQL dialect for which you have a working Data Context and Datasources.**
 
