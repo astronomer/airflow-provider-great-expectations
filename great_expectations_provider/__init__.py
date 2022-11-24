@@ -1,7 +1,10 @@
+__version__ = "0.2.3.dev1"
+
+
 def get_provider_info():
     return {
         "package-name": "airflow-provider-great-expectations",
         "name": "Great Expectations Provider",
         "description": "An Apache Airflow provider for Great Expectations.",
-        "versions": ["0.0.8"],
+        "versions": [__version__],
     }
