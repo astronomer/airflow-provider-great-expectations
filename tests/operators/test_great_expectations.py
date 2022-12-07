@@ -894,7 +894,7 @@ def test_great_expectations_operator__make_connection_string_schema_parameter():
     assert operator.make_connection_string() == test_conn_str
 
 
-def test_great_expectations_operator__make_connection_string_schema_parameter():
+def test_great_expectations_operator__make_connection_string_data_asset_name_schema_parse():
     test_conn_str = (
         "snowflake://user:password@account.region-east-1/database/test_schema?warehouse=warehouse&role=role"
     )
