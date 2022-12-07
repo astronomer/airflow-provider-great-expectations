@@ -79,6 +79,8 @@ class GreatExpectationsOperator(BaseOperator):
 
     :param run_name: Identifies the validation run (defaults to timestamp if not specified)
     :type run_name: Optional[str]
+    :param conn: An Airflow Connection or dict to create a Connection
+    :type conn: Optional[Union[Connection, Dict]
     :param conn_id: The name of a connection in Airflow
     :type conn_id: Optional[str]
     :param execution_engine: The execution engine to use when running Great Expectations
@@ -94,7 +96,7 @@ class GreatExpectationsOperator(BaseOperator):
     :type data_context_config: Optional[DataContextConfig]
     :param dataframe_to_validate: A pandas dataframe to validate
     :type dataframe_to_validate: Optional[str]
-    :param query_to_validate: A SQL query to validate
+    :param query_to_validate: A SQL query to validate`
     :type query_to_validate: Optional[str]
     :param checkpoint_name: A Checkpoint name to use for validation
     :type checkpoint_name: Optional[str]
@@ -111,6 +113,8 @@ class GreatExpectationsOperator(BaseOperator):
     :type return_json_dict: bool
     :param use_open_lineage: If True (default), creates an OpenLineage action if an OpenLineage environment is found
     :type use_open_lineage: bool
+    :param schema: If provided, overwrites the default schema provded by the connection
+    :type schema: Optional[str]
     """
 
     ui_color = "#AFEEEE"
@@ -129,6 +133,7 @@ class GreatExpectationsOperator(BaseOperator):
     def __init__(
         self,
         run_name: Optional[str] = None,
+        conn: Optional[Union[Connection, Dict[str, Any]]] = None,
         conn_id: Optional[str] = None,
         execution_engine: Optional[str] = None,
         expectation_suite_name: Optional[str] = None,
@@ -144,6 +149,7 @@ class GreatExpectationsOperator(BaseOperator):
         fail_task_on_validation_failure: bool = True,
         return_json_dict: bool = False,
         use_open_lineage: bool = True,
+        schema: Optional[str] = None,
         *args,
         **kwargs,
     ) -> None:
@@ -151,6 +157,7 @@ class GreatExpectationsOperator(BaseOperator):
 
         self.data_asset_name: Optional[str] = data_asset_name
         self.run_name: Optional[str] = run_name
+        self.conn: Optional[Union[Connection, Dict[str, Any]]] = Connection(**conn) if isinstance(conn, Dict) else conn
         self.conn_id: Optional[str] = conn_id
         self.execution_engine: Optional[str] = execution_engine
         self.expectation_suite_name: Optional[str] = expectation_suite_name
@@ -170,6 +177,7 @@ class GreatExpectationsOperator(BaseOperator):
         self.is_dataframe = True if self.dataframe_to_validate is not None else False
         self.datasource: Optional[Datasource] = None
         self.batch_request: Optional[BatchRequestBase] = None
+        self.schema = schema
 
         if self.is_dataframe and self.query_to_validate:
             raise ValueError(
@@ -213,11 +221,21 @@ class GreatExpectationsOperator(BaseOperator):
         if isinstance(self.checkpoint_config, CheckpointConfig):
             self.checkpoint_config = deep_filter_properties_iterable(properties=self.checkpoint_config.to_dict())
 
+        # If a schema is passed as part of the data_asset_name, use that schema
+        if self.data_asset_name and "." in self.data_asset_name:
+            # Assume data_asset_name is in the form "SCHEMA.TABLE"
+            # Schema parameter always takes priority
+            asset_list = self.data_asset_name.split(".")
+            self.schema = self.schema or asset_list[0]
+            # Update data_asset_name to be only the table
+            self.data_asset_name = asset_list[1]
+
     def make_connection_string(self) -> str:
         """Builds connection strings based off existing Airflow connections. Only supports necessary extras."""
         uri_string = ""
         if not self.conn:
             raise ValueError(f"Connections does not exist in Airflow for conn_id: {self.conn_id}")
+        schema = self.schema or self.conn.schema
         conn_type = self.conn.conn_type
         if conn_type in ("redshift", "postgres", "mysql", "mssql"):
             odbc_connector = ""
@@ -227,11 +245,11 @@ class GreatExpectationsOperator(BaseOperator):
                 odbc_connector = "mysql"
             else:
                 odbc_connector = "mssql+pyodbc"
-            uri_string = f"{odbc_connector}://{self.conn.login}:{self.conn.password}@{self.conn.host}:{self.conn.port}/{self.conn.schema}"  # noqa
+            uri_string = f"{odbc_connector}://{self.conn.login}:{self.conn.password}@{self.conn.host}:{self.conn.port}/{schema}"  # noqa
         elif conn_type == "snowflake":
-            uri_string = f"snowflake://{self.conn.login}:{self.conn.password}@{self.conn.extra_dejson['extra__snowflake__account']}.{self.conn.extra_dejson['extra__snowflake__region']}/{self.conn.extra_dejson['extra__snowflake__database']}/{self.conn.schema}?warehouse={self.conn.extra_dejson['extra__snowflake__warehouse']}&role={self.conn.extra_dejson['extra__snowflake__role']}"  # noqa
+            uri_string = f"snowflake://{self.conn.login}:{self.conn.password}@{self.conn.extra_dejson['extra__snowflake__account']}.{self.conn.extra_dejson['extra__snowflake__region']}/{self.conn.extra_dejson['extra__snowflake__database']}/{schema}?warehouse={self.conn.extra_dejson['extra__snowflake__warehouse']}&role={self.conn.extra_dejson['extra__snowflake__role']}"  # noqa
         elif conn_type == "gcpbigquery":
-            uri_string = f"{self.conn.host}{self.conn.schema}"
+            uri_string = f"{self.conn.host}{schema}"
         elif conn_type == "sqlite":
             uri_string = f"sqlite:///{self.conn.host}"
         # TODO: Add Athena and Trino support if possible
