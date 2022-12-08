@@ -862,6 +862,69 @@ def test_great_expectations_operator__make_connection_string_sqlite():
     assert operator.make_connection_string() == test_conn_str
 
 
+def test_great_expectations_operator__make_connection_string_schema_parameter():
+    test_conn_str = (
+        "snowflake://user:password@account.region-east-1/database/test_schema_parameter?warehouse=warehouse&role=role"
+    )
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        data_asset_name="test_schema.test_table",
+        conn_id="snowflake_default",
+        expectation_suite_name="suite",
+        schema="test_schema_parameter",
+    )
+    operator.conn = Connection(
+        conn_id="snowflake_default",
+        conn_type="snowflake",
+        host="connection",
+        login="user",
+        password="password",
+        schema="schema",
+        port=5439,
+        extra={
+            "extra__snowflake__role": "role",
+            "extra__snowflake__warehouse": "warehouse",
+            "extra__snowflake__database": "database",
+            "extra__snowflake__region": "region-east-1",
+            "extra__snowflake__account": "account",
+        },
+    )
+    operator.conn_type = operator.conn.conn_type
+    assert operator.make_connection_string() == test_conn_str
+
+
+def test_great_expectations_operator__make_connection_string_data_asset_name_schema_parse():
+    test_conn_str = (
+        "snowflake://user:password@account.region-east-1/database/test_schema?warehouse=warehouse&role=role"
+    )
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        data_asset_name="test_schema.test_table",
+        conn_id="snowflake_default",
+        expectation_suite_name="suite",
+    )
+    operator.conn = Connection(
+        conn_id="snowflake_default",
+        conn_type="snowflake",
+        host="connection",
+        login="user",
+        password="password",
+        port=5439,
+        extra={
+            "extra__snowflake__role": "role",
+            "extra__snowflake__warehouse": "warehouse",
+            "extra__snowflake__database": "database",
+            "extra__snowflake__region": "region-east-1",
+            "extra__snowflake__account": "account",
+        },
+    )
+    operator.conn_type = operator.conn.conn_type
+    assert operator.make_connection_string() == test_conn_str
+    assert operator.data_asset_name == "test_table"
+
+
 def test_great_expectations_operator__make_connection_string_raise_error():
     operator = GreatExpectationsOperator(
         task_id="task_id",
