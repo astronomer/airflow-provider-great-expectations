@@ -96,7 +96,7 @@ class GreatExpectationsOperator(BaseOperator):
     :type data_context_config: Optional[DataContextConfig]
     :param dataframe_to_validate: A pandas dataframe to validate
     :type dataframe_to_validate: Optional[str]
-    :param query_to_validate: A SQL query to validate`
+    :param query_to_validate: A SQL query to validate
     :type query_to_validate: Optional[str]
     :param checkpoint_name: A Checkpoint name to use for validation
     :type checkpoint_name: Optional[str]
