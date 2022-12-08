@@ -79,8 +79,6 @@ class GreatExpectationsOperator(BaseOperator):
 
     :param run_name: Identifies the validation run (defaults to timestamp if not specified)
     :type run_name: Optional[str]
-    :param conn: An Airflow Connection or dict to create a Connection
-    :type conn: Optional[Union[Connection, Dict]
     :param conn_id: The name of a connection in Airflow
     :type conn_id: Optional[str]
     :param execution_engine: The execution engine to use when running Great Expectations
@@ -133,7 +131,6 @@ class GreatExpectationsOperator(BaseOperator):
     def __init__(
         self,
         run_name: Optional[str] = None,
-        conn: Optional[Union[Connection, Dict[str, Any]]] = None,
         conn_id: Optional[str] = None,
         execution_engine: Optional[str] = None,
         expectation_suite_name: Optional[str] = None,
@@ -157,7 +154,6 @@ class GreatExpectationsOperator(BaseOperator):
 
         self.data_asset_name: Optional[str] = data_asset_name
         self.run_name: Optional[str] = run_name
-        self.conn: Optional[Union[Connection, Dict[str, Any]]] = Connection(**conn) if isinstance(conn, Dict) else conn
         self.conn_id: Optional[str] = conn_id
         self.execution_engine: Optional[str] = execution_engine
         self.expectation_suite_name: Optional[str] = expectation_suite_name
