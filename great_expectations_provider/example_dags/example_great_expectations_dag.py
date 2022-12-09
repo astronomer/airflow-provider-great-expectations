@@ -24,7 +24,7 @@ from include.great_expectations.object_configs.example_runtime_batch_request_for
 
 base_path = Path(__file__).parents[2]
 data_dir = base_path / "include" / "data"
-data_file = data_dir / "yellow_tripdata_sample_2019-01.csv",
+data_file = (data_dir / "yellow_tripdata_sample_2019-01.csv",)
 
 ge_root_dir = base_path / "include" / "great_expectations"
 
