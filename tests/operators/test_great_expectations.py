@@ -603,6 +603,7 @@ def test_build_configured_sql_datasource_config_from_conn_id(
 ):
     configured_sql_operator.conn = mock_airflow_conn
     monkeypatch.setattr(configured_sql_operator, "conn", mock_airflow_conn)
+    monkeypatch.setattr(configured_sql_operator, "schema", mock_airflow_conn.schema)
     constructed_datasource = configured_sql_operator.build_configured_sql_datasource_config_from_conn_id()
 
     assert isinstance(constructed_datasource, Datasource)
@@ -923,6 +924,57 @@ def test_great_expectations_operator__make_connection_string_data_asset_name_sch
     operator.conn_type = operator.conn.conn_type
     assert operator.make_connection_string() == test_conn_str
     assert operator.data_asset_name == "test_table"
+
+
+def test_great_expectations_operator__build_configured_sql_datasource_config_from_conn_id_uses_schema_override():
+    test_conn_str = "sqlite:///host"
+    datasource_config = {
+        "name": "sqlite_default_configured_sql_datasource",
+        "id": None,
+        "execution_engine": {
+            "module_name": "great_expectations.execution_engine",
+            "class_name": "SqlAlchemyExecutionEngine",
+            "connection_string": test_conn_str,
+        },
+        "data_connectors": {
+            "default_configured_asset_sql_data_connector": {
+                "module_name": "great_expectations.datasource.data_connector",
+                "class_name": "ConfiguredAssetSqlDataConnector",
+                "assets": {
+                    "test_table": {
+                        "module_name": "great_expectations.datasource.data_connector.asset",
+                        "class_name": "Asset",
+                        "schema_name": "test_schema",
+                        "batch_identifiers": ["airflow_run_id"],
+                    },
+                },
+            },
+        },
+    }
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        data_asset_name="default_schema.test_table",
+        conn_id="sqlite_default",
+        expectation_suite_name="suite",
+        schema="test_schema",
+    )
+    operator.conn = Connection(
+        conn_id="sqlite_default",
+        conn_type="sqlite",
+        host="host",
+        login="user",
+        password="password",
+        schema="wrong_schema",
+    )
+    operator.conn_type = operator.conn.conn_type
+    assert operator.make_connection_string() == test_conn_str
+    assert operator.build_configured_sql_datasource_config_from_conn_id().config == datasource_config
+
+    constructed_datasource = operator.build_configured_sql_datasource_config_from_conn_id()
+
+    assert isinstance(constructed_datasource, Datasource)
+    assert constructed_datasource.config == datasource_config
 
 
 def test_great_expectations_operator__make_connection_string_raise_error():

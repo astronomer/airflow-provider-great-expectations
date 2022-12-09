@@ -256,12 +256,13 @@ class GreatExpectationsOperator(BaseOperator):
     def build_configured_sql_datasource_config_from_conn_id(
         self,
     ) -> Datasource:
+        conn_str = self.make_connection_string()
         datasource_config = {
             "name": f"{self.conn.conn_id}_configured_sql_datasource",
             "execution_engine": {
                 "module_name": "great_expectations.execution_engine",
                 "class_name": "SqlAlchemyExecutionEngine",
-                "connection_string": self.make_connection_string(),
+                "connection_string": conn_str,
             },
             "data_connectors": {
                 "default_configured_asset_sql_data_connector": {
@@ -271,7 +272,7 @@ class GreatExpectationsOperator(BaseOperator):
                         f"{self.data_asset_name}": {
                             "module_name": "great_expectations.datasource.data_connector.asset",
                             "class_name": "Asset",
-                            "schema_name": f"{self.conn.schema}",
+                            "schema_name": f"{self.schema}",
                             "batch_identifiers": ["airflow_run_id"],
                         },
                     },
