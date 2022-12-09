@@ -927,39 +927,37 @@ def test_great_expectations_operator__make_connection_string_data_asset_name_sch
 
 
 def test_great_expectations_operator__build_configured_sql_datasource_config_from_conn_id_uses_schema_override():
-    test_conn_str = (
-        "sqlite:///host"
-    )
+    test_conn_str = "sqlite:///host"
     datasource_config = {
-            "name": "sqlite_default_configured_sql_datasource",
-            "id": None,
-            "execution_engine": {
-                "module_name": "great_expectations.execution_engine",
-                "class_name": "SqlAlchemyExecutionEngine",
-                "connection_string": test_conn_str,
-            },
-            "data_connectors": {
-                "default_configured_asset_sql_data_connector": {
-                    "module_name": "great_expectations.datasource.data_connector",
-                    "class_name": "ConfiguredAssetSqlDataConnector",
-                    "assets": {
-                        "test_table": {
-                            "module_name": "great_expectations.datasource.data_connector.asset",
-                            "class_name": "Asset",
-                            "schema_name": "test_schema",
-                            "batch_identifiers": ["airflow_run_id"],
-                        },
+        "name": "sqlite_default_configured_sql_datasource",
+        "id": None,
+        "execution_engine": {
+            "module_name": "great_expectations.execution_engine",
+            "class_name": "SqlAlchemyExecutionEngine",
+            "connection_string": test_conn_str,
+        },
+        "data_connectors": {
+            "default_configured_asset_sql_data_connector": {
+                "module_name": "great_expectations.datasource.data_connector",
+                "class_name": "ConfiguredAssetSqlDataConnector",
+                "assets": {
+                    "test_table": {
+                        "module_name": "great_expectations.datasource.data_connector.asset",
+                        "class_name": "Asset",
+                        "schema_name": "test_schema",
+                        "batch_identifiers": ["airflow_run_id"],
                     },
                 },
             },
-        }
+        },
+    }
     operator = GreatExpectationsOperator(
         task_id="task_id",
         data_context_config=in_memory_data_context_config,
         data_asset_name="default_schema.test_table",
         conn_id="sqlite_default",
         expectation_suite_name="suite",
-        schema="test_schema"
+        schema="test_schema",
     )
     operator.conn = Connection(
         conn_id="sqlite_default",
