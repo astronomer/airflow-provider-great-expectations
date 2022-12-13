@@ -3,6 +3,9 @@
 ## Upcoming
 * (please add here)
 
+## 0.2.3a1
+* [FEATURE] Add schema parameter and data_asset_name parsing (#75)
+
 ## 0.2.2
 * [BUGFIX] Fix template extension bug (#64)
 
