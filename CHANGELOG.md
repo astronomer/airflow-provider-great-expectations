@@ -3,8 +3,9 @@
 ## Upcoming
 * (please add here)
 
-## 0.2.3a4
+## 0.2.3a5
 * [FEATURE] Add schema parameter and data_asset_name parsing (#75)
+* [MAINTENANCE] Fixes `README.md` errors when building the package (#80)
 
 ## 0.2.2
 * [BUGFIX] Fix template extension bug (#64)
