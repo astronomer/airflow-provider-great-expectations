@@ -34,9 +34,10 @@ The operator requires a DataContext to run which can be specified either as:
    1. A path to a directory in which a yaml-based DataContext configuration is located
    2. A Great Expectations DataContextConfig object
 
-Additonally a Checkpoint may be supplied, which can be specified either as:
+Additonally, a Checkpoint may be supplied, which can be specified either as:
    1. The name of a Checkpoint already located in the Checkpoint Store of the specified DataContext
    2. A Great Expectations CheckpointConfig object
+
 Although if no Checkpoint is supplied, a default one will be built.
 
 The operator also enables you to pass in a Python dictionary containing kwargs which will be added/substituted to the Checkpoint at runtime.
@@ -65,6 +66,7 @@ The example DAG can be exercised in one of two ways:
 3. Copy the directories in the `include` folder of this repository into the `include` directory of your Astro project
 4. Copy your GCP `credentials.json` file into the base directory of your Astro project
 5. Add the following to your `Dockerfile` to install the `airflow-provider-great-expectations` package, enable xcom pickling, and add the required Airflow variables and connection to run the example DAG:
+
    ```
    RUN pip install --user airflow_provider_great_expectations
    ENV AIRFLOW__CORE__ENABLE_XCOM_PICKLING=True
@@ -75,6 +77,7 @@ The example DAG can be exercised in one of two ways:
    ENV AIRFLOW_VAR_MY_TABLE=<YOUR_BQ_TABLE>
    ENV AIRFLOW_CONN_MY_BIGQUERY_CONN_ID='google-cloud-platform://?extra__google_cloud_platform__scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fbigquery&extra__google_cloud_platform__project=bombora-dev&extra__google_cloud_platform__key_path=%2Fusr%2Flocal%2Fairflow%2Fairflow-gcp.bombora-dev.iam.gserviceaccount.com.json'
    ```
+
 6. Run `astro dev start` to view the DAG on a local Airflow instance (you will need Docker running)
 
 **With a vanilla Airflow installation**:
@@ -89,11 +92,14 @@ The example DAG can be exercised in one of two ways:
 
 ### Setting Up the Virtual Environment
 
-Any virtual environment tool can be used, but the simplest approach is likely using the `venv` tool included in the Python standard library.
+Any virtual environment tool can be used, but the simplest approach is likely using the `venv` tool included
+in the Python standard library.
 
-For example, creating a virtual environment for development against this package can be done with the following (assuming `bash`):
+For example, creating a virtual environment for development against this package can be done with the following
+(assuming `bash`):
+
 ```
-# Create the virtual environment using `venv`:
+# Create the virtual environment using venv:
 $ python -m venv --prompt my-af-ge-venv .venv
 
 # Activate the virtual environment:
@@ -109,9 +115,14 @@ Once the above is done, running the unit and integration tests can be done with 
 
 #### Using `pytest`
 
-The `pytest` library and CLI is preferred by this project, and many Python developers, because of its rich API, and the additional control it gives you over things like test output, test markers, etc. It is included as a dependency in `requirements.txt`.
+The `pytest` library and CLI is preferred by this project, and many Python developers, because of its
+rich API, and the additional control it gives you over things like test output, test markers, etc.
+It is included as a dependency in `requirements.txt`.
 
-The simple command `pytest -p no:warnings`, when run in the virtual environment created with the above process, provides a concise output when all tests pass, filtering out deprecation warnings that may be issued by Airflow, and a only as detailed as necessary output when they don't:
+The simple command `pytest -p no:warnings`, when run in the virtual environment created with the above
+process, provides a concise output when all tests pass, filtering out deprecation warnings that may be
+issued by Airflow, and a only as detailed as necessary output when they dont:
+
 ```
 (my-af-ge-venv) $ pytest -p no:warnings
 =========================================================================================== test session starts ============================================================================================
