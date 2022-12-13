@@ -4,6 +4,8 @@ on:
     branches: ['main']
   pull_request:
     branches: ['main']
+  release:
+    types: [ 'created' ]
 
 # This allows a subsequently queued workflow run to interrupt and cancel previous runs
 concurrency:
