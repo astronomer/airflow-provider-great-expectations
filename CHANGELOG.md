@@ -3,7 +3,7 @@
 ## Upcoming
 * (please add here)
 
-## 0.2.3a3
+## 0.2.3a4
 * [FEATURE] Add schema parameter and data_asset_name parsing (#75)
 
 ## 0.2.2
