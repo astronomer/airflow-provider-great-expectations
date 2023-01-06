@@ -41,6 +41,7 @@ from great_expectations.data_context.util import instantiate_class_from_config
 from great_expectations.datasource.new_datasource import Datasource
 from great_expectations.util import deep_filter_properties_iterable
 from pandas import DataFrame
+import pkg_resources
 
 if TYPE_CHECKING:
     from airflow.utils.context import Context
@@ -111,7 +112,7 @@ class GreatExpectationsOperator(BaseOperator):
     :type return_json_dict: bool
     :param use_open_lineage: If True (default), creates an OpenLineage action if an OpenLineage environment is found
     :type use_open_lineage: bool
-    :param schema: If provided, overwrites the default schema provded by the connection
+    :param schema: If provided, overwrites the default schema provided by the connection
     :type schema: Optional[str]
     """
 
@@ -243,9 +244,11 @@ class GreatExpectationsOperator(BaseOperator):
                 odbc_connector = "mssql+pyodbc"
             uri_string = f"{odbc_connector}://{self.conn.login}:{self.conn.password}@{self.conn.host}:{self.conn.port}/{schema}"  # noqa
         elif conn_type == "snowflake":
-            try:  # auto generated connection kwargs Snowflake provider >=4.0.0
+            # auto generated connection kwargs Snowflake provider >=4.0.0
+            if int(pkg_resources.get_distribution("apache-airflow-providers-snowflake").version[0]) >= 4:
                 uri_string = f"snowflake://{self.conn.login}:{self.conn.password}@{self.conn.extra_dejson['account']}.{self.conn.extra_dejson['region']}/{self.conn.extra_dejson['database']}/{schema}?warehouse={self.conn.extra_dejson['warehouse']}&role={self.conn.extra_dejson['role']}"  # noqa
-            except KeyError:  # auto generated connection kwargs Snowflake provider < 4.0.0
+            # auto generated connection kwargs Snowflake provider < 4.0.0
+            else:
                 self.log.warning("Snowflake provider >=4.0.0 updated the Snowflake hook to not use the extra prefix.")
                 uri_string = f"snowflake://{self.conn.login}:{self.conn.password}@{self.conn.extra_dejson['extra__snowflake__account']}.{self.conn.extra_dejson['extra__snowflake__region']}/{self.conn.extra_dejson['extra__snowflake__database']}/{schema}?warehouse={self.conn.extra_dejson['extra__snowflake__warehouse']}&role={self.conn.extra_dejson['extra__snowflake__role']}"  # noqa
         elif conn_type == "gcpbigquery":
