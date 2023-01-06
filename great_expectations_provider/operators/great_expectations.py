@@ -42,6 +42,7 @@ from great_expectations.data_context.util import instantiate_class_from_config
 from great_expectations.datasource.new_datasource import Datasource
 from great_expectations.util import deep_filter_properties_iterable
 from pandas import DataFrame
+import airflow.providers.snowflake
 
 if TYPE_CHECKING:
     from airflow.utils.context import Context
@@ -245,7 +246,7 @@ class GreatExpectationsOperator(BaseOperator):
             uri_string = f"{odbc_connector}://{self.conn.login}:{self.conn.password}@{self.conn.host}:{self.conn.port}/{schema}"  # noqa
         elif conn_type == "snowflake":
             # auto generated connection kwargs Snowflake provider >=4.0.0
-            if int(pkg_resources.get_distribution("apache-airflow-providers-snowflake").version[0]) >= 4:  # noqa
+            if int(pkg_resources.get_distribution('apache-airflow-providers-snowflake==4.0.2').version[0]) >= 10:
                 uri_string = f"snowflake://{self.conn.login}:{self.conn.password}@{self.conn.extra_dejson['account']}.{self.conn.extra_dejson['region']}/{self.conn.extra_dejson['database']}/{schema}?warehouse={self.conn.extra_dejson['warehouse']}&role={self.conn.extra_dejson['role']}"  # noqa
             # auto generated connection kwargs Snowflake provider < 4.0.0
             else:
