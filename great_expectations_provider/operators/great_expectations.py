@@ -22,6 +22,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
 import great_expectations as ge
+import pkg_resources
 from airflow.exceptions import AirflowException
 from airflow.hooks.base import BaseHook
 from airflow.models import BaseOperator, BaseOperatorLink, Connection, XCom
@@ -41,7 +42,6 @@ from great_expectations.data_context.util import instantiate_class_from_config
 from great_expectations.datasource.new_datasource import Datasource
 from great_expectations.util import deep_filter_properties_iterable
 from pandas import DataFrame
-import pkg_resources
 
 if TYPE_CHECKING:
     from airflow.utils.context import Context
