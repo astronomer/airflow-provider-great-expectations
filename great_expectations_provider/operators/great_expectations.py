@@ -22,7 +22,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
 import great_expectations as ge
-from airflow.exceptions import AirflowException
+from airflow.exceptions import AirflowException, AirflowProviderDeprecationWarning
 from airflow.hooks.base import BaseHook
 from airflow.models import BaseOperator, BaseOperatorLink, Connection, XCom
 from great_expectations.checkpoint import Checkpoint
@@ -245,7 +245,8 @@ class GreatExpectationsOperator(BaseOperator):
         elif conn_type == "snowflake":
             try:  # auto generated connection kwargs Snowflake provider >=4.0.0
                 uri_string = f"snowflake://{self.conn.login}:{self.conn.password}@{self.conn.extra_dejson['account']}.{self.conn.extra_dejson['region']}/{self.conn.extra_dejson['database']}/{schema}?warehouse={self.conn.extra_dejson['warehouse']}&role={self.conn.extra_dejson['role']}"  # noqa
-            except:  # auto generated connection kwargs Snowflake provider < 4.0.0
+            except AirflowProviderDeprecationWarning as ex:  # auto generated connection kwargs Snowflake provider < 4.0.0
+                self.log.info(ex)
                 uri_string = f"snowflake://{self.conn.login}:{self.conn.password}@{self.conn.extra_dejson['extra__snowflake__account']}.{self.conn.extra_dejson['extra__snowflake__region']}/{self.conn.extra_dejson['extra__snowflake__database']}/{schema}?warehouse={self.conn.extra_dejson['extra__snowflake__warehouse']}&role={self.conn.extra_dejson['extra__snowflake__role']}"
         elif conn_type == "gcpbigquery":
             uri_string = f"{self.conn.host}{schema}"
