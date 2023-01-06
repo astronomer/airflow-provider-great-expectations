@@ -21,7 +21,7 @@ import os
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
-import airflow.providers.snowflake
+import airflow.providers.snowflake  # noqa
 import great_expectations as ge
 import pkg_resources
 from airflow.exceptions import AirflowException
@@ -246,7 +246,7 @@ class GreatExpectationsOperator(BaseOperator):
             uri_string = f"{odbc_connector}://{self.conn.login}:{self.conn.password}@{self.conn.host}:{self.conn.port}/{schema}"  # noqa
         elif conn_type == "snowflake":
             # auto generated connection kwargs Snowflake provider >=4.0.0
-            if int(pkg_resources.get_distribution("apache-airflow-providers-snowflake==4.0.2").version[0]) >= 10:
+            if int(pkg_resources.get_distribution("apache-airflow-providers-snowflake").version[0]) >= 4:
                 uri_string = f"snowflake://{self.conn.login}:{self.conn.password}@{self.conn.extra_dejson['account']}.{self.conn.extra_dejson['region']}/{self.conn.extra_dejson['database']}/{schema}?warehouse={self.conn.extra_dejson['warehouse']}&role={self.conn.extra_dejson['role']}"  # noqa
             # auto generated connection kwargs Snowflake provider < 4.0.0
             else:
