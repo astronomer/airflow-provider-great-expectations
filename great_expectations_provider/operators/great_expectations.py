@@ -367,8 +367,6 @@ class GreatExpectationsOperator(BaseOperator):
                 batch_request = self.build_configured_sql_datasource_batch_request()
             else:
                 raise ValueError("Unrecognized, or lack of, runtime query or Airflow connection passed.")
-        else:
-            raise ValueError("Unrecognized, or lack of, runtime or conn_id datasource passed.")
         if not self.checkpoint_kwargs:
             self.batch_request = batch_request
 
