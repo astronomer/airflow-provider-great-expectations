@@ -21,7 +21,6 @@ import os
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
-import airflow.providers.snowflake  # noqa
 import great_expectations as ge
 import pkg_resources
 from airflow.exceptions import AirflowException
