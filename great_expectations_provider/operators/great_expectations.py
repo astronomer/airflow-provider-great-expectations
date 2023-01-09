@@ -245,13 +245,13 @@ class GreatExpectationsOperator(BaseOperator):
                 odbc_connector = "mssql+pyodbc"
             uri_string = f"{odbc_connector}://{self.conn.login}:{self.conn.password}@{self.conn.host}:{self.conn.port}/{schema}"  # noqa
         elif conn_type == "snowflake":
-            # auto generated connection kwargs Snowflake provider >=4.0.0
-            if int(pkg_resources.get_distribution("apache-airflow-providers-snowflake").version[0]) >= 4:
-                uri_string = f"snowflake://{self.conn.login}:{self.conn.password}@{self.conn.extra_dejson['account']}.{self.conn.extra_dejson['region']}/{self.conn.extra_dejson['database']}/{schema}?warehouse={self.conn.extra_dejson['warehouse']}&role={self.conn.extra_dejson['role']}"  # noqa
-            # auto generated connection kwargs Snowflake provider < 4.0.0
-            else:
-                self.log.warning("Snowflake provider >=4.0.0 updated the Snowflake hook to not use the extra prefix.")
-                uri_string = f"snowflake://{self.conn.login}:{self.conn.password}@{self.conn.extra_dejson['extra__snowflake__account']}.{self.conn.extra_dejson['extra__snowflake__region']}/{self.conn.extra_dejson['extra__snowflake__database']}/{schema}?warehouse={self.conn.extra_dejson['extra__snowflake__warehouse']}&role={self.conn.extra_dejson['extra__snowflake__role']}"  # noqa
+			snowflake_account = self.conn.extra_dejson.get("account", self.conn.extra_dejson["extra__snowflake__account"])
+			snowflake_region = self.conn.extra_dejson.get("region", self.conn.extra_dejson["extra__snowflake__region"])
+			snowflake_database = self.conn.extra_dejson.get("database", self.conn.extra_dejson["extra__snowflake__database"])
+			snowflake_warehouse = self.conn.extra_dejson.get("warehouse", self.conn.extra_dejson["extra__snowflake__warehouse"])
+			snowflake_role = self.conn.extra_dejson.get("role", self.conn.extra_dejson["extra__snowflake__role"])
+			
+			uri_string = f"snowflake://{self.conn.login}:{self.conn.password}@{snowflake_account}.{snowflake_region}/{snowflake_database}/{schema}?warehouse={snowflake_warehouse}&role={snowflake_role}"
         elif conn_type == "gcpbigquery":
             uri_string = f"{self.conn.host}{schema}"
         elif conn_type == "sqlite":
