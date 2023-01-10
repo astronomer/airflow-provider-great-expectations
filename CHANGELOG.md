@@ -3,6 +3,11 @@
 ## Upcoming
 * (please add here)
 
+## 0.2.4
+* [MAINTENANCE] Simplify example path manipulation with `pathlib` (#77)
+* [BUGFIX] Change kwargs in Snowflake URI generation (#84)
+* [FEATURE] Add data asset name guard (#85)
+
 ## 0.2.3
 * [FEATURE] Add schema parameter and data_asset_name parsing (#75)
 * [MAINTENANCE] Fixes `README.md` errors when building the package (#80)
