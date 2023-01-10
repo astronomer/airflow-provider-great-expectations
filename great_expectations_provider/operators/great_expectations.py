@@ -211,7 +211,15 @@ class GreatExpectationsOperator(BaseOperator):
 
         if not (self.checkpoint_name or self.checkpoint_config) and not self.expectation_suite_name:
             raise ValueError(
-                "An expectation_suite_name must be supplied if neither checkpoint_name nor checkpoint_config are."
+                "An expectation_suite_name must be specified if neither checkpoint_name nor checkpoint_config are."
+            )
+
+        # Check that when a data asset name is passed, a valid conn_id or dataframe_to_validate is passed as well
+        # so the appropriate custom data assets can be generated
+        if self.data_asset_name and not (self.is_dataframe or self.conn_id):
+            raise ValueError(
+                "When a data_asset_name is specified, a dataframe_to_validate or conn_id must also be specified"
+                " to generate the data asset."
             )
 
         if isinstance(self.checkpoint_config, CheckpointConfig):
