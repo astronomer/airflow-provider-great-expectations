@@ -292,13 +292,13 @@ class GreatExpectationsOperator(BaseOperator):
         elif conn_type == "aws":
             # TODO: Check which AWS resource is being used based on the hook. This is difficult because
             # we don't have access to a specific hook.
-            athena_db = schema or self.kwargs.get("database")
-            s3_path = self.kwargs.get("s3_path")
-            region = self.kwargs.get("region")
+            athena_db = schema or self.params.get("database")
+            s3_path = self.params.get("s3_path")
+            region = self.params.get("region")
             if not s3_path:
-                raise ValueError("No s3_path given in kwargs.")
+                raise ValueError("No s3_path given in params.")
             if not region:
-                raise ValueError("No region given in kwargs.")
+                raise ValueError("No region given in params.")
             if athena_db:
                 uri_string = f"awsathena+rest://@athena.{region}.amazonaws.com/{athena_db}?s3_staging_dir={s3_path}"
             else:
