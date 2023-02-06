@@ -938,10 +938,7 @@ def test_great_expectations_operator__make_connection_string_athena_with_db():
         data_asset_name="athena_db.table_name",
         conn_id="aws_default",
         expectation_suite_name="suite",
-        params={
-            "region": "us-east-1",
-            "s3_path": "bucket/path/to/staging/dir"
-        }
+        params={"region": "us-east-1", "s3_path": "bucket/path/to/staging/dir"},
     )
     operator.conn = Connection(
         conn_id="aws_default",
