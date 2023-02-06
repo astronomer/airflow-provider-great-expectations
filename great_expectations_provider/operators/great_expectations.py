@@ -174,6 +174,7 @@ class GreatExpectationsOperator(BaseOperator):
         self.datasource: Optional[Datasource] = None
         self.batch_request: Optional[BatchRequestBase] = None
         self.schema = schema
+        self.kwargs = kwargs
 
         if self.is_dataframe and self.query_to_validate:
             raise ValueError(
@@ -268,7 +269,22 @@ class GreatExpectationsOperator(BaseOperator):
             uri_string = f"{self.conn.host}{schema}"
         elif conn_type == "sqlite":
             uri_string = f"sqlite:///{self.conn.host}"
-        # TODO: Add Athena and Trino support if possible
+        elif conn_type == "aws":
+            # TODO: Check which AWS resource is being used based on the hook. This is difficult because
+            # we don't have access to a specific hook.
+            athena_db = schema or self.kwargs.get("database")
+            s3_path = self.kwargs.get("s3_path")
+            region = self.kwargs.get("region")
+            if not s3_path:
+                raise ValueError("No s3_path given in kwargs.")
+            if not region:
+                raise ValueError("No region given in kwargs.")
+            if athena_db:
+                uri_string = f"awsathena+rest://@athena.{region}.amazonaws.com/{athena_db}?s3_staging_dir={s3_path}"
+            else:
+                uri_string = f"awsathena+rest://@athena.{region}.amazonaws.com/?s3_staging_dir={s3_path}"
+            # TODO: Add other AWS sources here as needed
+        # TODO: Add and Trino support (if possible)
         else:
             raise ValueError(f"Conn type: {conn_type} is not supported.")
         return uri_string
