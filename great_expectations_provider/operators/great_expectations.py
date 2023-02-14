@@ -255,7 +255,7 @@ class GreatExpectationsOperator(BaseOperator):
             snowflake_region = self.conn.extra_dejson.get("region") or self.conn.extra_dejson["extra__snowflake__region"]
             snowflake_database = self.conn.extra_dejson.get("database") or self.conn.extra_dejson["extra__snowflake__database"]
             snowflake_warehouse = self.conn.extra_dejson.get("warehouse") or self.conn.extra_dejson["extra__snowflake__warehouse"]
-            snowflake_role = self.conn.extra_dejson.get("role") or self.conn.extra_dejson["extra__snowflake__role"])
+            snowflake_role = self.conn.extra_dejson.get("role") or self.conn.extra_dejson["extra__snowflake__role"]
 
             uri_string = f"snowflake://{self.conn.login}:{self.conn.password}@/{schema}?account={snowflake_account}&database={snowflake_database}&region={snowflake_region}&warehouse={snowflake_warehouse}&role={snowflake_role}"  # noqa
         elif conn_type == "gcpbigquery":
