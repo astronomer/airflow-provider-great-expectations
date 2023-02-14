@@ -251,10 +251,18 @@ class GreatExpectationsOperator(BaseOperator):
                 odbc_connector = "mssql+pyodbc"
             uri_string = f"{odbc_connector}://{self.conn.login}:{self.conn.password}@{self.conn.host}:{self.conn.port}/{self.schema}"  # noqa
         elif conn_type == "snowflake":
-            snowflake_account = self.conn.extra_dejson.get("account") or self.conn.extra_dejson["extra__snowflake__account"]
-            snowflake_region = self.conn.extra_dejson.get("region") or self.conn.extra_dejson["extra__snowflake__region"]
-            snowflake_database = self.conn.extra_dejson.get("database") or self.conn.extra_dejson["extra__snowflake__database"]
-            snowflake_warehouse = self.conn.extra_dejson.get("warehouse") or self.conn.extra_dejson["extra__snowflake__warehouse"]
+            snowflake_account = (
+                self.conn.extra_dejson.get("account") or self.conn.extra_dejson["extra__snowflake__account"]
+            )
+            snowflake_region = (
+                self.conn.extra_dejson.get("region") or self.conn.extra_dejson["extra__snowflake__region"]
+            )
+            snowflake_database = (
+                self.conn.extra_dejson.get("database") or self.conn.extra_dejson["extra__snowflake__database"]
+            )
+            snowflake_warehouse = (
+                self.conn.extra_dejson.get("warehouse") or self.conn.extra_dejson["extra__snowflake__warehouse"]
+            )
             snowflake_role = self.conn.extra_dejson.get("role") or self.conn.extra_dejson["extra__snowflake__role"]
 
             uri_string = f"snowflake://{self.conn.login}:{self.conn.password}@{snowflake_account}.{snowflake_region}/{snowflake_database}/{self.schema}?warehouse={snowflake_warehouse}&role={snowflake_role}"  # noqa
