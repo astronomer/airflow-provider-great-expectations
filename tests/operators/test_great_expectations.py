@@ -617,7 +617,6 @@ def test_build_runtime_sql_datasource_config_from_conn_id(
     runtime_sql_operator,
     monkeypatch,
 ):
-
     runtime_sql_operator.conn = mock_airflow_conn
     monkeypatch.setattr(runtime_sql_operator, "conn", mock_airflow_conn)
 
