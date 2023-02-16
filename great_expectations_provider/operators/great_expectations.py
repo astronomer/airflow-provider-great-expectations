@@ -267,6 +267,13 @@ class GreatExpectationsOperator(BaseOperator):
 
             uri_string = f"snowflake://{self.conn.login}:{self.conn.password}@{snowflake_account}.{snowflake_region}/{snowflake_database}/{self.schema}?warehouse={snowflake_warehouse}&role={snowflake_role}"  # noqa
 
+            # private_key_file is optional, see:
+            # https://docs.snowflake.com/en/user-guide/sqlalchemy.html#key-pair-authentication-support
+            snowflake_private_key_file = self.conn.extra_dejson.get(
+                "private_key_file", self.conn.extra_dejson.get("extra__snowflake__private_key_file")
+            )
+            if snowflake_private_key_file:
+                uri_string += f"&private_key_file={snowflake_private_key_file}"
         elif conn_type == "gcpbigquery":
             uri_string = f"{self.conn.host}{self.schema}"
         elif conn_type == "sqlite":

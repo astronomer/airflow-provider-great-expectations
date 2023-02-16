@@ -814,7 +814,10 @@ def test_great_expectations_operator__make_connection_string_mssql():
 
 
 def test_great_expectations_operator__make_connection_string_snowflake():
-    test_conn_str = "snowflake://user:password@account.region-east-1/database/schema?warehouse=warehouse&role=role"
+    test_conn_str = (
+        "snowflake://user:password@account.region-east-1/"
+        "database/schema?warehouse=warehouse&role=role&private_key_file=/path/to/key.p8"
+    )
     operator = GreatExpectationsOperator(
         task_id="task_id",
         data_context_config=in_memory_data_context_config,
@@ -837,6 +840,7 @@ def test_great_expectations_operator__make_connection_string_snowflake():
             "extra__snowflake__database": "database",
             "extra__snowflake__region": "region-east-1",
             "extra__snowflake__account": "account",
+            "extra__snowflake__private_key_file": "/path/to/key.p8",
         },
     )
     operator.conn_type = operator.conn.conn_type
