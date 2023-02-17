@@ -3,6 +3,10 @@
 ## Upcoming
 * (please add here)
 
+## 0.2.5
+* [BUGFIX] Schema variable update fixes Issues #94 and #87 by @mpgreg in https://github.com/astronomer/airflow-provider-great-expectations/pull/95
+* [FEATURE] Snowflake key auth by @ivanstillfront in https://github.com/astronomer/airflow-provider-great-expectations/pull/93
+
 ## 0.2.4
 * [MAINTENANCE] Simplify example path manipulation with `pathlib` (#77)
 * [BUGFIX] Change kwargs in Snowflake URI generation (#84)
