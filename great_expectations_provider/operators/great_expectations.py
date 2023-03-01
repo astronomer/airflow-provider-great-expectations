@@ -19,6 +19,7 @@
 
 import os
 from datetime import datetime
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
 import great_expectations as ge
@@ -234,7 +235,7 @@ class GreatExpectationsOperator(BaseOperator):
             # Update data_asset_name to be only the table
             self.data_asset_name = asset_list[1]
 
-    def make_connection_string(self) -> str:
+    def make_connection_configuration(self) -> Dict[str, str]:
         """Builds connection strings based off existing Airflow connections. Only supports necessary extras."""
         uri_string = ""
         if not self.conn:
@@ -251,6 +252,19 @@ class GreatExpectationsOperator(BaseOperator):
                 odbc_connector = "mssql+pyodbc"
             uri_string = f"{odbc_connector}://{self.conn.login}:{self.conn.password}@{self.conn.host}:{self.conn.port}/{self.schema}"  # noqa
         elif conn_type == "snowflake":
+            try:
+                return self.build_snowflake_connection_config_from_hook()
+            except ImportError:
+                self.log.warning(
+                    (
+                        "Snowflake provider package could not be imported, "
+                        "attempting to build connection uri from %s "
+                        "Snowflake provider package is required for key-based auth, "
+                        "see: https://airflow.apache.org/docs/apache-airflow-providers-snowflake/stable/index.html"
+                    ),
+                    self.conn,
+                )
+
             snowflake_account = (
                 self.conn.extra_dejson.get("account") or self.conn.extra_dejson["extra__snowflake__account"]
             )
@@ -267,13 +281,6 @@ class GreatExpectationsOperator(BaseOperator):
 
             uri_string = f"snowflake://{self.conn.login}:{self.conn.password}@{snowflake_account}.{snowflake_region}/{snowflake_database}/{self.schema}?warehouse={snowflake_warehouse}&role={snowflake_role}"  # noqa
 
-            # private_key_file is optional, see:
-            # https://docs.snowflake.com/en/user-guide/sqlalchemy.html#key-pair-authentication-support
-            snowflake_private_key_file = self.conn.extra_dejson.get(
-                "private_key_file", self.conn.extra_dejson.get("extra__snowflake__private_key_file")
-            )
-            if snowflake_private_key_file:
-                uri_string += f"&private_key_file={snowflake_private_key_file}"
         elif conn_type == "gcpbigquery":
             uri_string = f"{self.conn.host}{self.schema}"
         elif conn_type == "sqlite":
@@ -281,18 +288,63 @@ class GreatExpectationsOperator(BaseOperator):
         # TODO: Add Athena and Trino support if possible
         else:
             raise ValueError(f"Conn type: {conn_type} is not supported.")
-        return uri_string
+        return {"connection_string": uri_string}
+
+    def build_snowflake_connection_config_from_hook(self) -> Dict[str, str]:
+        from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
+        from cryptography.hazmat.backends import default_backend
+        from cryptography.hazmat.primitives import serialization
+
+        hook = SnowflakeHook(snowflake_conn_id=self.conn_id)
+
+        # Support the operator overriding the schema
+        # which is necessary for temp tables.
+        hook.schema = self.schema or hook.schema
+
+        conn = hook.get_connection(self.conn_id)
+        engine = hook.get_sqlalchemy_engine()
+
+        url = engine.url.render_as_string(hide_password=False)
+
+        private_key_file = conn.extra_dejson.get("extra__snowflake__private_key_file") or conn.extra_dejson.get(
+            "private_key_file"
+        )
+
+        if private_key_file:
+            private_key_pem = Path(private_key_file).read_bytes()
+
+            passphrase = None
+            if conn.password:
+                passphrase = conn.password.strip().encode()
+
+            p_key = serialization.load_pem_private_key(private_key_pem, password=passphrase, backend=default_backend())
+
+            pkb = p_key.private_bytes(
+                encoding=serialization.Encoding.DER,
+                format=serialization.PrivateFormat.PKCS8,
+                encryption_algorithm=serialization.NoEncryption(),
+            )
+            return {
+                # Unfortunately GE uses deepcopy when instantiating the SqlAlchemyExecutionEngine
+                # which uses pickle and SAEngine is not pickleable.
+                # "engine": engine,
+                "url": url,
+                "connect_args": {
+                    "private_key": pkb,
+                },
+            }
+
+        return {"url": url}
 
     def build_configured_sql_datasource_config_from_conn_id(
         self,
     ) -> Datasource:
-        conn_str = self.make_connection_string()
         datasource_config = {
             "name": f"{self.conn.conn_id}_configured_sql_datasource",
             "execution_engine": {
                 "module_name": "great_expectations.execution_engine",
                 "class_name": "SqlAlchemyExecutionEngine",
-                "connection_string": conn_str,
+                **self.make_connection_configuration(),
             },
             "data_connectors": {
                 "default_configured_asset_sql_data_connector": {
@@ -327,7 +379,7 @@ class GreatExpectationsOperator(BaseOperator):
             "execution_engine": {
                 "module_name": "great_expectations.execution_engine",
                 "class_name": "SqlAlchemyExecutionEngine",
-                "connection_string": self.make_connection_string(),
+                **self.make_connection_configuration(),
             },
             "data_connectors": {
                 "default_runtime_data_connector": {
