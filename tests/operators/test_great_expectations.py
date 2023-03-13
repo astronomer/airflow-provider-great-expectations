@@ -19,6 +19,7 @@ import pandas as pd
 import pytest
 from airflow.exceptions import AirflowException
 from airflow.models.connection import Connection
+from cryptography.hazmat.backends import default_backend
 from great_expectations.core.batch import BatchRequest, RuntimeBatchRequest
 from great_expectations.data_context.types.base import (
     CheckpointConfig,
@@ -26,6 +27,7 @@ from great_expectations.data_context.types.base import (
 )
 from great_expectations.datasource import Datasource
 from great_expectations.exceptions.exceptions import CheckpointNotFoundError
+from sqlalchemy.engine import URL
 
 from great_expectations_provider.operators.great_expectations import (
     GreatExpectationsOperator,
@@ -722,7 +724,7 @@ def test_build_default_checkpoint_config(configured_sql_operator):
 
 
 def test_great_expectations_operator__make_connection_string_redshift():
-    test_conn_str = "postgresql+psycopg2://user:password@connection:5439/schema"
+    test_conn_conf = {"connection_string": "postgresql+psycopg2://user:password@connection:5439/schema"}
     operator = GreatExpectationsOperator(
         task_id="task_id",
         data_context_config=in_memory_data_context_config,
@@ -741,11 +743,11 @@ def test_great_expectations_operator__make_connection_string_redshift():
         port=5439,
     )
     operator.conn_type = operator.conn.conn_type
-    assert operator.make_connection_string() == test_conn_str
+    assert operator.make_connection_configuration() == test_conn_conf
 
 
 def test_great_expectations_operator__make_connection_string_postgres():
-    test_conn_str = "postgresql+psycopg2://user:password@connection:5439/schema"
+    test_conn_conf = {"connection_string": "postgresql+psycopg2://user:password@connection:5439/schema"}
     operator = GreatExpectationsOperator(
         task_id="task_id",
         data_context_config=in_memory_data_context_config,
@@ -764,11 +766,11 @@ def test_great_expectations_operator__make_connection_string_postgres():
         port=5439,
     )
     operator.conn_type = operator.conn.conn_type
-    assert operator.make_connection_string() == test_conn_str
+    assert operator.make_connection_configuration() == test_conn_conf
 
 
 def test_great_expectations_operator__make_connection_string_mysql():
-    test_conn_str = "mysql://user:password@connection:5439/schema"
+    test_conn_conf = {"connection_string": "mysql://user:password@connection:5439/schema"}
     operator = GreatExpectationsOperator(
         task_id="task_id",
         data_context_config=in_memory_data_context_config,
@@ -787,11 +789,11 @@ def test_great_expectations_operator__make_connection_string_mysql():
         port=5439,
     )
     operator.conn_type = operator.conn.conn_type
-    assert operator.make_connection_string() == test_conn_str
+    assert operator.make_connection_configuration() == test_conn_conf
 
 
 def test_great_expectations_operator__make_connection_string_mssql():
-    test_conn_str = "mssql+pyodbc://user:password@connection:5439/schema"
+    test_conn_conf = {"connection_string": "mssql+pyodbc://user:password@connection:5439/schema"}
     operator = GreatExpectationsOperator(
         task_id="task_id",
         data_context_config=in_memory_data_context_config,
@@ -810,14 +812,64 @@ def test_great_expectations_operator__make_connection_string_mssql():
         port=5439,
     )
     operator.conn_type = operator.conn.conn_type
-    assert operator.make_connection_string() == test_conn_str
+    assert operator.make_connection_configuration() == test_conn_conf
 
 
-def test_great_expectations_operator__make_connection_string_snowflake():
-    test_conn_str = (
-        "snowflake://user:password@account.region-east-1/"
-        "database/schema?warehouse=warehouse&role=role&private_key_file=/path/to/key.p8"
+def test_great_expectations_operator__make_connection_string_snowflake(mocker):
+    test_conn_conf = {
+        "url": URL.create(
+            drivername="snowflake",
+            username="user",
+            password="password",
+            host="account.region-east-1",
+            database="database/schema",
+            query={"role": "role", "warehouse": "warehouse", "authenticator": "snowflake", "application": "AIRFLOW"},
+        ).render_as_string(hide_password=False)
+    }
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        data_asset_name="test_runtime_data_asset",
+        conn_id="snowflake_default",
+        query_to_validate="SELECT * FROM db;",
+        expectation_suite_name="suite",
     )
+    operator.conn = Connection(
+        conn_id="snowflake_default",
+        conn_type="snowflake",
+        host="connection",
+        login="user",
+        password="password",
+        schema="schema",
+        port=5439,
+        extra={
+            "extra__snowflake__role": "role",
+            "extra__snowflake__warehouse": "warehouse",
+            "extra__snowflake__database": "database",
+            "extra__snowflake__region": "region-east-1",
+            "extra__snowflake__account": "account",
+        },
+    )
+    mocker.patch(
+        "airflow.providers.snowflake.hooks.snowflake.SnowflakeHook.get_connection", return_value=operator.conn
+    )
+    operator.conn_type = operator.conn.conn_type
+    assert operator.make_connection_configuration() == test_conn_conf
+
+
+def test_great_expectations_operator__make_connection_string_snowflake_pkey(mocker):
+    private_key_bytes = b"secret"
+    test_conn_conf = {
+        "url": URL.create(
+            drivername="snowflake",
+            username="user",
+            password="",
+            host="account.region-east-1",
+            database="database/schema",
+            query={"role": "role", "warehouse": "warehouse", "authenticator": "snowflake", "application": "AIRFLOW"},
+        ).render_as_string(hide_password=False),
+        "connect_args": {"private_key": private_key_bytes},
+    }
     operator = GreatExpectationsOperator(
         task_id="task_id",
         data_context_config=in_memory_data_context_config,
@@ -844,11 +896,23 @@ def test_great_expectations_operator__make_connection_string_snowflake():
         },
     )
     operator.conn_type = operator.conn.conn_type
-    assert operator.make_connection_string() == test_conn_str
+
+    mocker.patch(
+        "airflow.providers.snowflake.hooks.snowflake.SnowflakeHook.get_connection", return_value=operator.conn
+    )
+    mocker.patch("great_expectations_provider.operators.great_expectations.Path.read_bytes", return_value=b"dummy")
+    mocked_key = mock.MagicMock(default_backend())
+    mocked_key.private_bytes = mock.MagicMock(return_value=private_key_bytes)
+    mocker.patch(
+        "cryptography.hazmat.primitives.serialization.load_pem_private_key",
+        return_value=mocked_key,
+    )
+
+    assert operator.make_connection_configuration() == test_conn_conf
 
 
 def test_great_expectations_operator__make_connection_string_sqlite():
-    test_conn_str = "sqlite:///host"
+    test_conn_conf = {"connection_string": "sqlite:///host"}
     operator = GreatExpectationsOperator(
         task_id="task_id",
         data_context_config=in_memory_data_context_config,
@@ -863,13 +927,20 @@ def test_great_expectations_operator__make_connection_string_sqlite():
         host="host",
     )
     operator.conn_type = operator.conn.conn_type
-    assert operator.make_connection_string() == test_conn_str
+    assert operator.make_connection_configuration() == test_conn_conf
 
 
-def test_great_expectations_operator__make_connection_string_schema_parameter():
-    test_conn_str = (
-        "snowflake://user:password@account.region-east-1/database/test_schema_parameter?warehouse=warehouse&role=role"
-    )
+def test_great_expectations_operator__make_connection_string_schema_parameter(mocker):
+    test_conn_conf = {
+        "url": URL.create(
+            drivername="snowflake",
+            username="user",
+            password="password",
+            host="account.region-east-1",
+            database="database/test_schema_parameter",
+            query={"role": "role", "warehouse": "warehouse", "authenticator": "snowflake", "application": "AIRFLOW"},
+        ).render_as_string(hide_password=False),
+    }
     operator = GreatExpectationsOperator(
         task_id="task_id",
         data_context_config=in_memory_data_context_config,
@@ -895,13 +966,23 @@ def test_great_expectations_operator__make_connection_string_schema_parameter():
         },
     )
     operator.conn_type = operator.conn.conn_type
-    assert operator.make_connection_string() == test_conn_str
-
-
-def test_great_expectations_operator__make_connection_string_data_asset_name_schema_parse():
-    test_conn_str = (
-        "snowflake://user:password@account.region-east-1/database/test_schema?warehouse=warehouse&role=role"
+    mocker.patch(
+        "airflow.providers.snowflake.hooks.snowflake.SnowflakeHook.get_connection", return_value=operator.conn
     )
+    assert operator.make_connection_configuration() == test_conn_conf
+
+
+def test_great_expectations_operator__make_connection_string_data_asset_name_schema_parse(mocker):
+    test_conn_conf = {
+        "url": URL.create(
+            drivername="snowflake",
+            username="user",
+            password="password",
+            host="account.region-east-1",
+            database="database/test_schema",
+            query={"role": "role", "warehouse": "warehouse", "authenticator": "snowflake", "application": "AIRFLOW"},
+        ).render_as_string(hide_password=False),
+    }
     operator = GreatExpectationsOperator(
         task_id="task_id",
         data_context_config=in_memory_data_context_config,
@@ -925,19 +1006,22 @@ def test_great_expectations_operator__make_connection_string_data_asset_name_sch
         },
     )
     operator.conn_type = operator.conn.conn_type
-    assert operator.make_connection_string() == test_conn_str
+    mocker.patch(
+        "airflow.providers.snowflake.hooks.snowflake.SnowflakeHook.get_connection", return_value=operator.conn
+    )
+    assert operator.make_connection_configuration() == test_conn_conf
     assert operator.data_asset_name == "test_table"
 
 
 def test_great_expectations_operator__build_configured_sql_datasource_config_from_conn_id_uses_schema_override():
-    test_conn_str = "sqlite:///host"
+    test_conn_conf = {"connection_string": "sqlite:///host"}
     datasource_config = {
         "name": "sqlite_default_configured_sql_datasource",
         "id": None,
         "execution_engine": {
             "module_name": "great_expectations.execution_engine",
             "class_name": "SqlAlchemyExecutionEngine",
-            "connection_string": test_conn_str,
+            **test_conn_conf,
         },
         "data_connectors": {
             "default_configured_asset_sql_data_connector": {
@@ -971,7 +1055,7 @@ def test_great_expectations_operator__build_configured_sql_datasource_config_fro
         schema="wrong_schema",
     )
     operator.conn_type = operator.conn.conn_type
-    assert operator.make_connection_string() == test_conn_str
+    assert operator.make_connection_configuration() == test_conn_conf
     assert operator.build_configured_sql_datasource_config_from_conn_id().config == datasource_config
 
     constructed_datasource = operator.build_configured_sql_datasource_config_from_conn_id()
@@ -1000,4 +1084,4 @@ def test_great_expectations_operator__make_connection_string_raise_error():
     )
     operator.conn_type = operator.conn.conn_type
     with pytest.raises(ValueError):
-        operator.make_connection_string()
+        operator.make_connection_configuration()
