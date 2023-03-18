@@ -269,7 +269,7 @@ class GreatExpectationsOperator(BaseOperator):
                 self.conn.extra_dejson.get("account") or self.conn.extra_dejson["extra__snowflake__account"]
             )
             snowflake_region = (
-                self.conn.extra_dejson.get("region") or self.conn.extra_dejson["extra__snowflake__region"]
+                self.conn.extra_dejson.get("region") or self.conn.extra_dejson.get("extra__snowflake__region")  #Snowflake region can be None for us-west-2
             )
             snowflake_database = (
                 self.conn.extra_dejson.get("database") or self.conn.extra_dejson["extra__snowflake__database"]
@@ -279,7 +279,10 @@ class GreatExpectationsOperator(BaseOperator):
             )
             snowflake_role = self.conn.extra_dejson.get("role") or self.conn.extra_dejson["extra__snowflake__role"]
 
-            uri_string = f"snowflake://{self.conn.login}:{self.conn.password}@{snowflake_account}.{snowflake_region}/{snowflake_database}/{self.schema}?warehouse={snowflake_warehouse}&role={snowflake_role}"  # noqa
+            if snowflake_region:
+                uri_string = f"snowflake://{self.conn.login}:{self.conn.password}@{snowflake_account}.{snowflake_region}/{snowflake_database}/{self.schema}?warehouse={snowflake_warehouse}&role={snowflake_role}"  # noqa
+            else:
+                uri_string = f"snowflake://{self.conn.login}:{self.conn.password}@{snowflake_account}/{snowflake_database}/{self.schema}?warehouse={snowflake_warehouse}&role={snowflake_role}"  # noqa
 
         elif conn_type == "gcpbigquery":
             uri_string = f"{self.conn.host}{self.schema}"
