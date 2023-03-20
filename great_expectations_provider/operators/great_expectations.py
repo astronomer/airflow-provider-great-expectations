@@ -268,9 +268,9 @@ class GreatExpectationsOperator(BaseOperator):
             snowflake_account = (
                 self.conn.extra_dejson.get("account") or self.conn.extra_dejson["extra__snowflake__account"]
             )
-            snowflake_region = (
-                self.conn.extra_dejson.get("region") or self.conn.extra_dejson.get("extra__snowflake__region")  #Snowflake region can be None for us-west-2
-            )
+            snowflake_region = self.conn.extra_dejson.get("region") or self.conn.extra_dejson.get(
+                "extra__snowflake__region"
+            )  # Snowflake region can be None for us-west-2
             snowflake_database = (
                 self.conn.extra_dejson.get("database") or self.conn.extra_dejson["extra__snowflake__database"]
             )
