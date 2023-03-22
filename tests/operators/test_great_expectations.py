@@ -931,9 +931,9 @@ def test_great_expectations_operator__make_connection_string_sqlite():
 
 
 def test_great_expectations_operator__make_connection_string_athena_with_db():
-    test_conn_str = (
-        "awsathena+rest://@athena.us-east-1.amazonaws.com/athena_db?s3_staging_dir=bucket/path/to/staging/dir"
-    )
+    test_conn_conf = {
+        "connection_string": "awsathena+rest://@athena.us-east-1.amazonaws.com/athena_db?s3_staging_dir=bucket/path/to/staging/dir" # noqa
+    }
     operator = GreatExpectationsOperator(
         task_id="task_id",
         data_context_config=in_memory_data_context_config,
@@ -948,11 +948,13 @@ def test_great_expectations_operator__make_connection_string_athena_with_db():
         host="host",
     )
     operator.conn_type = operator.conn.conn_type
-    assert operator.make_connection_configuration() == test_conn_str
+    assert operator.make_connection_configuration() == test_conn_conf
 
 
 def test_great_expectations_operator__make_connection_string_athena_without_db():
-    test_conn_str = "awsathena+rest://@athena.us-east-1.amazonaws.com/?s3_staging_dir=bucket/path/to/staging/dir"
+    test_conn_conf = {
+        "connection_string": "awsathena+rest://@athena.us-east-1.amazonaws.com/?s3_staging_dir=bucket/path/to/staging/dir" # noqa
+    }
     operator = GreatExpectationsOperator(
         task_id="task_id",
         data_context_config=in_memory_data_context_config,
@@ -967,7 +969,7 @@ def test_great_expectations_operator__make_connection_string_athena_without_db()
         host="host",
     )
     operator.conn_type = operator.conn.conn_type
-    assert operator.make_connection_configuration() == test_conn_str
+    assert operator.make_connection_configuration() == test_conn_conf
 
 
 def test_great_expectations_operator__make_connection_string_schema_parameter(mocker):
