@@ -970,13 +970,10 @@ def test_great_expectations_operator__make_connection_string_athena_without_db()
     assert operator.make_connection_configuration() == test_conn_str
 
 
-def test_great_expectations_operator__make_connection_string_schema_parameter():
+def test_great_expectations_operator__make_connection_string_schema_parameter(mocker):
     test_conn_str = (
         "snowflake://user:password@account.region-east-1/database/test_schema_parameter?warehouse=warehouse&role=role"
     )
-
-
-def test_great_expectations_operator__make_connection_string_schema_parameter(mocker):
     test_conn_conf = {
         "url": URL.create(
             drivername="snowflake",
