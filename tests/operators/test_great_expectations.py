@@ -932,7 +932,7 @@ def test_great_expectations_operator__make_connection_string_sqlite():
 
 def test_great_expectations_operator__make_connection_string_athena_with_db():
     test_conn_conf = {
-        "connection_string": "awsathena+rest://@athena.us-east-1.amazonaws.com/athena_db?s3_staging_dir=bucket/path/to/staging/dir" # noqa
+        "connection_string": "awsathena+rest://@athena.us-east-1.amazonaws.com/athena_db?s3_staging_dir=bucket/path/to/staging/dir"  # noqa
     }
     operator = GreatExpectationsOperator(
         task_id="task_id",
@@ -953,7 +953,7 @@ def test_great_expectations_operator__make_connection_string_athena_with_db():
 
 def test_great_expectations_operator__make_connection_string_athena_without_db():
     test_conn_conf = {
-        "connection_string": "awsathena+rest://@athena.us-east-1.amazonaws.com/?s3_staging_dir=bucket/path/to/staging/dir" # noqa
+        "connection_string": "awsathena+rest://@athena.us-east-1.amazonaws.com/?s3_staging_dir=bucket/path/to/staging/dir"  # noqa
     }
     operator = GreatExpectationsOperator(
         task_id="task_id",
@@ -973,9 +973,6 @@ def test_great_expectations_operator__make_connection_string_athena_without_db()
 
 
 def test_great_expectations_operator__make_connection_string_schema_parameter(mocker):
-    test_conn_str = (
-        "snowflake://user:password@account.region-east-1/database/test_schema_parameter?warehouse=warehouse&role=role"
-    )
     test_conn_conf = {
         "url": URL.create(
             drivername="snowflake",
