@@ -304,7 +304,19 @@ class GreatExpectationsOperator(BaseOperator):
             else:
                 uri_string = f"awsathena+rest://@athena.{region}.amazonaws.com/?s3_staging_dir={s3_path}"
             # TODO: Add other AWS sources here as needed
-        # TODO: Add and Trino support (if possible)
+        elif conn_type == "trino":
+            catalog = self.conn.extra_dejson.get("catalog", "hive")
+            if self.conn.schema:
+                catalog += f"/{self.conn.schema}"
+            if self.conn.password:
+                uri_string = f"trino://{self.conn.login}:{self.conn.password}@{self.conn.host}:{self.conn.port}/{catalog}"  # noqa
+            elif self.conn.extra_dejson.get("auth") == "jwt":
+                uri_string = f"trino://{self.conn.login}@{self.conn.host}:{self.conn.port}/{catalog}?access_token={self.conn.extra_dejson['jwt__token']}"  # noqa
+            # TODO: Add other auth methods as needed
+            elif self.conn.extra_dejson["auth"] in ("kerberos", "certs"):
+                raise NotImplementedError("kerberos and cert auth methods are not implemented.")  # noqa
+            else:
+                raise ValueError("Unrecognized Trino Auth method.")
         else:
             raise ValueError(f"Conn type: {conn_type} is not supported.")
         return {"connection_string": uri_string}

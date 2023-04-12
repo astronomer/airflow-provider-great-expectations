@@ -972,6 +972,51 @@ def test_great_expectations_operator__make_connection_string_athena_without_db()
     assert operator.make_connection_configuration() == test_conn_conf
 
 
+def test_great_expectations_operator__make_connection_string_trino_basic_auth():
+    test_conn_conf = {
+        "connection_string": "trino://user:pass@host:8080/hive"
+    }
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        data_asset_name="table_name",
+        conn_id="trino_default",
+        expectation_suite_name="suite",
+    )
+    operator.conn = Connection(
+        conn_id="trino_default",
+        conn_type="trino",
+        host="host",
+        port=8080,
+        login="user",
+        password="pass",
+    )
+    operator.conn_type = operator.conn.conn_type
+    assert operator.make_connection_configuration() == test_conn_conf
+
+
+def test_great_expectations_operator__make_connection_string_trino_jwt_auth():
+    test_conn_conf = {
+        "connection_string": "trino://user@host:8080/tpch?access_token=TEST_JWT_TOKEN"
+    }
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        data_asset_name="table_name",
+        conn_id="trino_default",
+        expectation_suite_name="suite",
+    )
+    operator.conn = Connection(
+        conn_id="trino_default",
+        conn_type="trino",
+        host="host",
+        port=8080,
+        login="user",
+        extra={"catalog": "tpch", "auth": "jwt", "jwt__token": "TEST_JWT_TOKEN"}
+    )
+    operator.conn_type = operator.conn.conn_type
+    assert operator.make_connection_configuration() == test_conn_conf
+
 def test_great_expectations_operator__make_connection_string_schema_parameter(mocker):
     test_conn_conf = {
         "url": URL.create(
