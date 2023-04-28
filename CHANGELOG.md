@@ -3,6 +3,12 @@
 ## Upcoming
 * (please add here)
 
+## 0.2.6
+* [FEATURE] Use Snowflake provider to build connection string by @ivanstillfront in https://github.com/astronomer/airflow-provider-great-expectations/pull/98
+* [BUGFIX] Snowflake Region Should be Optional by @mpgreg in https://github.com/astronomer/airflow-provider-great-expectations/pull/101
+* [MAINTENANCE] Update deprecated map_metric import in custom  by @cdkini in https://github.com/astronomer/airflow-provider-great-expectations/pull/99
+* [FEATURE] Add Athena Connection Support by @denimalpaca in https://github.com/astronomer/airflow-provider-great-expectations/pull/91
+
 ## 0.2.5
 * [BUGFIX] Schema variable update fixes Issues #94 and #87 by @mpgreg in https://github.com/astronomer/airflow-provider-great-expectations/pull/95
 * [FEATURE] Snowflake key auth by @ivanstillfront in https://github.com/astronomer/airflow-provider-great-expectations/pull/93

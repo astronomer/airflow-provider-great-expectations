@@ -930,6 +930,48 @@ def test_great_expectations_operator__make_connection_string_sqlite():
     assert operator.make_connection_configuration() == test_conn_conf
 
 
+def test_great_expectations_operator__make_connection_string_athena_with_db():
+    test_conn_conf = {
+        "connection_string": "awsathena+rest://@athena.us-east-1.amazonaws.com/athena_db?s3_staging_dir=bucket/path/to/staging/dir"  # noqa
+    }
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        data_asset_name="athena_db.table_name",
+        conn_id="aws_default",
+        expectation_suite_name="suite",
+        params={"region": "us-east-1", "s3_path": "bucket/path/to/staging/dir"},
+    )
+    operator.conn = Connection(
+        conn_id="aws_default",
+        conn_type="aws",
+        host="host",
+    )
+    operator.conn_type = operator.conn.conn_type
+    assert operator.make_connection_configuration() == test_conn_conf
+
+
+def test_great_expectations_operator__make_connection_string_athena_without_db():
+    test_conn_conf = {
+        "connection_string": "awsathena+rest://@athena.us-east-1.amazonaws.com/?s3_staging_dir=bucket/path/to/staging/dir"  # noqa
+    }
+    operator = GreatExpectationsOperator(
+        task_id="task_id",
+        data_context_config=in_memory_data_context_config,
+        data_asset_name="table_name",
+        conn_id="aws_default",
+        expectation_suite_name="suite",
+        params={"region": "us-east-1", "s3_path": "bucket/path/to/staging/dir"},
+    )
+    operator.conn = Connection(
+        conn_id="aws_default",
+        conn_type="aws",
+        host="host",
+    )
+    operator.conn_type = operator.conn.conn_type
+    assert operator.make_connection_configuration() == test_conn_conf
+
+
 def test_great_expectations_operator__make_connection_string_schema_parameter(mocker):
     test_conn_conf = {
         "url": URL.create(
