@@ -236,24 +236,26 @@ class GreatExpectationsOperator(BaseOperator):
             # Check if data_asset_name is in the form "SCHEMA.TABLE" or "DATABASE.TABLE.SCHEMA"
             # Database and Schema parameters always takes priority
             asset_list = self.data_asset_name.split(".")
-            
+
             # Update data_asset_name to be only the table
             self.data_asset_name = asset_list.pop(-1)
 
-            if asset_list: 
+            if asset_list:
                 schema_name = asset_list.pop(-1)
                 if self.schema and schema_name:
                     print("Using Operator argument for 'schema' instead of schema in fully-qualified table name.")
                 self.schema = self.schema or schema_name
-            
-            if asset_list: 
+
+            if asset_list:
                 database_name = asset_list.pop(-1)
                 if self.database and database_name:
                     print("Using Operator argument for 'database' instead of database in fully-qualified table name.")
                 self.database = self.database or database_name
 
-            if asset_list: 
-                raise AirflowException('Parameter data_asset_name must be specified as TABLE, SCHEMA.TABLE or DATABASE.SCHEMA.TABLE.')
+            if asset_list:
+                raise AirflowException(
+                    "Parameter data_asset_name must be specified as TABLE, SCHEMA.TABLE or DATABASE.SCHEMA.TABLE."
+                )
 
     def make_connection_configuration(self) -> Dict[str, str]:
         """Builds connection strings based off existing Airflow connections. Only supports necessary extras."""
@@ -262,8 +264,8 @@ class GreatExpectationsOperator(BaseOperator):
             raise ValueError(f"Connections does not exist in Airflow for conn_id: {self.conn_id}")
         self.schema = self.schema or self.conn.schema
         conn_type = self.conn.conn_type
-        
-        #Postgres uses database instead of schema.  User must pass database and schema via Operator args.
+
+        # Postgres uses database instead of schema.  User must pass database and schema via Operator args.
         if conn_type in ("redshift", "postgres"):
             uri_string = f"postgresql+psycopg2://{self.conn.login}:{self.conn.password}@{self.conn.host}:{self.conn.port}/{self.database}?options=-csearch_path%3D{self.schema}"  # noqa
         elif conn_type == "mysql":
