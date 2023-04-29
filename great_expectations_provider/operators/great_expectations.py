@@ -112,6 +112,8 @@ class GreatExpectationsOperator(BaseOperator):
     :type return_json_dict: bool
     :param use_open_lineage: If True (default), creates an OpenLineage action if an OpenLineage environment is found
     :type use_open_lineage: bool
+    :param database: If provided, overwrites the default database provided by the connection
+    :type database: Optional[str]
     :param schema: If provided, overwrites the default schema provided by the connection
     :type schema: Optional[str]
     """
@@ -148,6 +150,7 @@ class GreatExpectationsOperator(BaseOperator):
         return_json_dict: bool = False,
         use_open_lineage: bool = True,
         schema: Optional[str] = None,
+        database: Optional[str] = None,
         *args,
         **kwargs,
     ) -> None:
@@ -175,6 +178,7 @@ class GreatExpectationsOperator(BaseOperator):
         self.datasource: Optional[Datasource] = None
         self.batch_request: Optional[BatchRequestBase] = None
         self.schema = schema
+        self.database = database
         self.kwargs = kwargs
 
         if self.is_dataframe and self.query_to_validate:
@@ -227,14 +231,29 @@ class GreatExpectationsOperator(BaseOperator):
         if isinstance(self.checkpoint_config, CheckpointConfig):
             self.checkpoint_config = deep_filter_properties_iterable(properties=self.checkpoint_config.to_dict())
 
-        # If a schema is passed as part of the data_asset_name, use that schema
-        if self.data_asset_name and "." in self.data_asset_name:
-            # Assume data_asset_name is in the form "SCHEMA.TABLE"
-            # Schema parameter always takes priority
+        # If a schema and db are passed as part of the data_asset_name, use that schema/db
+        if self.data_asset_name:
+            # Check if data_asset_name is in the form "SCHEMA.TABLE" or "DATABASE.TABLE.SCHEMA"
+            # Database and Schema parameters always takes priority
             asset_list = self.data_asset_name.split(".")
-            self.schema = self.schema or asset_list[0]
+            
             # Update data_asset_name to be only the table
-            self.data_asset_name = asset_list[1]
+            self.data_asset_name = asset_list.pop(-1)
+
+            if asset_list: 
+                schema_name = asset_list.pop(-1)
+                if self.schema and schema_name:
+                    print("Using Operator argument for 'schema' instead of schema in fully-qualified table name.")
+                self.schema = self.schema or schema_name
+            
+            if asset_list: 
+                database_name = asset_list.pop(-1)
+                if self.database and database_name:
+                    print("Using Operator argument for 'database' instead of database in fully-qualified table name.")
+                self.database = self.database or database_name
+
+            if asset_list: 
+                raise AirflowException('Parameter data_asset_name must be specified as TABLE, SCHEMA.TABLE or DATABASE.SCHEMA.TABLE.')
 
     def make_connection_configuration(self) -> Dict[str, str]:
         """Builds connection strings based off existing Airflow connections. Only supports necessary extras."""
@@ -243,15 +262,14 @@ class GreatExpectationsOperator(BaseOperator):
             raise ValueError(f"Connections does not exist in Airflow for conn_id: {self.conn_id}")
         self.schema = self.schema or self.conn.schema
         conn_type = self.conn.conn_type
-        if conn_type in ("redshift", "postgres", "mysql", "mssql"):
-            odbc_connector = ""
-            if conn_type in ("redshift", "postgres"):
-                odbc_connector = "postgresql+psycopg2"
-            elif conn_type == "mysql":
-                odbc_connector = "mysql"
-            else:
-                odbc_connector = "mssql+pyodbc"
-            uri_string = f"{odbc_connector}://{self.conn.login}:{self.conn.password}@{self.conn.host}:{self.conn.port}/{self.schema}"  # noqa
+        
+        #Postgres uses database instead of schema.  User must pass database and schema via Operator args.
+        if conn_type in ("redshift", "postgres"):
+            uri_string = f"postgresql+psycopg2://{self.conn.login}:{self.conn.password}@{self.conn.host}:{self.conn.port}/{self.database}?options=-csearch_path%3D{self.schema}"  # noqa
+        elif conn_type == "mysql":
+            uri_string = f"mysql://{self.conn.login}:{self.conn.password}@{self.conn.host}:{self.conn.port}/{self.schema}"  # noqa
+        elif conn_type == "mssql":
+            uri_string = f"mssql+pyodbc://{self.conn.login}:{self.conn.password}@{self.conn.host}:{self.conn.port}/{self.schema}"  # noqa
         elif conn_type == "snowflake":
             try:
                 return self.build_snowflake_connection_config_from_hook()
@@ -316,9 +334,10 @@ class GreatExpectationsOperator(BaseOperator):
 
         hook = SnowflakeHook(snowflake_conn_id=self.conn_id)
 
-        # Support the operator overriding the schema
+        # Support the operator overriding the schema and database
         # which is necessary for temp tables.
         hook.schema = self.schema or hook.schema
+        hook.database = self.database or hook.database
 
         conn = hook.get_connection(self.conn_id)
         engine = hook.get_sqlalchemy_engine()
