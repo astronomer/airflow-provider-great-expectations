@@ -257,7 +257,10 @@ class GreatExpectationsOperator(BaseOperator):
                 ms_driver = self.conn.extra_dejson.get("driver") or "ODBC Driver 17 for SQL Server"
                 driver = f"?driver={ms_driver}"
                 database_name = self.conn.schema
-            uri_string = f"{odbc_connector}://{self.conn.login}:{self.conn.password}@{self.conn.host}:{self.conn.port}/{database_name}{driver}"  # no qa
+            uri_string = (
+                f"{odbc_connector}://{self.conn.login}:{self.conn.password}@"
+                f"{self.conn.host}:{self.conn.port}/{database_name}{driver}"
+            )
         elif conn_type == "snowflake":
             try:
                 return self.build_snowflake_connection_config_from_hook()
