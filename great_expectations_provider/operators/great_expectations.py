@@ -254,10 +254,7 @@ class GreatExpectationsOperator(BaseOperator):
                 database_name = self.schema
             else:
                 odbc_connector = "mssql+pyodbc"
-                ms_driver = (
-                    self.conn.extra_dejson.get("driver")
-                    or "ODBC Driver 17 for SQL Server"
-                )
+                ms_driver = self.conn.extra_dejson.get("driver") or "ODBC Driver 17 for SQL Server"
                 driver = f"?driver={ms_driver}"
                 database_name = self.conn.schema
             uri_string = f"{odbc_connector}://{self.conn.login}:{self.conn.password}@{self.conn.host}:{self.conn.port}/{database_name}{driver}"  # no qa
