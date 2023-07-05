@@ -793,7 +793,7 @@ def test_great_expectations_operator__make_connection_string_mysql():
 
 
 def test_great_expectations_operator__make_connection_string_mssql():
-    test_conn_conf = {"connection_string": "mssql+pyodbc://user:password@connection:5439/schema"}
+    test_conn_conf = {"connection_string": "mssql+pyodbc://user:password@connection:5439/schema?driver=driver"}
     operator = GreatExpectationsOperator(
         task_id="task_id",
         data_context_config=in_memory_data_context_config,
@@ -810,6 +810,7 @@ def test_great_expectations_operator__make_connection_string_mssql():
         password="password",
         schema="schema",
         port=5439,
+        extra='{"driver": "driver"}',
     )
     operator.conn_type = operator.conn.conn_type
     assert operator.make_connection_configuration() == test_conn_conf
