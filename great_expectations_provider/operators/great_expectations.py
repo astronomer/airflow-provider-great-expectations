@@ -252,11 +252,13 @@ class GreatExpectationsOperator(BaseOperator):
             elif conn_type == "mysql":
                 odbc_connector = "mysql"
                 database_name = self.schema
-            else:
+            elif conn_type == "mssql":
                 odbc_connector = "mssql+pyodbc"
                 ms_driver = self.conn.extra_dejson.get("driver") or "ODBC Driver 17 for SQL Server"
                 driver = f"?driver={ms_driver}"
                 database_name = self.conn.schema
+            else:
+                raise ValueError(f"Conn type: {conn_type} is not supported.")
             uri_string = (
                 f"{odbc_connector}://{self.conn.login}:{self.conn.password}@"
                 f"{self.conn.host}:{self.conn.port}/{database_name}{driver}"
