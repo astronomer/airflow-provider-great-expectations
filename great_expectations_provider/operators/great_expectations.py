@@ -256,7 +256,7 @@ class GreatExpectationsOperator(BaseOperator):
                 odbc_connector = "mssql+pyodbc"
                 ms_driver = self.conn.extra_dejson.get("driver") or "ODBC Driver 17 for SQL Server"
                 driver = f"?driver={ms_driver}"
-                database_name = self.conn.schema
+                database_name = self.conn.schema or "master"
             else:
                 raise ValueError(f"Conn type: {conn_type} is not supported.")
             uri_string = (
