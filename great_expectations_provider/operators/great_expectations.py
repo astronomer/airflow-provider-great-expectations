@@ -148,6 +148,7 @@ class GreatExpectationsOperator(BaseOperator):
         return_json_dict: bool = False,
         use_open_lineage: bool = True,
         schema: Optional[str] = None,
+        runtime_environment: Optional[Dict[str, Any]] = None,
         *args,
         **kwargs,
     ) -> None:
@@ -174,6 +175,7 @@ class GreatExpectationsOperator(BaseOperator):
         self.is_dataframe = True if self.dataframe_to_validate is not None else False
         self.datasource: Optional[Datasource] = None
         self.batch_request: Optional[BatchRequestBase] = None
+        self.runtime_environment: Optional[Dict[str, Any]] = runtime_environment
         self.schema = schema
         self.kwargs = kwargs
 
@@ -565,7 +567,10 @@ class GreatExpectationsOperator(BaseOperator):
         if self.data_asset_name:
             self.build_runtime_datasources()
         if self.data_context_root_dir:
-            self.data_context = ge.data_context.DataContext(context_root_dir=self.data_context_root_dir)
+            self.data_context = ge.data_context.FileDataContext(
+                context_root_dir=self.data_context_root_dir,
+                runtime_environment=self.runtime_environment,
+            )
         else:
             self.data_context = BaseDataContext(project_config=self.data_context_config)
         if self.datasource:
