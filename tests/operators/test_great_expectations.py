@@ -863,6 +863,8 @@ def test_great_expectations_operator__make_connection_string_snowflake_pkey(mock
     # create a temp key file
     with tempfile.NamedTemporaryFile(delete=True) as temp_file:
         private_key_bytes = b"fake_key"
+        temp_file.write(private_key_bytes)
+        temp_file.flush()
         test_conn_conf = {
             "url": URL.create(
                 drivername="snowflake",
