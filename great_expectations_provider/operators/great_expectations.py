@@ -260,7 +260,7 @@ class GreatExpectationsOperator(BaseOperator):
                 uri_string = f"{odbc_connector}://{self.conn.login}:{self.conn.password}@{self.conn.host}:{self.conn.port}/{postgres_database}"  # noqa
             else:
                 raise ValueError(
-                    "Specify the name of the database in the schema parameter of the Postgres connection. See: https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/connections/postgres.html"
+                    "Specify the name of the database in the schema parameter of the Postgres connection. See: https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/connections/postgres.html"  # noqa
                 )  # noqa
         elif conn_type == "snowflake":
             try:
