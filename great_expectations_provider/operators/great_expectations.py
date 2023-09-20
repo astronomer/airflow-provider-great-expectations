@@ -246,7 +246,7 @@ class GreatExpectationsOperator(BaseOperator):
         conn_type = self.conn.conn_type
         if conn_type in ("redshift", "mysql", "mssql"):
             odbc_connector = ""
-            if conn_type in ("redshift", "postgres"):
+            if conn_type in ("redshift"):
                 odbc_connector = "postgresql+psycopg2"
                 database_name = self.schema
             elif conn_type == "mysql":
@@ -272,7 +272,7 @@ class GreatExpectationsOperator(BaseOperator):
             else:
                 raise ValueError(
                     "Specify the name of the database in the schema parameter of the Postgres connection. See: https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/connections/postgres.html"  # noqa
-                )  # noqa
+                )
         elif conn_type == "snowflake":
             try:
                 return self.build_snowflake_connection_config_from_hook()
