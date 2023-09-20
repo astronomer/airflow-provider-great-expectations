@@ -12,9 +12,9 @@ and tests can be run with, for instance::
 
 import logging
 import os
+import tempfile
 import unittest.mock as mock
 from pathlib import Path
-import tempfile
 
 import pandas as pd
 import pytest
@@ -870,7 +870,12 @@ def test_great_expectations_operator__make_connection_string_snowflake_pkey(mock
                 password="",
                 host="account.region-east-1",
                 database="database/schema",
-                query={"role": "role", "warehouse": "warehouse", "authenticator": "snowflake", "application": "AIRFLOW"},
+                query={
+                    "role": "role",
+                    "warehouse": "warehouse",
+                    "authenticator": "snowflake",
+                    "application": "AIRFLOW",
+                },
             ).render_as_string(hide_password=False),
             "connect_args": {"private_key": private_key_bytes},
         }
@@ -904,7 +909,9 @@ def test_great_expectations_operator__make_connection_string_snowflake_pkey(mock
         mocker.patch(
             "airflow.providers.snowflake.hooks.snowflake.SnowflakeHook.get_connection", return_value=operator.conn
         )
-        mocker.patch("great_expectations_provider.operators.great_expectations.Path.read_bytes", return_value=b"fake_key")
+        mocker.patch(
+            "great_expectations_provider.operators.great_expectations.Path.read_bytes", return_value=b"fake_key"
+        )
         mocked_key = mock.MagicMock(default_backend())
         mocked_key.private_bytes = mock.MagicMock(return_value=private_key_bytes)
         mocker.patch(
