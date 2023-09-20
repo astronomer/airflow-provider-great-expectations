@@ -894,6 +894,7 @@ def test_great_expectations_operator__make_connection_string_snowflake_pkey(mock
             "extra__snowflake__region": "region-east-1",
             "extra__snowflake__account": "account",
             "extra__snowflake__private_key_file": "/path/to/key.p8",
+            "private_key_file": "/path/to/key.p8",
         },
     )
     operator.conn_type = operator.conn.conn_type
