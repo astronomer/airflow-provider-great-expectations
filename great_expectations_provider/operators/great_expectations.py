@@ -239,19 +239,30 @@ class GreatExpectationsOperator(BaseOperator):
     def make_connection_configuration(self) -> Dict[str, str]:
         """Builds connection strings based off existing Airflow connections. Only supports necessary extras."""
         uri_string = ""
+        driver = ""
         if not self.conn:
             raise ValueError(f"Connections does not exist in Airflow for conn_id: {self.conn_id}")
         self.schema = self.schema or self.conn.schema
         conn_type = self.conn.conn_type
         if conn_type in ("redshift", "mysql", "mssql"):
             odbc_connector = ""
-            if conn_type in ("redshift"):
+            if conn_type in ("redshift", "postgres"):
                 odbc_connector = "postgresql+psycopg2"
+                database_name = self.schema
             elif conn_type == "mysql":
                 odbc_connector = "mysql"
-            else:
+                database_name = self.schema
+            elif conn_type == "mssql":
                 odbc_connector = "mssql+pyodbc"
-            uri_string = f"{odbc_connector}://{self.conn.login}:{self.conn.password}@{self.conn.host}:{self.conn.port}/{self.schema}"  # noqa
+                ms_driver = self.conn.extra_dejson.get("driver") or "ODBC Driver 17 for SQL Server"
+                driver = f"?driver={ms_driver}"
+                database_name = self.conn.schema or "master"
+            else:
+                raise ValueError(f"Conn type: {conn_type} is not supported.")
+            uri_string = (
+                f"{odbc_connector}://{self.conn.login}:{self.conn.password}@"
+                f"{self.conn.host}:{self.conn.port}/{database_name}{driver}"
+            )
         elif conn_type == "postgres":
             # the schema parameter in the postgres connection is the database name
             if self.conn.schema:
