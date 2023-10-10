@@ -244,9 +244,9 @@ class GreatExpectationsOperator(BaseOperator):
             raise ValueError(f"Connections does not exist in Airflow for conn_id: {self.conn_id}")
         self.schema = self.schema or self.conn.schema
         conn_type = self.conn.conn_type
-        if conn_type in ("redshift", "postgres", "mysql", "mssql"):
+        if conn_type in ("redshift", "mysql", "mssql"):
             odbc_connector = ""
-            if conn_type in ("redshift", "postgres"):
+            if conn_type in ("redshift"):
                 odbc_connector = "postgresql+psycopg2"
                 database_name = self.schema
             elif conn_type == "mysql":
@@ -263,6 +263,16 @@ class GreatExpectationsOperator(BaseOperator):
                 f"{odbc_connector}://{self.conn.login}:{self.conn.password}@"
                 f"{self.conn.host}:{self.conn.port}/{database_name}{driver}"
             )
+        elif conn_type == "postgres":
+            # the schema parameter in the postgres connection is the database name
+            if self.conn.schema:
+                postgres_database = self.conn.schema
+                odbc_connector = "postgresql+psycopg2"
+                uri_string = f"{odbc_connector}://{self.conn.login}:{self.conn.password}@{self.conn.host}:{self.conn.port}/{postgres_database}"  # noqa
+            else:
+                raise ValueError(
+                    "Specify the name of the database in the schema parameter of the Postgres connection. See: https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/connections/postgres.html"  # noqa
+                )
         elif conn_type == "snowflake":
             try:
                 return self.build_snowflake_connection_config_from_hook()

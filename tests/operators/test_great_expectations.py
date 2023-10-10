@@ -12,6 +12,7 @@ and tests can be run with, for instance::
 
 import logging
 import os
+import tempfile
 import unittest.mock as mock
 from pathlib import Path
 
@@ -859,57 +860,68 @@ def test_great_expectations_operator__make_connection_string_snowflake(mocker):
 
 
 def test_great_expectations_operator__make_connection_string_snowflake_pkey(mocker):
-    private_key_bytes = b"secret"
-    test_conn_conf = {
-        "url": URL.create(
-            drivername="snowflake",
-            username="user",
-            password="",
-            host="account.region-east-1",
-            database="database/schema",
-            query={"role": "role", "warehouse": "warehouse", "authenticator": "snowflake", "application": "AIRFLOW"},
-        ).render_as_string(hide_password=False),
-        "connect_args": {"private_key": private_key_bytes},
-    }
-    operator = GreatExpectationsOperator(
-        task_id="task_id",
-        data_context_config=in_memory_data_context_config,
-        data_asset_name="test_runtime_data_asset",
-        conn_id="snowflake_default",
-        query_to_validate="SELECT * FROM db;",
-        expectation_suite_name="suite",
-    )
-    operator.conn = Connection(
-        conn_id="snowflake_default",
-        conn_type="snowflake",
-        host="connection",
-        login="user",
-        password="password",
-        schema="schema",
-        port=5439,
-        extra={
-            "extra__snowflake__role": "role",
-            "extra__snowflake__warehouse": "warehouse",
-            "extra__snowflake__database": "database",
-            "extra__snowflake__region": "region-east-1",
-            "extra__snowflake__account": "account",
-            "extra__snowflake__private_key_file": "/path/to/key.p8",
-        },
-    )
-    operator.conn_type = operator.conn.conn_type
+    # create a temp key file
+    with tempfile.NamedTemporaryFile(delete=True) as temp_file:
+        private_key_bytes = b"fake_key"
+        temp_file.write(private_key_bytes)
+        temp_file.flush()
+        test_conn_conf = {
+            "url": URL.create(
+                drivername="snowflake",
+                username="user",
+                password="",
+                host="account.region-east-1",
+                database="database/schema",
+                query={
+                    "role": "role",
+                    "warehouse": "warehouse",
+                    "authenticator": "snowflake",
+                    "application": "AIRFLOW",
+                },
+            ).render_as_string(hide_password=False),
+            "connect_args": {"private_key": private_key_bytes},
+        }
+        operator = GreatExpectationsOperator(
+            task_id="task_id",
+            data_context_config=in_memory_data_context_config,
+            data_asset_name="test_runtime_data_asset",
+            conn_id="snowflake_default",
+            query_to_validate="SELECT * FROM db;",
+            expectation_suite_name="suite",
+        )
+        operator.conn = Connection(
+            conn_id="snowflake_default",
+            conn_type="snowflake",
+            host="connection",
+            login="user",
+            password="password",
+            schema="schema",
+            port=5439,
+            extra={
+                "extra__snowflake__role": "role",
+                "extra__snowflake__warehouse": "warehouse",
+                "extra__snowflake__database": "database",
+                "extra__snowflake__region": "region-east-1",
+                "extra__snowflake__account": "account",
+                "extra__snowflake__private_key_file": temp_file.name,
+            },
+        )
+        operator.conn_type = operator.conn.conn_type
 
-    mocker.patch(
-        "airflow.providers.snowflake.hooks.snowflake.SnowflakeHook.get_connection", return_value=operator.conn
-    )
-    mocker.patch("great_expectations_provider.operators.great_expectations.Path.read_bytes", return_value=b"dummy")
-    mocked_key = mock.MagicMock(default_backend())
-    mocked_key.private_bytes = mock.MagicMock(return_value=private_key_bytes)
-    mocker.patch(
-        "cryptography.hazmat.primitives.serialization.load_pem_private_key",
-        return_value=mocked_key,
-    )
+        mocker.patch(
+            "airflow.providers.snowflake.hooks.snowflake.SnowflakeHook.get_connection", return_value=operator.conn
+        )
+        mocker.patch(
+            "great_expectations_provider.operators.great_expectations.Path.read_bytes", return_value=b"fake_key"
+        )
+        mocked_key = mock.MagicMock(default_backend())
+        mocked_key.private_bytes = mock.MagicMock(return_value=private_key_bytes)
+        mocker.patch(
+            "cryptography.hazmat.primitives.serialization.load_pem_private_key",
+            return_value=mocked_key,
+        )
 
-    assert operator.make_connection_configuration() == test_conn_conf
+        assert operator.make_connection_configuration() == test_conn_conf
 
 
 def test_great_expectations_operator__make_connection_string_sqlite():
