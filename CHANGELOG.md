@@ -3,10 +3,15 @@
 ## Upcoming
 * (please add here)
 
+## 0.2.7
+
+* [BUGFIX] Fix schema parameter for Postgres connections by @TJanif in https://github.com/astronomer/airflow-provider-great-expectations/pull/117
+* [BUGFIX] Add a driver parameter to the MSSQL connection string by @TJaniF in https://github.com/astronomer/airflow-provider-great-expectations/pull/113/
+
 ## 0.2.6
 * [FEATURE] Use Snowflake provider to build connection string by @ivanstillfront in https://github.com/astronomer/airflow-provider-great-expectations/pull/98
 * [BUGFIX] Snowflake Region Should be Optional by @mpgreg in https://github.com/astronomer/airflow-provider-great-expectations/pull/101
-* [MAINTENANCE] Update deprecated map_metric import in custom  by @cdkini in https://github.com/astronomer/airflow-provider-great-expectations/pull/99
+* [MAINTENANCE] Update deprecated map_metric import in custom by @cdkini in https://github.com/astronomer/airflow-provider-great-expectations/pull/99
 * [FEATURE] Add Athena Connection Support by @denimalpaca in https://github.com/astronomer/airflow-provider-great-expectations/pull/91
 
 ## 0.2.5
