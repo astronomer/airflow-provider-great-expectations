@@ -381,11 +381,14 @@ class GreatExpectationsOperator(BaseOperator):
     def build_configured_sql_datasource_config_from_conn_id(
         self,
     ) -> Datasource:
+        create_temp_table = self.conn.extra_dejson.get("create_temp_table") if self.conn.extra_dejson.get("create_temp_table") is not None else True
+
         datasource_config = {
             "name": f"{self.conn.conn_id}_configured_sql_datasource",
             "execution_engine": {
                 "module_name": "great_expectations.execution_engine",
                 "class_name": "SqlAlchemyExecutionEngine",
+                "create_temp_table": create_temp_table,
                 **self.make_connection_configuration(),
             },
             "data_connectors": {
@@ -416,11 +419,14 @@ class GreatExpectationsOperator(BaseOperator):
     def build_runtime_sql_datasource_config_from_conn_id(
         self,
     ) -> Datasource:
+        create_temp_table = self.conn.extra_dejson.get("create_temp_table") if self.conn.extra_dejson.get("create_temp_table") is not None else True
+
         datasource_config = {
             "name": f"{self.conn.conn_id}_runtime_sql_datasource",
             "execution_engine": {
                 "module_name": "great_expectations.execution_engine",
                 "class_name": "SqlAlchemyExecutionEngine",
+                "create_temp_table": create_temp_table,
                 **self.make_connection_configuration(),
             },
             "data_connectors": {
