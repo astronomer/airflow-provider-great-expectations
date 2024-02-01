@@ -1070,6 +1070,7 @@ def test_great_expectations_operator__make_connection_string_data_asset_name_sch
     assert operator.make_connection_configuration() == test_conn_conf
     assert operator.data_asset_name == "test_table"
 
+
 def test_great_expectations_operator__build_configured_sql_datasource_config_from_conn_id_uses_schema_override():
     test_conn_conf = {"connection_string": "sqlite:///host"}
     datasource_config = {
@@ -1121,10 +1122,11 @@ def test_great_expectations_operator__build_configured_sql_datasource_config_fro
     assert isinstance(constructed_datasource, Datasource)
     assert constructed_datasource.config == datasource_config
 
+
 def test_great_expectations_operator__build_configured_sql_datasource_config_from_conn_id_uses_extra_create_temp_table(
-    constructed_sql_configured_datasource
+    constructed_sql_configured_datasource,
 ):
-    constructed_sql_configured_datasource["execution_engine"]["create_temp_table"] = False; 
+    constructed_sql_configured_datasource["execution_engine"]["create_temp_table"] = False
 
     operator = GreatExpectationsOperator(
         task_id="task_id",
@@ -1141,9 +1143,7 @@ def test_great_expectations_operator__build_configured_sql_datasource_config_fro
         login="user",
         password="password",
         schema="schema",
-        extra={
-            "create_temp_table": False
-        }
+        extra={"create_temp_table": False},
     )
 
     constructed_datasource = operator.build_configured_sql_datasource_config_from_conn_id()
@@ -1151,10 +1151,11 @@ def test_great_expectations_operator__build_configured_sql_datasource_config_fro
     assert isinstance(constructed_datasource, Datasource)
     assert constructed_datasource.config == constructed_sql_configured_datasource
 
+
 def test_great_expectations_operator__build_runtime_sql_datasource_config_from_conn_id_uses_extra_create_temp_table(
-    constructed_sql_runtime_datasource
+    constructed_sql_runtime_datasource,
 ):
-    constructed_sql_runtime_datasource["execution_engine"]["create_temp_table"] = False; 
+    constructed_sql_runtime_datasource["execution_engine"]["create_temp_table"] = False
 
     operator = GreatExpectationsOperator(
         task_id="task_id",
@@ -1171,15 +1172,14 @@ def test_great_expectations_operator__build_runtime_sql_datasource_config_from_c
         login="user",
         password="password",
         schema="schema",
-        extra={
-            "create_temp_table": False
-        }
+        extra={"create_temp_table": False},
     )
 
     constructed_datasource = operator.build_runtime_sql_datasource_config_from_conn_id()
 
     assert isinstance(constructed_datasource, Datasource)
     assert constructed_datasource.config == constructed_sql_runtime_datasource
+
 
 def test_great_expectations_operator__make_connection_string_raise_error():
     operator = GreatExpectationsOperator(
