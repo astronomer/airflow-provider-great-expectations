@@ -421,11 +421,7 @@ class GreatExpectationsOperator(BaseOperator):
     def build_runtime_sql_datasource_config_from_conn_id(
         self,
     ) -> Datasource:
-        create_temp_table = (
-            self.conn.extra_dejson.get("create_temp_table")
-            if self.conn.extra_dejson.get("create_temp_table") is not None
-            else True
-        )
+        create_temp_table = self.conn.extra_dejson.get("create_temp_table", True)
 
         datasource_config = {
             "name": f"{self.conn.conn_id}_runtime_sql_datasource",
