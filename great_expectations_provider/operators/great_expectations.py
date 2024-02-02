@@ -382,9 +382,7 @@ class GreatExpectationsOperator(BaseOperator):
         self,
     ) -> Datasource:
         create_temp_table = (
-            self.conn.extra_dejson.get("create_temp_table")
-            if self.conn.extra_dejson.get("create_temp_table") is not None
-            else True
+            self.conn.extra_dejson.get("create_temp_table", True)
         )
 
         datasource_config = {
