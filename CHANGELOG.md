@@ -1,7 +1,8 @@
 # Apache Airflow Provider for Great Expectations
 
-## Upcoming
-* (please add here)
+## 0.2.8
+
+* [FEATURE] Add create_temp_table support by @antelmoa in https://github.com/astronomer/airflow-provider-great-expectations/pull/129
 
 ## 0.2.7
 
