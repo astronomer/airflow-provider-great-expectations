@@ -267,6 +267,7 @@ def test_great_expectations_operator__assert_template_fields_exist():
     assert "checkpoint_name" in operator.template_fields
     assert "checkpoint_kwargs" in operator.template_fields
     assert "query_to_validate" in operator.template_fields
+    assert "schema" in operator.template_fields
 
 
 def test_great_expectations_operator__assert_template_ext_exist():
