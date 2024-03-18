@@ -125,6 +125,7 @@ class GreatExpectationsOperator(BaseOperator):
         "checkpoint_name",
         "checkpoint_kwargs",
         "query_to_validate",
+        "schema",
     )
     template_ext = (".sql",)
     operator_extra_links = (GreatExpectationsDataDocsLink(),)
