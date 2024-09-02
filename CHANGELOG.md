@@ -1,6 +1,6 @@
 # Apache Airflow Provider for Great Expectations
 
-## 0.2.9
+## 0.2.9 (2024-09-02)
 
 * [BUGFIX] Fix compatibility issue with great_expectations 1.0.0 by @mostafasayed5 in https://github.com/astronomer/airflow-provider-great-expectations/pull/149
 
