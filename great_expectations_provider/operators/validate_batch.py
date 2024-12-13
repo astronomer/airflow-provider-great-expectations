@@ -46,5 +46,4 @@ class ValidateBatchOperator(BaseOperator):
             )
         else:
             result = batch.validate(expect=self.expect)
-        print(result)
         return result.to_json_dict()

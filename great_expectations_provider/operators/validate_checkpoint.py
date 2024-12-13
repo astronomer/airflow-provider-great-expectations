@@ -41,5 +41,4 @@ class ValidateCheckpointOperator(BaseOperator):
 
     def execute(self, context: Context) -> dict:
         result = self.checkpoint.run(batch_parameters=self.batch_parameters)
-        print(result)
         return result.dict()

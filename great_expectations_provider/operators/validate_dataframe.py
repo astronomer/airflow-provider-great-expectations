@@ -12,7 +12,8 @@ if TYPE_CHECKING:
     from pandas import DataFrame
 
 
-class ValidateDataframeOperator(BaseOperator):
+class ValidateDataFrameOperator(BaseOperator):
+    # todo: update signature to allow Spark DataFrame
     def __init__(
         self,
         task_id: str,
@@ -48,5 +49,4 @@ class ValidateDataframeOperator(BaseOperator):
             )
         else:
             result = batch.validate(expect=self.expect)
-        print(result)
         return result.to_json_dict()

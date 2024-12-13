@@ -2,7 +2,7 @@ import pandas as pd
 from great_expectations import ExpectationSuite
 from great_expectations.expectations import ExpectColumnValuesToBeInSet
 from great_expectations_provider.operators.validate_dataframe import (
-    ValidateDataframeOperator,
+    ValidateDataFrameOperator,
 )
 from great_expectations.core import (
     ExpectationValidationResult,
@@ -10,7 +10,7 @@ from great_expectations.core import (
 )
 
 
-class TestValidateDataframeOperator:
+class TestValidateDataFrameOperator:
     def test_expectation(self):
         # arrange
         column_name = "col_A"
@@ -22,7 +22,7 @@ class TestValidateDataframeOperator:
             column=column_name, value_set=["a", "b", "c", "d", "e"]
         )
 
-        validate_batch = ValidateDataframeOperator(
+        validate_batch = ValidateDataFrameOperator(
             task_id="validate_batch_success",
             configure_dataframe=configure_dataframe,
             expect=expect,
@@ -51,7 +51,7 @@ class TestValidateDataframeOperator:
             ],
         )
 
-        validate_batch = ValidateDataframeOperator(
+        validate_batch = ValidateDataFrameOperator(
             task_id="validate_batch_success",
             configure_dataframe=configure_dataframe,
             expect=expect,
