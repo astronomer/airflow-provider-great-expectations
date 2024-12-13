@@ -19,7 +19,7 @@ Its required parameters are:
 - `expect` is either a single Expectation or an ExpectationSuite
 
 Optionally, you can also pass a `result_format` parameter to control the verbosity of the output, and
-`batch_parameters` to specify a specific Batch of data at runtime. 
+`batch_parameters` to specify a batch of data at runtime. 
 The ValidateBatchOperator will return a serialized ExpectationValidationResult, or ExpectationSuiteValidationResult.
 
 ## ValidateCheckpointOperator
@@ -30,5 +30,5 @@ MicrosoftTeam messages, email alerts, and more.
 It has a single required parameter:
 - `configure_checkpoint` is a function that takes a single argument, a DataContext, and returns a Checkpoint. 
 
-Optionally, you can pass in `batch_parameters` to specify a specific Batch of data at runtime. 
+Optionally, you can pass in `batch_parameters` to specify a batch of data at runtime. 
 The ValidateCheckpointOperator will return a serialized CheckpointResult.
