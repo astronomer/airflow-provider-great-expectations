@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Callable, Literal, TYPE_CHECKING
 
-from airflow.models import BaseOperator, BaseOperatorLink, Connection, XCom
+from airflow.models import BaseOperator
 
 
 if TYPE_CHECKING:
