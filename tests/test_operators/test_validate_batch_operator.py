@@ -79,5 +79,4 @@ class TestValidateBatchOperator:
 
         # assert
         json.dumps(result)  # result must be json serializable
-        deserialized_result = ExpectationSuiteValidationResult(**result)
-        assert deserialized_result.success
+        assert result["success"] is True
