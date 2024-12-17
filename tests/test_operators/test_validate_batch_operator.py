@@ -1,3 +1,5 @@
+import json
+
 from great_expectations.data_context import AbstractDataContext
 from great_expectations.core.batch_definition import BatchDefinition
 from great_expectations_provider.operators.validate_batch import ValidateBatchOperator
@@ -76,5 +78,6 @@ class TestValidateBatchOperator:
         result = validate_batch.execute(context={})
 
         # assert
+        json.dumps(result)  # result must be json serializable
         deserialized_result = ExpectationSuiteValidationResult(**result)
         assert deserialized_result.success

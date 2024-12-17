@@ -1,3 +1,5 @@
+import json
+
 from great_expectations import ValidationDefinition
 from great_expectations import Checkpoint
 from great_expectations.checkpoint.checkpoint import CheckpointResult
@@ -64,3 +66,4 @@ class TestValidateCheckpointOperator:
 
         # assert
         assert serialized_result["success"]
+        json.dumps(serialized_result)  # result must be json serializable

@@ -1,3 +1,5 @@
+import json
+
 import pandas as pd
 from great_expectations import ExpectationSuite
 from great_expectations.expectations import ExpectColumnValuesToBeInSet
@@ -32,6 +34,7 @@ class TestValidateDataFrameOperator:
         result = validate_batch.execute(context={})
 
         # assert
+        json.dumps(result)  # result must be json serializable
         deserialized_result = ExpectationValidationResult(**result)
         assert deserialized_result.success
 
@@ -61,5 +64,6 @@ class TestValidateDataFrameOperator:
         result = validate_batch.execute(context={})
 
         # assert
+        json.dumps(result)  # result must be json serializable
         deserialized_result = ExpectationSuiteValidationResult(**result)
         assert deserialized_result.success
