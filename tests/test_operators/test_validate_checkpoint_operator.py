@@ -63,5 +63,4 @@ class TestValidateCheckpointOperator:
         serialized_result = validate_cloud_checkpoint.execute(context={})
 
         # assert
-        checkpoint_result = CheckpointResult(**serialized_result)
-        assert checkpoint_result.success
+        assert serialized_result["success"]

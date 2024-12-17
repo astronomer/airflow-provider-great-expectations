@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import json
 from typing import Callable, Literal, TYPE_CHECKING
 
 from airflow.models import BaseOperator
@@ -44,4 +46,6 @@ class ValidateCheckpointOperator(BaseOperator):
             gx_context = gx.get_context(mode=self.context_type)
         checkpoint = self.configure_checkpoint(gx_context)
         result = checkpoint.run(batch_parameters=self.batch_parameters)
-        return result.dict()
+        serialized_result = result.dict()
+        serialized_result["run_id"] = serialized_result["run_id"].to_json_dict()
+        return serialized_result
