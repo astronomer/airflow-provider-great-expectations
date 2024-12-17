@@ -46,5 +46,5 @@ class ValidateCheckpointOperator(BaseOperator):
             gx_context = gx.get_context(mode=self.context_type)
         checkpoint = self.configure_checkpoint(gx_context)
         result = checkpoint.run(batch_parameters=self.batch_parameters)
-        return {"success": result.success}
-
+        serialized_result = result.describe_dict()
+        return serialized_result
