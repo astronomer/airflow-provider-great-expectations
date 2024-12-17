@@ -25,16 +25,17 @@ class ValidateDataFrameOperator(BaseOperator):
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs, task_id=task_id)
-        import great_expectations as gx
 
-        self.context = gx.get_context(mode="ephemeral")
         self.dataframe = configure_dataframe()
         self.expect = expect
         self.result_format = result_format
 
     def execute(self, context: Context) -> dict:
+        import great_expectations as gx
+
+        gx_context = gx.get_context(mode="ephemeral")
         batch = (
-            self.context.data_sources.add_pandas(name=self.task_id)
+            gx_context.data_sources.add_pandas(name=self.task_id)
             .add_dataframe_asset(name=self.task_id)
             .add_batch_definition_whole_dataframe(name=self.task_id)
             .get_batch(

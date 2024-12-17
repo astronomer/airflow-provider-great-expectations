@@ -26,20 +26,22 @@ class ValidateBatchOperator(BaseOperator):
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
-        import great_expectations as gx
 
         if batch_parameters is None:
             self.batch_parameters = {}
         else:
             self.batch_parameters = batch_parameters
-
-        self.context = gx.get_context(mode=context_type)
-        self.batch_definition = configure_batch_definition(self.context)
+        self.context_type = context_type
+        self.configure_batch_definition = configure_batch_definition
         self.expect = expect
         self.result_format = result_format
 
     def execute(self, context: Context) -> dict:
-        batch = self.batch_definition.get_batch(batch_parameters=self.batch_parameters)
+        import great_expectations as gx
+
+        gx_context = gx.get_context(mode=self.context_type)
+        batch_definition = self.configure_batch_definition(gx_context)
+        batch = batch_definition.get_batch(batch_parameters=self.batch_parameters)
         if self.result_format:
             result = batch.validate(
                 expect=self.expect, result_format=self.result_format

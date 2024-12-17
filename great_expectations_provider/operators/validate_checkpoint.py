@@ -22,7 +22,6 @@ class ValidateCheckpointOperator(BaseOperator):
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
-        import great_expectations as gx
 
         if batch_parameters is None:
             self.batch_parameters = {}
@@ -32,13 +31,17 @@ class ValidateCheckpointOperator(BaseOperator):
             raise ValueError(
                 "Parameter `configure_file_data_context` must be specified if `context_type` is `file`"
             )
-
-        if context_type == "file":
-            self.context = configure_file_data_context()
-        else:
-            self.context = gx.get_context(mode=context_type)
-        self.checkpoint = configure_checkpoint(self.context)
+        self.context_type = context_type
+        self.configure_file_data_context = configure_file_data_context
+        self.configure_checkpoint = configure_checkpoint
 
     def execute(self, context: Context) -> dict:
-        result = self.checkpoint.run(batch_parameters=self.batch_parameters)
+        import great_expectations as gx
+
+        if self.context_type == "file":
+            gx_context = self.configure_file_data_context()
+        else:
+            gx_context = gx.get_context(mode=self.context_type)
+        checkpoint = self.configure_checkpoint(gx_context)
+        result = checkpoint.run(batch_parameters=self.batch_parameters)
         return result.dict()
