@@ -48,4 +48,4 @@ class ValidateBatchOperator(BaseOperator):
             )
         else:
             result = batch.validate(expect=self.expect)
-        return result.describe_dict()
+        return {"success": result.success}
