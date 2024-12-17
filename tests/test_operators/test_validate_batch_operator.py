@@ -2,14 +2,23 @@ import json
 
 from great_expectations.data_context import AbstractDataContext
 from great_expectations.core.batch_definition import BatchDefinition
+
+from great_expectations_provider.example_dags.example_great_expectations_dag import (
+    expectation_suite,
+)
 from great_expectations_provider.operators.validate_batch import ValidateBatchOperator
 import pandas as pd
 from great_expectations import ExpectationSuite
-from great_expectations.expectations import ExpectColumnValuesToBeInSet
+from great_expectations.expectations import (
+    ExpectColumnValuesToBeInSet,
+    ExpectTableRowCountToBeBetween,
+    ExpectColumnValuesToNotBeNull,
+    ExpectColumnDistinctValuesToBeInSet,
+    ExpectColumnValuesToBeBetween,
+)
 
 from great_expectations.core import (
     ExpectationValidationResult,
-    ExpectationSuiteValidationResult,
 )
 
 

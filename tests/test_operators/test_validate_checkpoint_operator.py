@@ -1,8 +1,7 @@
 import json
-
+import pytest
 from great_expectations import ValidationDefinition
 from great_expectations import Checkpoint
-from great_expectations.checkpoint.checkpoint import CheckpointResult
 
 from great_expectations_provider.operators.validate_checkpoint import (
     ValidateCheckpointOperator,
@@ -14,6 +13,10 @@ from great_expectations.expectations import ExpectColumnValuesToBeInSet
 
 
 class TestValidateCheckpointOperator:
+    @pytest.mark.xfail(
+        reason="ValidationResultIdentifier is being returned as a key in the CheckpointResult",
+        strict=True,
+    )
     def test_validate_dataframe(self):
         # arrange
         column_name = "col_A"

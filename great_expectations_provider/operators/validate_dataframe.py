@@ -50,4 +50,4 @@ class ValidateDataFrameOperator(BaseOperator):
             )
         else:
             result = batch.validate(expect=self.expect)
-        return result.describe_dict()
+        return result.to_json_dict()
