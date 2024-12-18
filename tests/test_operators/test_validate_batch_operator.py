@@ -6,7 +6,7 @@ from great_expectations.core.batch_definition import BatchDefinition
 from great_expectations_provider.example_dags.example_great_expectations_dag import (
     expectation_suite,
 )
-from great_expectations_provider.operators.validate_batch import ValidateBatchOperator
+from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
 import pandas as pd
 from great_expectations import ExpectationSuite
 from great_expectations.expectations import (
@@ -40,7 +40,7 @@ class TestValidateBatchOperator:
             column=column_name, value_set=["a", "b", "c", "d", "e"]
         )
 
-        validate_batch = ValidateBatchOperator(
+        validate_batch = GXValidateBatchOperator(
             task_id="validate_batch_success",
             configure_batch_definition=configure_ephemeral_batch_definition,
             expect=expect,
@@ -76,7 +76,7 @@ class TestValidateBatchOperator:
             ],
         )
 
-        validate_batch = ValidateBatchOperator(
+        validate_batch = GXValidateBatchOperator(
             task_id="validate_batch_success",
             configure_batch_definition=configure_ephemeral_batch_definition,
             expect=expect,

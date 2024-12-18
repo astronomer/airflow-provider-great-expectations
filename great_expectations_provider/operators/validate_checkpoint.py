@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from airflow.utils.context import Context
 
 
-class ValidateCheckpointOperator(BaseOperator):
+class GXValidateCheckpointOperator(BaseOperator):
     def __init__(
         self,
         configure_checkpoint: Callable[[AbstractDataContext], Checkpoint],

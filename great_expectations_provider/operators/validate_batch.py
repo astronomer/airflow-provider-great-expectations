@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from airflow.utils.context import Context
 
 
-class ValidateBatchOperator(BaseOperator):
+class GXValidateBatchOperator(BaseOperator):
     def __init__(
         self,
         configure_batch_definition: Callable[[AbstractDataContext], BatchDefinition],

@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from pandas import DataFrame
 
 
-class ValidateDataFrameOperator(BaseOperator):
+class GXValidateDataFrameOperator(BaseOperator):
     # todo: update signature to allow Spark DataFrame
     def __init__(
         self,

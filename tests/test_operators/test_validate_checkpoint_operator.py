@@ -4,7 +4,7 @@ from great_expectations import ValidationDefinition
 from great_expectations import Checkpoint
 
 from great_expectations_provider.operators.validate_checkpoint import (
-    ValidateCheckpointOperator,
+    GXValidateCheckpointOperator,
 )
 from great_expectations.data_context import AbstractDataContext
 import pandas as pd
@@ -54,7 +54,7 @@ class TestValidateCheckpointOperator:
 
         df = pd.DataFrame({column_name: ["a", "b", "c"]})
 
-        validate_cloud_checkpoint = ValidateCheckpointOperator(
+        validate_cloud_checkpoint = GXValidateCheckpointOperator(
             task_id="validate_cloud_checkpoint",
             configure_checkpoint=configure_checkpoint,
             batch_parameters={"dataframe": df},
