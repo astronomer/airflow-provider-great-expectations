@@ -13,10 +13,6 @@ from great_expectations.expectations import ExpectColumnValuesToBeInSet
 
 
 class TestValidateCheckpointOperator:
-    @pytest.mark.xfail(
-        reason="ValidationResultIdentifier is being returned as a key in the CheckpointResult",
-        strict=True,
-    )
     def test_validate_dataframe(self):
         # arrange
         column_name = "col_A"
