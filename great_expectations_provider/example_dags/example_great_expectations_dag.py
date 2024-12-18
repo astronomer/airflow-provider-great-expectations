@@ -10,12 +10,13 @@ from airflow.operators.empty import EmptyOperator
 from great_expectations_provider import (
     GXValidateDataFrameOperator,
     GXValidateBatchOperator,
-    GXValidateCheckpointOperator
+    GXValidateCheckpointOperator,
 )
 from airflow.decorators import task
 from airflow.models.param import Param
 from great_expectations import ExpectationSuite, ValidationDefinition, Checkpoint
 import great_expectations.expectations as gxe
+
 if TYPE_CHECKING:
     from great_expectations.data_context import AbstractDataContext
     from great_expectations.core.batch_definition import BatchDefinition
@@ -34,12 +35,10 @@ def configure_pandas_batch_definition(context: AbstractDataContext) -> BatchDefi
         name="Extract Data Source",
         base_directory=data_dir,
     )
-    asset = data_source.add_csv_asset(
-        name="Extract CSV Asset"
-    )
+    asset = data_source.add_csv_asset(name="Extract CSV Asset")
     batch_definition = asset.add_batch_definition_monthly(
         name="Extract Batch Definition",
-        regex="yellow_tripdata_sample_(?P<year>\d{4})-(?P<month>\d{2}).csv"
+        regex="yellow_tripdata_sample_(?P<year>\d{4})-(?P<month>\d{2}).csv",
     )
     return batch_definition
 
@@ -50,11 +49,13 @@ def configure_checkpoint(context: AbstractDataContext) -> Checkpoint:
     against an ExpectationSuite, and run Actions."""
     # setup data source, asset, batch definition
     batch_definition = (
-        context.data_sources.add_pandas_filesystem(name="Load Datasource", base_directory=data_dir)
+        context.data_sources.add_pandas_filesystem(
+            name="Load Datasource", base_directory=data_dir
+        )
         .add_csv_asset("Load Asset")
         .add_batch_definition_monthly(
             name="Load Batch Definition",
-            regex="yellow_tripdata_sample_(?P<year>\d{4})-(?P<month>\d{2}).csv"
+            regex="yellow_tripdata_sample_(?P<year>\d{4})-(?P<month>\d{2}).csv",
         )
     )
     # setup expectation suite
@@ -66,15 +67,11 @@ def configure_checkpoint(context: AbstractDataContext) -> Checkpoint:
                     min_value=9000,
                     max_value=11000,
                 ),
-                gxe.ExpectColumnValuesToNotBeNull(
-                    column="vendor_id"
-                ),
+                gxe.ExpectColumnValuesToNotBeNull(column="vendor_id"),
                 gxe.ExpectColumnValuesToBeBetween(
-                    column="passenger_count",
-                    min_value=1,
-                    max_value=6
-                )
-            ]
+                    column="passenger_count", min_value=1, max_value=6
+                ),
+            ],
         )
     )
     # setup validation definition
@@ -90,16 +87,24 @@ def configure_checkpoint(context: AbstractDataContext) -> Checkpoint:
         Checkpoint(
             name="Load Checkpoint",
             validation_definitions=[validation_definition],
-            actions=[]
+            actions=[],
         )
     )
     return checkpoint
 
 
-with DAG(
-    dag_id="sample_dag",
-) as dag:
+# Batch Parameters will also be available as DAG params, to be consumed directly by the
+# operator through the context. Users can still provide batch_parameters on operator init
+# (critical for validating data frames), but batch_parameters provided as DAG params should take precedence.
+# To demo validation failure, use FAILURE_MONTH as a batch parameter instead of SUCCESS_MONTH
+SUCCESS_MONTH = "01"
+FAILURE_MONTH = "02"
+batch_parameters = {"year": "2019", "month": SUCCESS_MONTH}
 
+
+with DAG(
+    dag_id="gx_provider_example_dag",
+) as dag:
     # define a consistent set of expectations we'll use throughout the pipeline
     expectation_suite = ExpectationSuite(
         name="Taxi Data Expectations",
@@ -108,29 +113,18 @@ with DAG(
                 min_value=9000,
                 max_value=11000,
             ),
-            gxe.ExpectColumnValuesToNotBeNull(
-                column="vendor_id"
-            ),
+            gxe.ExpectColumnValuesToNotBeNull(column="vendor_id"),
             gxe.ExpectColumnValuesToBeBetween(
-                column="passenger_count",
-                min_value=1,
-                max_value=6
-            )
-        ]
+                column="passenger_count", min_value=1, max_value=6
+            ),
+        ],
     )
-
-    # these should likely move into DAG params, and be consumed directly by the operator
-    # users will still provide batch_parameters on operator init, but DAG params should take precedence
-    batch_parameters = {
-        "year": "2019",
-        "month": "01"
-    }
 
     validate_extract = GXValidateBatchOperator(
         task_id="validate_extract",
         configure_batch_definition=configure_pandas_batch_definition,
         expect=expectation_suite,
-        batch_parameters=batch_parameters
+        batch_parameters=batch_parameters,
     )
 
     @task.short_circuit()
@@ -152,7 +146,7 @@ with DAG(
     validate_load = GXValidateCheckpointOperator(
         task_id="validate_load",
         configure_checkpoint=configure_checkpoint,
-        batch_parameters=batch_parameters
+        batch_parameters=batch_parameters,
     )
 
     @task.short_circuit()
