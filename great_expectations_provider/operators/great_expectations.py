@@ -306,19 +306,24 @@ class GreatExpectationsOperator(BaseOperator):
                     self.conn,
                 )
 
-            snowflake_account = self.conn.extra_dejson.get("account") or \
-                self.conn.extra_dejson["extra__snowflake__account"]
+            snowflake_account = (
+                self.conn.extra_dejson.get("account") or self.conn.extra_dejson["extra__snowflake__account"]
+            )
 
-            snowflake_region = self.conn.extra_dejson.get("region") or \
-                self.conn.extra_dejson.get("extra__snowflake__region")  # Snowflake region can be None for us-west-2
+            snowflake_region = self.conn.extra_dejson.get("region") or self.conn.extra_dejson.get(
+                "extra__snowflake__region"
+            )  # Snowflake region can be None for us-west-2
 
             # For the database override takes first priority
-            snowflake_database = self.database or \
-                self.conn.extra_dejson.get("database") or \
-                self.conn.extra_dejson["extra__snowflake__database"]
+            snowflake_database = (
+                self.database
+                or self.conn.extra_dejson.get("database")
+                or self.conn.extra_dejson["extra__snowflake__database"]
+            )
 
-            snowflake_warehouse = self.conn.extra_dejson.get("warehouse") or \
-                self.conn.extra_dejson["extra__snowflake__warehouse"]
+            snowflake_warehouse = (
+                self.conn.extra_dejson.get("warehouse") or self.conn.extra_dejson["extra__snowflake__warehouse"]
+            )
 
             snowflake_role = self.conn.extra_dejson.get("role") or self.conn.extra_dejson["extra__snowflake__role"]
 
