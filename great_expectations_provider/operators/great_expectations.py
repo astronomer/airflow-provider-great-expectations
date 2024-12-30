@@ -112,6 +112,8 @@ class GreatExpectationsOperator(BaseOperator):
     :type return_json_dict: bool
     :param use_open_lineage: If True (default), creates an OpenLineage action if an OpenLineage environment is found
     :type use_open_lineage: bool
+    :param database: If provided, overwrites the default database provided by the connection
+    :type database: Optional[str]
     :param schema: If provided, overwrites the default schema provided by the connection
     :type schema: Optional[str]
     """
@@ -148,6 +150,7 @@ class GreatExpectationsOperator(BaseOperator):
         fail_task_on_validation_failure: bool = True,
         return_json_dict: bool = False,
         use_open_lineage: bool = True,
+        database: Optional[str] = None,
         schema: Optional[str] = None,
         runtime_environment: Optional[Dict[str, Any]] = None,
         *args,
@@ -177,7 +180,8 @@ class GreatExpectationsOperator(BaseOperator):
         self.datasource: Optional[Datasource] = None
         self.batch_request: Optional[BatchRequestBase] = None
         self.runtime_environment: Optional[Dict[str, Any]] = runtime_environment
-        self.schema = schema
+        self.database: Optional[str] = database
+        self.schema: Optional[str] = schema
         self.kwargs = kwargs
 
         if self.is_dataframe and self.query_to_validate:
@@ -230,14 +234,23 @@ class GreatExpectationsOperator(BaseOperator):
         if isinstance(self.checkpoint_config, CheckpointConfig):
             self.checkpoint_config = deep_filter_properties_iterable(properties=self.checkpoint_config.to_dict())
 
-        # If a schema is passed as part of the data_asset_name, use that schema
+        # If a schema is passed as part of the data_asset_name, use that schema. Same thing with the database
         if self.data_asset_name and "." in self.data_asset_name:
             # Assume data_asset_name is in the form "SCHEMA.TABLE"
             # Schema parameter always takes priority
-            asset_list = self.data_asset_name.split(".")
-            self.schema = self.schema or asset_list[0]
-            # Update data_asset_name to be only the table
-            self.data_asset_name = asset_list[1]
+            asset_list: list = self.data_asset_name.split(".")
+
+            # Assuming there is at least one ".", then we know that we can index using -1 and -2
+            self.data_asset_name = asset_list[-1]
+            self.schema = self.schema or asset_list[-2]
+
+            # If there are two "."s, we can assume that the list has three elements, and index using -3
+            if len(asset_list) == 3:
+                self.database = self.database or asset_list[-3]
+
+            # Otherwise, raise an exception saying that an invalid string was passed
+            elif len(asset_list) > 3:
+                raise ValueError("The data asset name should include at most three (3) components.")
 
     def make_connection_configuration(self) -> Dict[str, str]:
         """Builds connection strings based off existing Airflow connections. Only supports necessary extras."""
@@ -245,7 +258,10 @@ class GreatExpectationsOperator(BaseOperator):
         driver = ""
         if not self.conn:
             raise ValueError(f"Connections does not exist in Airflow for conn_id: {self.conn_id}")
+
         self.schema = self.schema or self.conn.schema
+
+        # Pull the connection type, use this as a sort of factory
         conn_type = self.conn.conn_type
         if conn_type in ("redshift", "mysql", "mssql"):
             odbc_connector = ""
@@ -290,18 +306,20 @@ class GreatExpectationsOperator(BaseOperator):
                     self.conn,
                 )
 
-            snowflake_account = (
-                self.conn.extra_dejson.get("account") or self.conn.extra_dejson["extra__snowflake__account"]
-            )
-            snowflake_region = self.conn.extra_dejson.get("region") or self.conn.extra_dejson.get(
-                "extra__snowflake__region"
-            )  # Snowflake region can be None for us-west-2
-            snowflake_database = (
-                self.conn.extra_dejson.get("database") or self.conn.extra_dejson["extra__snowflake__database"]
-            )
-            snowflake_warehouse = (
-                self.conn.extra_dejson.get("warehouse") or self.conn.extra_dejson["extra__snowflake__warehouse"]
-            )
+            snowflake_account = self.conn.extra_dejson.get("account") or \
+                self.conn.extra_dejson["extra__snowflake__account"]
+
+            snowflake_region = self.conn.extra_dejson.get("region") or \
+                self.conn.extra_dejson.get("extra__snowflake__region")  # Snowflake region can be None for us-west-2
+
+            # For the database override takes first priority
+            snowflake_database = self.database or \
+                self.conn.extra_dejson.get("database") or \
+                self.conn.extra_dejson["extra__snowflake__database"]
+
+            snowflake_warehouse = self.conn.extra_dejson.get("warehouse") or \
+                self.conn.extra_dejson["extra__snowflake__warehouse"]
+
             snowflake_role = self.conn.extra_dejson.get("role") or self.conn.extra_dejson["extra__snowflake__role"]
 
             if snowflake_region:
@@ -342,6 +360,7 @@ class GreatExpectationsOperator(BaseOperator):
 
         # Support the operator overriding the schema
         # which is necessary for temp tables.
+        hook.database = self.database or hook.database
         hook.schema = self.schema or hook.schema
 
         conn = hook.get_connection(self.conn_id)
