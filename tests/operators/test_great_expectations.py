@@ -989,14 +989,14 @@ def test_great_expectations_operator__make_connection_string_athena_without_db()
     assert operator.make_connection_configuration() == test_conn_conf
 
 
-def test_great_expectations_operator__make_connection_string_schema_parameter(mocker):
+def test_great_expectations_operator__make_connection_string_database_schema_parameter(mocker):
     test_conn_conf = {
         "url": URL.create(
             drivername="snowflake",
             username="user",
             password="password",
             host="account.region-east-1",
-            database="database/test_schema_parameter",
+            database="test_database_parameter/test_schema_parameter",
             query={"role": "role", "warehouse": "warehouse", "authenticator": "snowflake", "application": "AIRFLOW"},
         ).render_as_string(hide_password=False),
     }
@@ -1006,6 +1006,7 @@ def test_great_expectations_operator__make_connection_string_schema_parameter(mo
         data_asset_name="test_schema.test_table",
         conn_id="snowflake_default",
         expectation_suite_name="suite",
+        database="test_database_parameter",
         schema="test_schema_parameter",
     )
     operator.conn = Connection(
@@ -1019,7 +1020,7 @@ def test_great_expectations_operator__make_connection_string_schema_parameter(mo
         extra={
             "extra__snowflake__role": "role",
             "extra__snowflake__warehouse": "warehouse",
-            "extra__snowflake__database": "database",
+            "extra__snowflake__database": "database",  # This should be overridden with the database parameter
             "extra__snowflake__region": "region-east-1",
             "extra__snowflake__account": "account",
         },
@@ -1031,21 +1032,21 @@ def test_great_expectations_operator__make_connection_string_schema_parameter(mo
     assert operator.make_connection_configuration() == test_conn_conf
 
 
-def test_great_expectations_operator__make_connection_string_data_asset_name_schema_parse(mocker):
+def test_great_expectations_operator__make_connection_string_data_asset_name_database_schema_parse(mocker):
     test_conn_conf = {
         "url": URL.create(
             drivername="snowflake",
             username="user",
             password="password",
             host="account.region-east-1",
-            database="database/test_schema",
+            database="test_database/test_schema",
             query={"role": "role", "warehouse": "warehouse", "authenticator": "snowflake", "application": "AIRFLOW"},
         ).render_as_string(hide_password=False),
     }
     operator = GreatExpectationsOperator(
         task_id="task_id",
         data_context_config=in_memory_data_context_config,
-        data_asset_name="test_schema.test_table",
+        data_asset_name="test_database.test_schema.test_table",
         conn_id="snowflake_default",
         expectation_suite_name="suite",
     )
