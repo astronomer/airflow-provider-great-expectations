@@ -102,23 +102,25 @@ FAILURE_MONTH = "02"
 batch_parameters = {"year": "2019", "month": SUCCESS_MONTH}
 
 
+expectation_suite = ExpectationSuite(
+    name="Taxi Data Expectations",
+    expectations=[
+        gxe.ExpectTableRowCountToBeBetween(
+            min_value=9000,
+            max_value=11000,
+        ),
+        gxe.ExpectColumnValuesToNotBeNull(column="vendor_id"),
+        gxe.ExpectColumnValuesToBeBetween(
+            column="passenger_count", min_value=1, max_value=6
+        ),
+    ],
+)
+
+
 with DAG(
     dag_id="gx_provider_example_dag",
 ) as dag:
     # define a consistent set of expectations we'll use throughout the pipeline
-    expectation_suite = ExpectationSuite(
-        name="Taxi Data Expectations",
-        expectations=[
-            gxe.ExpectTableRowCountToBeBetween(
-                min_value=9000,
-                max_value=11000,
-            ),
-            gxe.ExpectColumnValuesToNotBeNull(column="vendor_id"),
-            gxe.ExpectColumnValuesToBeBetween(
-                column="passenger_count", min_value=1, max_value=6
-            ),
-        ],
-    )
 
     validate_extract = GXValidateBatchOperator(
         task_id="validate_extract",
