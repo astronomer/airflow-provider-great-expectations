@@ -7,7 +7,7 @@ on:
       - main
 
 jobs:
-  lint-all:
+  format-and-type-check:
     runs-on: ubuntu-latest
 
     steps:
@@ -30,4 +30,3 @@ jobs:
 
       - name: MyPy
         run: mypy --pretty  --no-error-summary ./great_expectations_provider ./tests
-    
