@@ -7,7 +7,6 @@ from airflow import DAG
 from airflow.models.baseoperator import chain
 
 from airflow.decorators import task
-from airflow.utils.state import DagRunState, State
 from great_expectations import ExpectationSuite, ValidationDefinition, Checkpoint
 import great_expectations.expectations as gxe
 
