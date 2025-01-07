@@ -11,8 +11,12 @@ from great_expectations import ExpectationSuite, ValidationDefinition, Checkpoin
 import great_expectations.expectations as gxe
 
 from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
-from great_expectations_provider.operators.validate_checkpoint import GXValidateCheckpointOperator
-from great_expectations_provider.operators.validate_dataframe import GXValidateDataFrameOperator
+from great_expectations_provider.operators.validate_checkpoint import (
+    GXValidateCheckpointOperator,
+)
+from great_expectations_provider.operators.validate_dataframe import (
+    GXValidateDataFrameOperator,
+)
 
 if TYPE_CHECKING:
     from great_expectations.data_context import AbstractDataContext
@@ -88,9 +92,6 @@ def configure_checkpoint(context: AbstractDataContext) -> Checkpoint:
         )
     )
     return checkpoint
-
-
-
 
 
 # Batch Parameters will also be available as DAG params, to be consumed directly by the
