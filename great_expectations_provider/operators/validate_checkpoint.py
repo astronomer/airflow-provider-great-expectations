@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from typing import Callable, Literal, TYPE_CHECKING
 
 from airflow.models import BaseOperator

@@ -1,5 +1,4 @@
 import json
-import pytest
 from great_expectations import ValidationDefinition
 from great_expectations import Checkpoint
 
