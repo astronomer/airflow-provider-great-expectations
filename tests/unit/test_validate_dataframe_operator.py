@@ -8,7 +8,6 @@ from great_expectations_provider.operators.validate_dataframe import (
 )
 from great_expectations.core import (
     ExpectationValidationResult,
-    ExpectationSuiteValidationResult,
 )
 
 
