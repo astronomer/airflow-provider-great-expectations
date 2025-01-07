@@ -35,7 +35,6 @@ class TestExampleDag:
         dag_id = "gx_provider_example_dag"
         dag_bag = get_dag_bag()
         dag = dag_bag.get_dag(dag_id)
-        print(dag_bag.dag_ids)
         assert dag
 
         dag.clear()
