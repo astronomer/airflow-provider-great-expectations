@@ -1,0 +1,33 @@
+name: "Lint"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  lint-all:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Library
+        run: pip install .
+
+      - name: Install Dependencies
+        run: pip install -r test-requirements.txt
+
+      - name: Ruff
+        run: ruff check --fix --show-fixes  --output-format=github ./great_expectations_provider ./tests
+
+      - name: MyPy
+        run: mypy --pretty  --no-error-summary ./great_expectations_provider ./tests
+    
