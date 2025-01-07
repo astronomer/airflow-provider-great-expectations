@@ -41,5 +41,10 @@ jobs:
       - name: Install Dependencies
         run: pip install -r test-requirements.txt
 
+      - name: Setup
+        run: |
+          airflow db reset -y
+          airflow db init
+
       - name: Run Unit Tests
         run: pytest -vvv tests/integration
