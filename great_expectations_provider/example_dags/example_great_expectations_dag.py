@@ -1,21 +1,18 @@
 from __future__ import annotations
-from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pandas as pd
 from airflow import DAG
 from airflow.models.baseoperator import chain
-from airflow.operators.empty import EmptyOperator
-from great_expectations_provider import (
-    GXValidateDataFrameOperator,
-    GXValidateBatchOperator,
-    GXValidateCheckpointOperator,
-)
+
 from airflow.decorators import task
-from airflow.models.param import Param
 from great_expectations import ExpectationSuite, ValidationDefinition, Checkpoint
 import great_expectations.expectations as gxe
+
+from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
+from great_expectations_provider.operators.validate_checkpoint import GXValidateCheckpointOperator
+from great_expectations_provider.operators.validate_dataframe import GXValidateDataFrameOperator
 
 if TYPE_CHECKING:
     from great_expectations.data_context import AbstractDataContext
