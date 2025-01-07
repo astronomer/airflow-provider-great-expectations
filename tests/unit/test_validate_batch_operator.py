@@ -1,5 +1,7 @@
 import json
+from typing import Literal
 
+import pytest
 from great_expectations.data_context import AbstractDataContext
 from great_expectations.core.batch_definition import BatchDefinition
 
@@ -82,3 +84,93 @@ class TestValidateBatchOperator:
         # assert
         json.dumps(result)  # result must be json serializable
         assert result["success"] is True
+
+    @pytest.mark.parametrize(
+        "result_format,expected_result",
+        [
+            pytest.param("BOOLEAN_ONLY", {}, id="boolean"),
+            pytest.param(
+                "BASIC",
+                {
+                    "element_count": 3,
+                    "missing_count": 0,
+                    "missing_percent": 0.0,
+                    "partial_unexpected_list": [],
+                    "unexpected_count": 0,
+                    "unexpected_percent": 0.0,
+                    "unexpected_percent_nonmissing": 0.0,
+                    "unexpected_percent_total": 0.0,
+                },
+                id="basic",
+            ),
+            pytest.param(
+                "SUMMARY",
+                {
+                    "element_count": 3,
+                    "unexpected_count": 0,
+                    "unexpected_percent": 0.0,
+                    "partial_unexpected_list": [],
+                    "missing_count": 0,
+                    "missing_percent": 0.0,
+                    "unexpected_percent_total": 0.0,
+                    "unexpected_percent_nonmissing": 0.0,
+                    "partial_unexpected_counts": [],
+                    "partial_unexpected_index_list": [],
+                },
+                id="summary",
+            ),
+            pytest.param(
+                "COMPLETE",
+                {
+                    "element_count": 3,
+                    "unexpected_count": 0,
+                    "unexpected_percent": 0.0,
+                    "partial_unexpected_list": [],
+                    "missing_count": 0,
+                    "missing_percent": 0.0,
+                    "unexpected_percent_total": 0.0,
+                    "unexpected_percent_nonmissing": 0.0,
+                    "partial_unexpected_counts": [],
+                    "partial_unexpected_index_list": [],
+                    "unexpected_list": [],
+                    "unexpected_index_list": [],
+                    "unexpected_index_query": "df.filter(items=[], axis=0)",
+                },
+                id="complete",
+            ),
+        ],
+    )
+    def test_result_format(
+        self,
+        result_format: Literal["BOOLEAN_ONLY", "BASIC", "SUMMARY", "COMPLETE"],
+        expected_result: dict,
+    ):
+        # arrange
+        def configure_ephemeral_batch_definition(
+            context: AbstractDataContext,
+        ) -> BatchDefinition:
+            return (
+                context.data_sources.add_pandas(name="test datasource")
+                .add_dataframe_asset("test asset")
+                .add_batch_definition_whole_dataframe("test batch def")
+            )
+
+        column_name = "col_A"
+        df = pd.DataFrame({column_name: ["a", "b", "c"]})
+        expect = ExpectColumnValuesToBeInSet(
+            column=column_name, value_set=["a", "b", "c", "d", "e"]
+        )
+
+        validate_batch = GXValidateBatchOperator(
+            task_id="validate_batch_success",
+            configure_batch_definition=configure_ephemeral_batch_definition,
+            expect=expect,
+            batch_parameters={"dataframe": df},
+            result_format=result_format,
+        )
+
+        # act
+        result = validate_batch.execute(context={})
+
+        # assert
+        assert result["result"] == expected_result
