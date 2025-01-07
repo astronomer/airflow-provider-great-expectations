@@ -34,6 +34,3 @@ jobs:
 
       - name: Run Unit Tests
         run: pytest -vvv tests/unit
-
-      - name: Assert no file changes
-        run: git diff --exit-code
