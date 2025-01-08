@@ -16,7 +16,7 @@ from great_expectations.expectations import ExpectColumnValuesToBeInSet
 
 
 class TestValidateCheckpointOperator:
-    def test_validate_dataframe(self):
+    def test_validate_dataframe(self) -> None:
         # arrange
         column_name = "col_A"
 
@@ -71,7 +71,7 @@ class TestValidateCheckpointOperator:
         assert serialized_result["success"]
         json.dumps(serialized_result)  # result must be json serializable
 
-    def test_context_type_ephemeral(self, mocker: MockerFixture):
+    def test_context_type_ephemeral(self, mocker: MockerFixture) -> None:
         """Expect that param context_type creates an EphemeralDataContext."""
         # arrange
         context_type: Literal["ephemeral"] = "ephemeral"
@@ -93,7 +93,7 @@ class TestValidateCheckpointOperator:
         # assert
         mock_gx.get_context.assert_called_once_with(mode=context_type)
 
-    def test_context_type_cloud(self, mocker: MockerFixture):
+    def test_context_type_cloud(self, mocker: MockerFixture) -> None:
         """Expect that param context_type creates a CloudDataContext."""
         # arrange
         context_type: Literal["cloud"] = "cloud"
@@ -115,7 +115,7 @@ class TestValidateCheckpointOperator:
         # assert
         mock_gx.get_context.assert_called_once_with(mode=context_type)
 
-    def test_context_type_filesystem(self, mocker: MockerFixture):
+    def test_context_type_filesystem(self, mocker: MockerFixture) -> None:
         """Expect that param context_type defers creation of data context to user."""
         # arrange
         context_type: Literal["file"] = "file"
@@ -141,7 +141,32 @@ class TestValidateCheckpointOperator:
         # assert
         mock_gx.get_context.assert_not_called()
 
-    def test_context_type_filesystem_requires_configure_file_data_context(self):
+    def test_user_configured_context_is_passed_to_configure_checkpoint(self) -> None:
+        """Expect that if a user configures a file context, it gets passed to the configure_checkpoint function."""
+        # arrange
+        context_type: Literal["file"] = "file"
+        mock_file_data_context = Mock()
+
+        def configure_file_data_context() -> FileDataContext:
+            return mock_file_data_context
+
+        def configure_checkpoint(context: AbstractDataContext) -> Checkpoint:
+            # assert - a little out of order, but this gets called inside validate_checkpoint.execute
+            nonlocal mock_file_data_context
+            assert context is mock_file_data_context
+            return Mock()
+
+        validate_checkpoint = GXValidateCheckpointOperator(
+            task_id="validate_checkpoint_success",
+            configure_checkpoint=configure_checkpoint,
+            context_type=context_type,
+            configure_file_data_context=configure_file_data_context,
+        )
+
+        # act/assert
+        validate_checkpoint.execute(context={})
+
+    def test_context_type_filesystem_requires_configure_file_data_context(self) -> None:
         """Expect that param context_type requires the configure_file_data_context parameter."""
         # arrange
         context_type: Literal["file"] = "file"
@@ -158,8 +183,9 @@ class TestValidateCheckpointOperator:
                 configure_file_data_context=None,  # must be defined
             )
 
-    def test_batch_parameters(self):
-        """Expect that param batch_parameters is passed to Checkpoint.run"""
+    def test_batch_parameters(self) -> None:
+        """Expect that param batch_parameters is passed to Checkpoint.run. This
+        also confirms that we run the Checkpoint returned by configure_checkpoint."""
         # arrange
         mock_checkpoint = Mock()
 
