@@ -11,8 +11,12 @@ from great_expectations import ExpectationSuite, ValidationDefinition, Checkpoin
 import great_expectations.expectations as gxe
 
 from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
-from great_expectations_provider.operators.validate_checkpoint import GXValidateCheckpointOperator
-from great_expectations_provider.operators.validate_dataframe import GXValidateDataFrameOperator
+from great_expectations_provider.operators.validate_checkpoint import (
+    GXValidateCheckpointOperator,
+)
+from great_expectations_provider.operators.validate_dataframe import (
+    GXValidateDataFrameOperator,
+)
 
 if TYPE_CHECKING:
     from great_expectations.data_context import AbstractDataContext
@@ -155,9 +159,9 @@ with DAG(
 
     chain(
         validate_extract,
-        check_validate_extract(),
+        check_validate_extract(),  # type: ignore[call-arg, misc]
         validate_transform,
-        check_validate_transform(),
+        check_validate_transform(),  # type: ignore[call-arg, misc]
         validate_load,
-        check_validate_load(),
+        check_validate_load(),  # type: ignore[call-arg, misc]
     )

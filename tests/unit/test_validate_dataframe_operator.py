@@ -136,7 +136,8 @@ class TestValidateDataFrameOperator:
             return pd.DataFrame({column_name: ["a", "b", "c"]})
 
         expect = ExpectColumnValuesToBeInSet(
-            column=column_name, value_set=["a", "b", "c", "d", "e"]
+            column=column_name,
+            value_set=["a", "b", "c", "d", "e"],  # type: ignore[arg-type]
         )
 
         validate_batch = GXValidateDataFrameOperator(

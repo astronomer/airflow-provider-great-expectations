@@ -1,0 +1,32 @@
+name: "Lint"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  format-and-type-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Install Library
+        run: pip install .
+
+      - name: Install Dependencies
+        run: pip install -r test-requirements.txt
+
+      - name: Ruff
+        run: ruff format --check .
+
+      - name: MyPy
+        run: mypy --pretty  --no-error-summary .

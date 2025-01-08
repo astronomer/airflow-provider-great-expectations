@@ -15,7 +15,6 @@ if TYPE_CHECKING:
 class GXValidateDataFrameOperator(BaseOperator):
     def __init__(
         self,
-        task_id: str,
         configure_dataframe: Callable[[], DataFrame],
         expect: Expectation | ExpectationSuite,
         result_format: Literal["BOOLEAN_ONLY", "BASIC", "SUMMARY", "COMPLETE"]
@@ -23,7 +22,7 @@ class GXValidateDataFrameOperator(BaseOperator):
         *args,
         **kwargs,
     ) -> None:
-        super().__init__(*args, **kwargs, task_id=task_id)
+        super().__init__(*args, **kwargs)
 
         self.dataframe = configure_dataframe()
         self.expect = expect

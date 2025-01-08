@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from typing import Callable, Literal, TYPE_CHECKING
 
 from airflow.models import BaseOperator
@@ -10,6 +9,7 @@ if TYPE_CHECKING:
     from great_expectations.data_context import AbstractDataContext, FileDataContext
     from great_expectations import Checkpoint
     from great_expectations.core.batch import BatchParameters
+    from great_expectations.checkpoint.checkpoint import CheckpointDescriptionDict
     from airflow.utils.context import Context
 
 
@@ -37,10 +37,16 @@ class GXValidateCheckpointOperator(BaseOperator):
         self.configure_file_data_context = configure_file_data_context
         self.configure_checkpoint = configure_checkpoint
 
-    def execute(self, context: Context) -> dict:
+    def execute(self, context: Context) -> CheckpointDescriptionDict:
         import great_expectations as gx
 
+        gx_context: AbstractDataContext
+
         if self.context_type == "file":
+            if not self.configure_file_data_context:
+                raise ValueError(
+                    "Parameter `configure_file_data_context` must be specified if `context_type` is `file`"
+                )
             gx_context = self.configure_file_data_context()
         else:
             gx_context = gx.get_context(mode=self.context_type)
