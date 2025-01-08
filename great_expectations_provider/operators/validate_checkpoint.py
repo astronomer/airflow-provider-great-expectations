@@ -6,9 +6,9 @@ from airflow.models import BaseOperator
 
 
 if TYPE_CHECKING:
-    from great_expectations.data_context import AbstractDataContext, FileDataContext
-    from great_expectations import Checkpoint
-    from great_expectations.core.batch import BatchParameters
+    from great_expectations.data_context import AbstractDataContext, FileDataContext  # type: ignore[import-untyped]
+    from great_expectations import Checkpoint  # type: ignore[import-untyped]
+    from great_expectations.core.batch import BatchParameters  # type: ignore[import-untyped]
     from airflow.utils.context import Context
 
 
