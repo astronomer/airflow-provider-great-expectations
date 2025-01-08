@@ -1,6 +1,6 @@
 import json
 from typing import Literal
-
+from unittest.mock import Mock
 import pytest
 from great_expectations.data_context import AbstractDataContext
 from great_expectations.core.batch_definition import BatchDefinition
@@ -174,3 +174,22 @@ class TestValidateBatchOperator:
 
         # assert
         assert result["result"] == expected_result
+
+    @pytest.mark.parametrize("context_type", ["ephemeral", "cloud"])
+    def test_context_type(self, mocker, context_type: Literal["ephemeral", "cloud"]):
+        # arrange
+        mock_gx = Mock()
+        gx = mocker.patch.dict("sys.modules", {"great_expectations": mock_gx})
+        validate_batch = GXValidateBatchOperator(
+            task_id="validate_batch_success",
+            configure_batch_definition=lambda context: Mock(),
+            expect=Mock(),
+            batch_parameters={"dataframe": Mock()},
+            context_type=context_type,
+        )
+
+        # act
+        validate_batch.execute(context={})
+
+        # assert
+        mock_gx.assert_called_once_with(mode=context_type)
