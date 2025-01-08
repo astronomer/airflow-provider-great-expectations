@@ -141,9 +141,7 @@ class TestValidateCheckpointOperator:
         # assert
         mock_gx.get_context.assert_not_called()
 
-    def test_context_type_filesystem_requires_configure_file_data_context(
-        self, mocker: MockerFixture
-    ):
+    def test_context_type_filesystem_requires_configure_file_data_context(self):
         """Expect that param context_type requires the configure_file_data_context parameter."""
         # arrange
         context_type: Literal["file"] = "file"
