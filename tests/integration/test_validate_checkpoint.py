@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import pytest
 import random
 import string
@@ -13,16 +12,6 @@ from great_expectations.data_context import AbstractDataContext
 from great_expectations_provider.operators.validate_checkpoint import (
     GXValidateCheckpointOperator,
 )
-
-
-@dataclass(frozen=True)
-class CheckpointCloudState:
-    """Dataclass to hold what we need to clean up after the test."""
-
-    checkpoint_name: str
-    datasource_name: str
-    suite_name: str
-    validation_definition_name: str
 
 
 def rand_name() -> str:
