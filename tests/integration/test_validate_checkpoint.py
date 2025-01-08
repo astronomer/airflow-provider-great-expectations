@@ -80,7 +80,7 @@ class TestValidateCheckpointOperator:
 
         return _configure_checkpoint
 
-    def test_validate_checkpoint_data_frame_cloud(
+    def test_validate_checkpoint_with_cloud(
         self,
         configure_checkpoint: Callable[[AbstractDataContext], gx.Checkpoint],
     ) -> None:
