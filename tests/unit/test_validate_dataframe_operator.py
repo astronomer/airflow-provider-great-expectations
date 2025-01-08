@@ -72,7 +72,7 @@ class TestValidateDataFrameOperator:
     @pytest.mark.parametrize(
         "result_format,expected_result",
         [
-            pytest.param("BOOLEAN_ONLY", {}),
+            pytest.param("BOOLEAN_ONLY", {}, id="boolean"),
             pytest.param(
                 "BASIC",
                 {
@@ -85,6 +85,7 @@ class TestValidateDataFrameOperator:
                     "unexpected_percent_nonmissing": 0.0,
                     "unexpected_percent_total": 0.0,
                 },
+                id="basic",
             ),
             pytest.param(
                 "SUMMARY",
@@ -100,6 +101,7 @@ class TestValidateDataFrameOperator:
                     "partial_unexpected_counts": [],
                     "partial_unexpected_index_list": [],
                 },
+                id="summary",
             ),
             pytest.param(
                 "COMPLETE",
@@ -118,6 +120,7 @@ class TestValidateDataFrameOperator:
                     "unexpected_index_list": [],
                     "unexpected_index_query": "df.filter(items=[], axis=0)",
                 },
+                id="complete",
             ),
         ],
     )
