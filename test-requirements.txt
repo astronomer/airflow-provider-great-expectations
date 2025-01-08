@@ -1,2 +1,1 @@
 pytest==8.3.4
-great_expectations==1.3
