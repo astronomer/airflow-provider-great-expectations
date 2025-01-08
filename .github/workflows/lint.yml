@@ -19,9 +19,6 @@ jobs:
         with:
           python-version: 3.12
 
-      - name: Install Library
-        run: pip install .
-
       - name: Install Dependencies
         run: pip install -r test-requirements.txt
 
