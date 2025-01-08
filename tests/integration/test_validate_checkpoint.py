@@ -5,7 +5,7 @@ import string
 
 import pandas as pd
 
-from typing import Callable, Generator
+from typing import Callable
 import great_expectations as gx
 import great_expectations.expectations as gxe
 from great_expectations.data_context import AbstractDataContext
@@ -73,8 +73,8 @@ class TestValidateCheckpointOperator:
 
             ensure_checkpoint_cleanup(checkpoint.name)
             ensure_validation_definition_cleanup(validation_definition.name)
-            ensure_data_source_cleanup(batch_definition.data_asset.datasource.name)
             ensure_suite_cleanup(suite.name)
+            ensure_data_source_cleanup(batch_definition.data_asset.datasource.name)
 
             return checkpoint
 

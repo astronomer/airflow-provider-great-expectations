@@ -55,7 +55,7 @@ def ensure_suite_cleanup(
     yield ensure_cleanup
 
     for name in to_cleanup:
-        cloud_context.validation_definitions.delete(name)
+        cloud_context.suites.delete(name)
 
 
 @pytest.fixture
@@ -70,4 +70,8 @@ def ensure_data_source_cleanup(
     yield ensure_cleanup
 
     for name in to_cleanup:
-        cloud_context.suites.delete(name)
+        try:
+            cloud_context.data_sources.delete(name)
+        except KeyError:
+            # TODO: remove Try/Except block after CORE-767 is resolved in GX Core
+            pass
