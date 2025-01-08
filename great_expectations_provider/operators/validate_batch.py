@@ -5,11 +5,11 @@ from airflow.models import BaseOperator
 
 
 if TYPE_CHECKING:
-    from great_expectations.data_context import AbstractDataContext  # type: ignore[import-untyped]
-    from great_expectations.core.batch import BatchParameters  # type: ignore[import-untyped]
-    from great_expectations.core.batch_definition import BatchDefinition  # type: ignore[import-untyped]
-    from great_expectations.expectations import Expectation  # type: ignore[import-untyped]
-    from great_expectations import ExpectationSuite  # type: ignore[import-untyped]
+    from great_expectations.data_context import AbstractDataContext
+    from great_expectations.core.batch import BatchParameters
+    from great_expectations.core.batch_definition import BatchDefinition
+    from great_expectations.expectations import Expectation
+    from great_expectations import ExpectationSuite
     from airflow.utils.context import Context
 
 

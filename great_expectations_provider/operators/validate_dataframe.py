@@ -6,8 +6,8 @@ from airflow.models import BaseOperator
 
 
 if TYPE_CHECKING:
-    from great_expectations.expectations import Expectation  # type: ignore[import-untyped]
-    from great_expectations import ExpectationSuite  # type: ignore[import-untyped]
+    from great_expectations.expectations import Expectation
+    from great_expectations import ExpectationSuite
     from airflow.utils.context import Context
     from pandas import DataFrame
 
