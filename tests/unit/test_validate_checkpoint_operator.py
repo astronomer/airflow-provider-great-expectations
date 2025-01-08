@@ -59,7 +59,7 @@ class TestValidateCheckpointOperator:
         df = pd.DataFrame({column_name: ["a", "b", "c"]})
 
         validate_cloud_checkpoint = GXValidateCheckpointOperator(
-            task_id="validate_cloud_checkpoint",
+            task_id="validate_checkpoint",
             configure_checkpoint=configure_checkpoint,
             batch_parameters={"dataframe": df},
         )
@@ -75,10 +75,7 @@ class TestValidateCheckpointOperator:
         """Expect that param context_type creates an EphemeralDataContext."""
         # arrange
         context_type: Literal["ephemeral"] = "ephemeral"
-
-        def configure_checkpoint(context: AbstractDataContext) -> Checkpoint:
-            return Mock()
-
+        configure_checkpoint = Mock()
         mock_gx = Mock()
         mocker.patch.dict("sys.modules", {"great_expectations": mock_gx})
         validate_checkpoint = GXValidateCheckpointOperator(
@@ -97,10 +94,7 @@ class TestValidateCheckpointOperator:
         """Expect that param context_type creates a CloudDataContext."""
         # arrange
         context_type: Literal["cloud"] = "cloud"
-
-        def configure_checkpoint(context: AbstractDataContext) -> Checkpoint:
-            return Mock()
-
+        configure_checkpoint = Mock()
         mock_gx = Mock()
         mocker.patch.dict("sys.modules", {"great_expectations": mock_gx})
         validate_checkpoint = GXValidateCheckpointOperator(
@@ -119,13 +113,8 @@ class TestValidateCheckpointOperator:
         """Expect that param context_type defers creation of data context to user."""
         # arrange
         context_type: Literal["file"] = "file"
-
-        def configure_checkpoint(context: AbstractDataContext) -> Checkpoint:
-            return Mock()
-
-        def configure_file_data_context() -> FileDataContext:
-            return Mock()
-
+        configure_checkpoint = Mock()
+        configure_file_data_context = Mock()
         mock_gx = Mock()
         mocker.patch.dict("sys.modules", {"great_expectations": mock_gx})
         validate_checkpoint = GXValidateCheckpointOperator(
@@ -145,17 +134,8 @@ class TestValidateCheckpointOperator:
         """Expect that if a user configures a file context, it gets passed to the configure_checkpoint function."""
         # arrange
         context_type: Literal["file"] = "file"
-        mock_file_data_context = Mock()
-
-        def configure_file_data_context() -> FileDataContext:
-            return mock_file_data_context
-
-        def configure_checkpoint(context: AbstractDataContext) -> Checkpoint:
-            # assert - a little out of order, but this gets called inside validate_checkpoint.execute
-            nonlocal mock_file_data_context
-            assert context is mock_file_data_context
-            return Mock()
-
+        configure_checkpoint = Mock()
+        configure_file_data_context = Mock()
         validate_checkpoint = GXValidateCheckpointOperator(
             task_id="validate_checkpoint_success",
             configure_checkpoint=configure_checkpoint,
@@ -163,16 +143,19 @@ class TestValidateCheckpointOperator:
             configure_file_data_context=configure_file_data_context,
         )
 
-        # act/assert
+        # act
         validate_checkpoint.execute(context={})
+
+        # assert
+        configure_checkpoint.assert_called_once_with(
+            configure_file_data_context.return_value
+        )
 
     def test_context_type_filesystem_requires_configure_file_data_context(self) -> None:
         """Expect that param context_type requires the configure_file_data_context parameter."""
         # arrange
         context_type: Literal["file"] = "file"
-
-        def configure_checkpoint(context: AbstractDataContext) -> Checkpoint:
-            return Mock()
+        configure_checkpoint = Mock()
 
         # act/assert
         with pytest.raises(ValueError, match="configure_file_data_context"):
@@ -188,16 +171,13 @@ class TestValidateCheckpointOperator:
         also confirms that we run the Checkpoint returned by configure_checkpoint."""
         # arrange
         mock_checkpoint = Mock()
-
-        def configure_checkpoint(context: AbstractDataContext) -> Checkpoint:
-            return mock_checkpoint
-
+        configure_checkpoint = Mock()
+        configure_checkpoint.return_value = mock_checkpoint
         batch_parameters = {
             "year": "2024",
             "month": "01",
             "day": "01",
         }
-
         validate_checkpoint = GXValidateCheckpointOperator(
             task_id="validate_checkpoint",
             configure_checkpoint=configure_checkpoint,
