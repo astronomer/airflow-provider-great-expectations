@@ -17,18 +17,22 @@ from sqlalchemy.orm import Session
 
 log = logging.getLogger(__name__)
 
+
 @provide_session
-def get_session(session: Session=NEW_SESSION):
+def get_session(session: Session = NEW_SESSION):
     create_default_connections(session)
     return session
+
 
 @cache
 def get_dag_bag() -> DagBag:
     return DagBag(dag_folder="great_expectations_provider/example_dags")
 
+
 @pytest.fixture()
 def session():
     return get_session()
+
 
 class TestExampleDag:
     def test_example_dag(self, session: Session):
