@@ -13,7 +13,6 @@ if TYPE_CHECKING:
 
 
 class GXValidateDataFrameOperator(BaseOperator):
-    # todo: update signature to allow Spark DataFrame
     def __init__(
         self,
         configure_dataframe: Callable[[], DataFrame],
