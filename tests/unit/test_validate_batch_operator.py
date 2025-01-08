@@ -222,7 +222,7 @@ class TestValidateBatchOperator:
         # assert
         mock_gx.get_context.assert_called_once_with(mode=context_type)
 
-    def test_batch_parameters(self, foo):
+    def test_batch_parameters(self):
         """Expect that param batch_parameters is passed to BatchDefinition.get_batch"""
         # arrange
         mock_batch_definition = Mock()
