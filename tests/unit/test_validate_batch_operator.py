@@ -4,20 +4,24 @@ from unittest.mock import Mock
 import pytest
 from great_expectations.data_context import AbstractDataContext
 from great_expectations.core.batch_definition import BatchDefinition
+
 from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
 import pandas as pd
 from great_expectations import ExpectationSuite
 from great_expectations.expectations import (
     ExpectColumnValuesToBeInSet,
 )
-
+from pytest_mock import MockerFixture
 from great_expectations.core import (
     ExpectationValidationResult,
 )
+from airflow.operators.python import PythonOperator
 
 
 class TestValidateBatchOperator:
     def test_expectation(self):
+        """Expect that an Expectation can be used as an `expect` parameter to generate a result."""
+
         # arrange
         def configure_ephemeral_batch_definition(
             context: AbstractDataContext,
@@ -49,6 +53,8 @@ class TestValidateBatchOperator:
         assert deserialized_result.success
 
     def test_expectation_suite(self):
+        """Expect that an ExpectationSuite can be used as an `expect` parameter to generate a result."""
+
         # arrange
         def configure_ephemeral_batch_definition(
             context: AbstractDataContext,
@@ -144,6 +150,8 @@ class TestValidateBatchOperator:
         result_format: Literal["BOOLEAN_ONLY", "BASIC", "SUMMARY", "COMPLETE"],
         expected_result: dict,
     ):
+        """Expect that valid values of param result_format alter result as expected."""
+
         # arrange
         def configure_ephemeral_batch_definition(
             context: AbstractDataContext,
@@ -174,7 +182,8 @@ class TestValidateBatchOperator:
         # assert
         assert result["result"] == expected_result
 
-    def test_context_type_ephemeral(self, mocker):
+    def test_context_type_ephemeral(self, mocker: MockerFixture):
+        """Expect that param context_type creates an EphemeralDataContext."""
         # arrange
         context_type = "ephemeral"
         mock_gx = Mock()
@@ -193,7 +202,8 @@ class TestValidateBatchOperator:
         # assert
         mock_gx.get_context.assert_called_once_with(mode=context_type)
 
-    def test_context_type_cloud(self, mocker):
+    def test_context_type_cloud(self, mocker: MockerFixture):
+        """Expect that param context_type creates a CloudDataContext."""
         # arrange
         context_type = "cloud"
         mock_gx = Mock()
@@ -211,3 +221,29 @@ class TestValidateBatchOperator:
 
         # assert
         mock_gx.get_context.assert_called_once_with(mode=context_type)
+
+    def test_batch_parameters(self, foo):
+        """Expect that param batch_parameters is passed to BatchDefinition.get_batch"""
+        # arrange
+        mock_batch_definition = Mock()
+        batch_parameters = {
+            "year": "2024",
+            "month": "01",
+            "day": "01",
+        }
+
+        validate_batch = GXValidateBatchOperator(
+            task_id="validate_batch_success",
+            configure_batch_definition=lambda context: mock_batch_definition,
+            expect=Mock(),
+            batch_parameters=batch_parameters,
+            context_type="ephemeral",
+        )
+
+        # act
+        validate_batch.execute(context={})
+
+        # assert
+        mock_batch_definition.get_batch.assert_called_once_with(
+            batch_parameters=batch_parameters
+        )
