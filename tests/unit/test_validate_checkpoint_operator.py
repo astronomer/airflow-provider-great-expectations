@@ -29,7 +29,7 @@ class TestValidateCheckpointOperator:
                     name="test suite",
                     expectations=[
                         ExpectColumnValuesToBeInSet(
-                            column=column_name, value_set=["a", "b", "c", "d", "e"]
+                            column=column_name, value_set=["a", "b", "c", "d", "e"]  # type: ignore[arg-type]
                         ),
                     ],
                 )
