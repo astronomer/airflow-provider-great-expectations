@@ -26,7 +26,7 @@ jobs:
         run: pip install -r test-requirements.txt
 
       - name: Ruff
-        run: ruff format --check ./great_expectations_provider ./tests
+        run: ruff format --check .
 
       - name: MyPy
-        run: mypy --pretty  --no-error-summary ./great_expectations_provider ./tests
+        run: mypy --pretty  --no-error-summary .

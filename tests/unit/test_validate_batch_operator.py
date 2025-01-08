@@ -1,5 +1,5 @@
 import json
-from typing import Literal
+from typing import Literal, Final
 from unittest.mock import Mock
 import pytest
 from great_expectations.data_context import AbstractDataContext
@@ -165,7 +165,8 @@ class TestValidateBatchOperator:
         column_name = "col_A"
         df = pd.DataFrame({column_name: ["a", "b", "c"]})
         expect = ExpectColumnValuesToBeInSet(
-            column=column_name, value_set=["a", "b", "c", "d", "e"]
+            column=column_name,
+            value_set=["a", "b", "c", "d", "e"],  # type: ignore[arg-type]
         )
 
         validate_batch = GXValidateBatchOperator(
@@ -185,7 +186,7 @@ class TestValidateBatchOperator:
     def test_context_type_ephemeral(self, mocker: MockerFixture):
         """Expect that param context_type creates an EphemeralDataContext."""
         # arrange
-        context_type = "ephemeral"
+        context_type: Literal["ephemeral"] = "ephemeral"
         mock_gx = Mock()
         mocker.patch.dict("sys.modules", {"great_expectations": mock_gx})
         validate_batch = GXValidateBatchOperator(
@@ -205,7 +206,7 @@ class TestValidateBatchOperator:
     def test_context_type_cloud(self, mocker: MockerFixture):
         """Expect that param context_type creates a CloudDataContext."""
         # arrange
-        context_type = "cloud"
+        context_type: Literal["cloud"] = "cloud"
         mock_gx = Mock()
         mocker.patch.dict("sys.modules", {"great_expectations": mock_gx})
         validate_batch = GXValidateBatchOperator(

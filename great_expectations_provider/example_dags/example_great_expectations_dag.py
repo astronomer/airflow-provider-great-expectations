@@ -159,9 +159,9 @@ with DAG(
 
     chain(
         validate_extract,
-        check_validate_extract(),  # type: ignore[call-arg]
+        check_validate_extract(),  # type: ignore[call-arg, misc]
         validate_transform,
-        check_validate_transform(),  # type: ignore[call-arg]
+        check_validate_transform(),  # type: ignore[call-arg, misc]
         validate_load,
-        check_validate_load(),  # type: ignore[call-arg]
+        check_validate_load(),  # type: ignore[call-arg, misc]
     )
