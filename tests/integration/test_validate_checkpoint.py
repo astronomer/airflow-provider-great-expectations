@@ -35,9 +35,11 @@ class TestValidateCheckpointOperator:
     @pytest.fixture
     def configure_checkpoint(
         self,
-    ) -> Generator[Callable[[AbstractDataContext], gx.Checkpoint], None, None]:
-        to_cleanup: set[CheckpointCloudState] = set()
-
+        ensure_checkpoint_cleanup: Callable[[str], None],
+        ensure_validation_definition_cleanup: Callable[[str], None],
+        ensure_suite_cleanup: Callable[[str], None],
+        ensure_data_source_cleanup: Callable[[str], None],
+    ) -> Callable[[AbstractDataContext], gx.Checkpoint]:
         def _configure_checkpoint(context: AbstractDataContext) -> gx.Checkpoint:
             batch_definition = (
                 context.data_sources.add_pandas(name=rand_name())
@@ -56,7 +58,7 @@ class TestValidateCheckpointOperator:
                     ],
                 )
             )
-            validation_definitions = context.validation_definitions.add(
+            validation_definition = context.validation_definitions.add(
                 gx.ValidationDefinition(
                     name=rand_name(),
                     data=batch_definition,
@@ -65,31 +67,18 @@ class TestValidateCheckpointOperator:
             )
             checkpoint = context.checkpoints.add(
                 gx.Checkpoint(
-                    name=rand_name(), validation_definitions=[validation_definitions]
+                    name=rand_name(), validation_definitions=[validation_definition]
                 )
             )
 
-            to_cleanup.add(
-                CheckpointCloudState(
-                    checkpoint_name=checkpoint.name,
-                    datasource_name=batch_definition.data_asset.datasource.name,
-                    suite_name=suite.name,
-                    validation_definition_name=validation_definitions.name,
-                )
-            )
+            ensure_checkpoint_cleanup(checkpoint.name)
+            ensure_validation_definition_cleanup(validation_definition.name)
+            ensure_data_source_cleanup(batch_definition.data_asset.datasource.name)
+            ensure_suite_cleanup(suite.name)
+
             return checkpoint
 
-        yield _configure_checkpoint
-
-        cleanup_context = gx.get_context(mode="cloud")
-
-        for to_clean in to_cleanup:
-            cleanup_context.checkpoints.delete(to_clean.checkpoint_name)
-            cleanup_context.validation_definitions.delete(
-                to_clean.validation_definition_name
-            )
-            cleanup_context.data_sources.delete(to_clean.datasource_name)
-            cleanup_context.suites.delete(to_clean.suite_name)
+        return _configure_checkpoint
 
     def test_validate_checkpoint_data_frame_cloud(
         self,
