@@ -3,6 +3,12 @@ import great_expectations as gx
 from great_expectations.data_context import AbstractDataContext
 
 import pytest
+import string
+import random
+
+
+def rand_name() -> str:
+    return "".join(random.choices(string.ascii_lowercase, k=10))
 
 
 @pytest.fixture
