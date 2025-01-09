@@ -115,6 +115,11 @@ class TestValidateCheckpointOperator:
         result = validate_cloud_checkpoint.execute(context={})
 
         assert result["success"] is True
+        # make sure we have something that looks like a valid result url
+        assert (
+            "https://app.greatexpectations.io/organizations/"
+            in result["validation_results"][0]["result_url"]
+        )
 
     def test_with_file_context(
         self,
