@@ -1,11 +1,13 @@
 import json
 from typing import Literal
+from unittest.mock import Mock
 
 import pandas as pd
 from great_expectations import ExpectationSuite
 from great_expectations.expectations import ExpectColumnValuesToBeInSet
 
 import pytest
+from pytest_mock import MockerFixture
 from great_expectations_provider.operators.validate_dataframe import (
     GXValidateDataFrameOperator,
 )
@@ -15,7 +17,7 @@ from great_expectations.core import (
 
 
 class TestValidateDataFrameOperator:
-    def test_expectation(self):
+    def test_expectation(self) -> None:
         # arrange
         column_name = "col_A"
 
@@ -23,7 +25,8 @@ class TestValidateDataFrameOperator:
             return pd.DataFrame({column_name: ["a", "b", "c"]})
 
         expect = ExpectColumnValuesToBeInSet(
-            column=column_name, value_set=["a", "b", "c", "d", "e"]
+            column=column_name,
+            value_set=["a", "b", "c", "d", "e"],  # type: ignore[arg-type]
         )
 
         validate_batch = GXValidateDataFrameOperator(
@@ -40,7 +43,7 @@ class TestValidateDataFrameOperator:
         deserialized_result = ExpectationValidationResult(**result)
         assert deserialized_result.success
 
-    def test_expectation_suite(self):
+    def test_expectation_suite(self) -> None:
         # arrange
         column_name = "col_A"
 
@@ -51,7 +54,8 @@ class TestValidateDataFrameOperator:
             name="test suite",
             expectations=[
                 ExpectColumnValuesToBeInSet(
-                    column=column_name, value_set=["a", "b", "c", "d", "e"]
+                    column=column_name,
+                    value_set=["a", "b", "c", "d", "e"],  # type: ignore[arg-type]
                 ),
             ],
         )
@@ -128,7 +132,7 @@ class TestValidateDataFrameOperator:
         self,
         result_format: Literal["BOOLEAN_ONLY", "BASIC", "SUMMARY", "COMPLETE"],
         expected_result: dict,
-    ):
+    ) -> None:
         # arrange
         column_name = "col_A"
 
@@ -140,7 +144,7 @@ class TestValidateDataFrameOperator:
             value_set=["a", "b", "c", "d", "e"],  # type: ignore[arg-type]
         )
 
-        validate_batch = GXValidateDataFrameOperator(
+        validate_df = GXValidateDataFrameOperator(
             task_id="test-result-format",
             configure_dataframe=configure_dataframe,
             expect=expect,
@@ -148,7 +152,45 @@ class TestValidateDataFrameOperator:
         )
 
         # act
-        result = validate_batch.execute(context={})
+        result = validate_df.execute(context={})
 
         # assert
         assert result["result"] == expected_result
+
+    def test_context_type_ephemeral(self, mocker: MockerFixture):
+        """Expect that param context_type creates an EphemeralDataContext."""
+        # arrange
+        context_type: Literal["ephemeral"] = "ephemeral"
+        mock_gx = Mock()
+        mocker.patch.dict("sys.modules", {"great_expectations": mock_gx})
+        validate_batch = GXValidateDataFrameOperator(
+            task_id="validate_df_success",
+            configure_dataframe=Mock(),
+            expect=Mock(),
+            context_type=context_type,
+        )
+
+        # act
+        validate_batch.execute(context={})
+
+        # assert
+        mock_gx.get_context.assert_called_once_with(mode=context_type)
+
+    def test_context_type_cloud(self, mocker: MockerFixture):
+        """Expect that param context_type creates a CloudDataContext."""
+        # arrange
+        context_type: Literal["cloud"] = "cloud"
+        mock_gx = Mock()
+        mocker.patch.dict("sys.modules", {"great_expectations": mock_gx})
+        validate_batch = GXValidateDataFrameOperator(
+            task_id="validate_df_success",
+            configure_dataframe=Mock(),
+            expect=Mock(),
+            context_type=context_type,
+        )
+
+        # act
+        validate_batch.execute(context={})
+
+        # assert
+        mock_gx.get_context.assert_called_once_with(mode=context_type)
