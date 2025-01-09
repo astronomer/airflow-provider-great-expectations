@@ -1,5 +1,5 @@
 import json
-from typing import Literal, Final
+from typing import Literal
 from unittest.mock import Mock
 import pytest
 from great_expectations.data_context import AbstractDataContext
@@ -15,7 +15,6 @@ from pytest_mock import MockerFixture
 from great_expectations.core import (
     ExpectationValidationResult,
 )
-from airflow.operators.python import PythonOperator
 
 
 class TestValidateBatchOperator:

@@ -9,7 +9,7 @@ from pytest_mock import MockerFixture
 from great_expectations_provider.operators.validate_checkpoint import (
     GXValidateCheckpointOperator,
 )
-from great_expectations.data_context import AbstractDataContext, FileDataContext
+from great_expectations.data_context import AbstractDataContext
 import pandas as pd
 from great_expectations import ExpectationSuite
 from great_expectations.expectations import ExpectColumnValuesToBeInSet
