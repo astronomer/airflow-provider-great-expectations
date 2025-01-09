@@ -1,14 +1,14 @@
 from __future__ import annotations
+
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import great_expectations.expectations as gxe
 import pandas as pd
 from airflow import DAG
-from airflow.models.baseoperator import chain
-
 from airflow.decorators import task
-from great_expectations import ExpectationSuite, ValidationDefinition, Checkpoint
-import great_expectations.expectations as gxe
+from airflow.models.baseoperator import chain
+from great_expectations import Checkpoint, ExpectationSuite, ValidationDefinition
 
 from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
 from great_expectations_provider.operators.validate_checkpoint import (
@@ -19,9 +19,8 @@ from great_expectations_provider.operators.validate_dataframe import (
 )
 
 if TYPE_CHECKING:
-    from great_expectations.data_context import AbstractDataContext
     from great_expectations.core.batch_definition import BatchDefinition
-    from great_expectations import Checkpoint
+    from great_expectations.data_context import AbstractDataContext
 
 base_path = Path(__file__).parents[2]
 data_dir = base_path / "include" / "data"

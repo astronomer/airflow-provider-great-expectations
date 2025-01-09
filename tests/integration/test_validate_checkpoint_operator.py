@@ -1,12 +1,11 @@
-import pytest
-
-import pandas as pd
-
+from pathlib import Path
 from typing import Callable
+
 import great_expectations as gx
 import great_expectations.expectations as gxe
+import pandas as pd
+import pytest
 from great_expectations.data_context import AbstractDataContext, FileDataContext
-from pathlib import Path
 
 from great_expectations_provider.operators.validate_checkpoint import (
     GXValidateCheckpointOperator,
