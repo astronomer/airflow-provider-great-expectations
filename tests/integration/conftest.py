@@ -1,6 +1,7 @@
 import os
 import random
 import string
+from pathlib import Path
 from typing import Callable, Generator
 
 import great_expectations as gx
@@ -126,3 +127,14 @@ def load_postgres_data(
     engine = create_engine(url=postgres_connection_string)
     with engine.connect() as conn, conn.begin():
         conn.execute(text(f"DROP TABLE {table_name};"))
+
+
+@pytest.fixture
+def load_csv_data() -> Generator[Callable[[Path, list[dict]], None], None, None]:
+    def _load_csv_data(path: Path, data: list[dict]) -> None:
+        with path.open("w") as f:
+            f.write("name,age\n")
+            for row in data:
+                f.write(f"{row['name']},{row['age']}\n")
+
+    yield _load_csv_data
