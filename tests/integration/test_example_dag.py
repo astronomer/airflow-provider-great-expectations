@@ -1,10 +1,10 @@
 import logging
-import pytest
-
 from functools import cache
+
+import pytest
 from airflow.models.dagbag import DagBag
 from airflow.utils.db import create_default_connections
-from airflow.utils.session import provide_session, NEW_SESSION
+from airflow.utils.session import NEW_SESSION, provide_session
 from airflow.utils.state import DagRunState, State
 from sqlalchemy.orm import Session
 

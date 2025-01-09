@@ -1,12 +1,12 @@
 import os
-import great_expectations as gx
+import random
+import string
 from typing import Callable, Generator
+
+import great_expectations as gx
+import pytest
 from great_expectations.data_context import AbstractDataContext
 from sqlalchemy import create_engine, text
-
-import pytest
-import string
-import random
 
 
 def rand_name() -> str:

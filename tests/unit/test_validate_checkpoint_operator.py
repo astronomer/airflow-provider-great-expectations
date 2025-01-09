@@ -1,18 +1,17 @@
 import json
 from typing import Literal
 from unittest.mock import Mock
+
+import pandas as pd
 import pytest
-from great_expectations import ValidationDefinition
-from great_expectations import Checkpoint
+from great_expectations import Checkpoint, ExpectationSuite, ValidationDefinition
+from great_expectations.data_context import AbstractDataContext
+from great_expectations.expectations import ExpectColumnValuesToBeInSet
 from pytest_mock import MockerFixture
 
 from great_expectations_provider.operators.validate_checkpoint import (
     GXValidateCheckpointOperator,
 )
-from great_expectations.data_context import AbstractDataContext
-import pandas as pd
-from great_expectations import ExpectationSuite
-from great_expectations.expectations import ExpectColumnValuesToBeInSet
 
 
 class TestValidateCheckpointOperator:

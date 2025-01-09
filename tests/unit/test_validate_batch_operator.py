@@ -1,20 +1,21 @@
 import json
 from typing import Literal
 from unittest.mock import Mock
-import pytest
-from great_expectations.data_context import AbstractDataContext
-from great_expectations.core.batch_definition import BatchDefinition
 
-from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
 import pandas as pd
+import pytest
 from great_expectations import ExpectationSuite
+from great_expectations.core import (
+    ExpectationValidationResult,
+)
+from great_expectations.core.batch_definition import BatchDefinition
+from great_expectations.data_context import AbstractDataContext
 from great_expectations.expectations import (
     ExpectColumnValuesToBeInSet,
 )
 from pytest_mock import MockerFixture
-from great_expectations.core import (
-    ExpectationValidationResult,
-)
+
+from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
 
 
 class TestValidateBatchOperator:
