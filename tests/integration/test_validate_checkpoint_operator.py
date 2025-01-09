@@ -1,6 +1,4 @@
 import pytest
-import random
-import string
 
 import pandas as pd
 
@@ -12,10 +10,7 @@ from great_expectations.data_context import AbstractDataContext
 from great_expectations_provider.operators.validate_checkpoint import (
     GXValidateCheckpointOperator,
 )
-
-
-def rand_name() -> str:
-    return "".join(random.choices(string.ascii_lowercase, k=10))
+from integration.conftest import rand_name
 
 
 class TestValidateCheckpointOperator:
