@@ -1,16 +1,16 @@
 from __future__ import annotations
-from typing import Callable, Literal, TYPE_CHECKING
+
+from typing import TYPE_CHECKING, Callable, Literal
 
 from airflow.models import BaseOperator
 
-
 if TYPE_CHECKING:
-    from great_expectations.data_context import AbstractDataContext
+    from airflow.utils.context import Context
+    from great_expectations import ExpectationSuite
     from great_expectations.core.batch import BatchParameters
     from great_expectations.core.batch_definition import BatchDefinition
+    from great_expectations.data_context import AbstractDataContext
     from great_expectations.expectations import Expectation
-    from great_expectations import ExpectationSuite
-    from airflow.utils.context import Context
 
 
 class GXValidateBatchOperator(BaseOperator):

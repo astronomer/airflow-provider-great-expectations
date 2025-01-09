@@ -3,16 +3,16 @@ from typing import Literal
 from unittest.mock import Mock
 
 import pandas as pd
-from great_expectations import ExpectationSuite
-from great_expectations.expectations import ExpectColumnValuesToBeInSet
-
 import pytest
-from pytest_mock import MockerFixture
-from great_expectations_provider.operators.validate_dataframe import (
-    GXValidateDataFrameOperator,
-)
+from great_expectations import ExpectationSuite
 from great_expectations.core import (
     ExpectationValidationResult,
+)
+from great_expectations.expectations import ExpectColumnValuesToBeInSet
+from pytest_mock import MockerFixture
+
+from great_expectations_provider.operators.validate_dataframe import (
+    GXValidateDataFrameOperator,
 )
 
 
