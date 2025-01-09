@@ -104,8 +104,6 @@ def load_postgres_data(
     This should be enough to cover our use cases.
     """
 
-    # conn.execute(f"INSERT INTO {table_name} (name) VALUES ('Alice');")
-    # conn.execute(f"INSERT INTO {table_name} (name) VALUES ('Bob');")
     def _load_postgres_data(data: list[dict]) -> None:
         engine = create_engine(url=postgres_connection_string)
         with engine.connect() as conn, conn.begin():
