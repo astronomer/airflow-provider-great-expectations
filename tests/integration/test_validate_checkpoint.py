@@ -104,8 +104,8 @@ class TestValidateCheckpointOperator:
                     name=rand_name(),
                     connection_string=postgres_connection_string,
                 )
-                .add_table_asset(table_name)
-                .add_batch_definition_whole_table(rand_name())
+                .add_table_asset(name=rand_name(), table_name=table_name)
+                .add_batch_definition_whole_table(name=rand_name())
             )
             suite = context.suites.add(
                 gx.ExpectationSuite(
@@ -115,7 +115,8 @@ class TestValidateCheckpointOperator:
                             column="age",
                             min_value=0,
                             max_value=100,
-                        )
+                        ),
+                        gxe.ExpectTableRowCountToEqual(value=2),
                     ],
                 )
             )
