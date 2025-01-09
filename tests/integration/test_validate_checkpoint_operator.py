@@ -107,7 +107,7 @@ class TestValidateCheckpointOperator:
 
         validate_cloud_checkpoint = GXValidateCheckpointOperator(
             context_type="cloud",
-            task_id="validate_cloud_checkpoint",
+            task_id="cloud_context",
             configure_checkpoint=configure_checkpoint_with_cleanup,
             batch_parameters={"dataframe": data_frame},
         )
@@ -129,7 +129,7 @@ class TestValidateCheckpointOperator:
 
         validate_cloud_checkpoint = GXValidateCheckpointOperator(
             configure_file_data_context=configure_context,
-            task_id="validate_cloud_checkpoint",
+            task_id="file_context",
             configure_checkpoint=configure_checkpoint,
             batch_parameters={"dataframe": data_frame},
         )
@@ -147,7 +147,7 @@ class TestValidateCheckpointOperator:
 
         validate_cloud_checkpoint = GXValidateCheckpointOperator(
             context_type="ephemeral",
-            task_id="validate_cloud_checkpoint",
+            task_id="ephemeral_context",
             configure_checkpoint=configure_checkpoint,
             batch_parameters={"dataframe": data_frame},
         )
@@ -204,7 +204,7 @@ class TestValidateCheckpointOperator:
 
         validate_checkpoint = GXValidateCheckpointOperator(
             context_type="ephemeral",
-            task_id="validate_cloud_checkpoint",
+            task_id="postgres_data_source",
             configure_checkpoint=configure_checkpoint,
         )
 
@@ -258,7 +258,7 @@ class TestValidateCheckpointOperator:
 
         validate_checkpoint = GXValidateCheckpointOperator(
             context_type="ephemeral",
-            task_id="validate_cloud_checkpoint",
+            task_id="filesystem_data_source",
             configure_checkpoint=configure_checkpoint,
         )
 
