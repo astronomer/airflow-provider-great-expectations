@@ -79,3 +79,59 @@ class TestValidateCheckpointOperator:
         result = validate_cloud_checkpoint.execute(context={})
 
         assert result["success"] is True
+
+    def test_postgres(
+        self,
+        table_name: str,
+        load_postgres_data: Callable[[list[dict]], None],
+        postgres_connection_string: str,
+    ) -> None:
+        load_postgres_data(
+            [
+                {"name": "Alice", "age": 30},
+                {"name": "Bob", "age": 31},
+            ]
+        )
+
+        def configure_checkpoint(context: AbstractDataContext) -> gx.Checkpoint:
+            bd = (
+                context.data_sources.add_postgres(
+                    name=rand_name(),
+                    connection_string=postgres_connection_string,
+                )
+                .add_table_asset(name=rand_name(), table_name=table_name)
+                .add_batch_definition_whole_table(name=rand_name())
+            )
+            suite = context.suites.add(
+                gx.ExpectationSuite(
+                    name=rand_name(),
+                    expectations=[
+                        gxe.ExpectColumnValuesToBeBetween(
+                            column="age",
+                            min_value=0,
+                            max_value=100,
+                        ),
+                        gxe.ExpectTableRowCountToEqual(value=2),
+                    ],
+                )
+            )
+            vd = context.validation_definitions.add(
+                gx.ValidationDefinition(
+                    name=rand_name(),
+                    data=bd,
+                    suite=suite,
+                )
+            )
+            return context.checkpoints.add(
+                gx.Checkpoint(name=rand_name(), validation_definitions=[vd])
+            )
+
+        validate_checkpoint = GXValidateCheckpointOperator(
+            context_type="cloud",
+            task_id="validate_cloud_checkpoint",
+            configure_checkpoint=configure_checkpoint,
+        )
+
+        result = validate_checkpoint.execute(context={})
+
+        assert result["success"] is True
