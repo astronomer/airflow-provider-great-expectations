@@ -222,7 +222,8 @@ class TestValidateCheckpointOperator:
         load_csv_data: Callable[[Path, list[dict]], None],
         tmp_path: Path,
     ) -> None:
-        data_location = tmp_path / "data.csv"
+        file_name = "data.csv"
+        data_location = tmp_path / file_name
         load_csv_data(
             data_location,
             [
@@ -233,9 +234,17 @@ class TestValidateCheckpointOperator:
 
         def configure_checkpoint(context: AbstractDataContext) -> gx.Checkpoint:
             bd = (
-                context.data_sources.add_pandas(name=rand_name())
-                .add_csv_asset(name=rand_name(), filepath_or_buffer=data_location)
-                .add_batch_definition_whole_dataframe(name=rand_name())
+                context.data_sources.add_pandas_filesystem(
+                    name=rand_name(),
+                    base_directory=tmp_path,
+                )
+                .add_csv_asset(
+                    name=rand_name(),
+                )
+                .add_batch_definition_path(
+                    name=rand_name(),
+                    path=file_name,
+                )
             )
             suite = context.suites.add(
                 gx.ExpectationSuite(

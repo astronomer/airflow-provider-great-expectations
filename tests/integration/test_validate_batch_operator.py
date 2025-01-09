@@ -1,5 +1,6 @@
 import random
 import string
+from pathlib import Path
 from typing import Callable
 
 import great_expectations as gx
@@ -46,27 +47,51 @@ class TestValidateBatchOperator:
 
         assert result["success"] is True
 
-    def test_validate_dataframe(self):
-        task_id = f"validate_batch_dataframe_integration_test_{rand_name()}"
-        dataframe = pd.DataFrame({self.COL_NAME: ["a", "b", "c"]})
-        expect = gxe.ExpectColumnValuesToBeInSet(
-            column=self.COL_NAME,
-            value_set=["a", "b", "c", "d", "e"],  # type: ignore[arg-type]
+    def test_file_system_data_source(
+        self,
+        load_csv_data: Callable[[Path, list[dict]], None],
+        tmp_path: Path,
+    ) -> None:
+        task_id = f"validate_batch_file_system_integration_test_{rand_name()}"
+        file_name = "data.csv"
+        data_location = tmp_path / file_name
+        load_csv_data(
+            data_location,
+            [
+                {"name": "Alice", "age": 30},
+                {"name": "Bob", "age": 31},
+            ],
         )
-        batch_parameters = {"dataframe": dataframe}
 
         def configure_batch_definition(context: AbstractDataContext) -> BatchDefinition:
             return (
-                context.data_sources.add_pandas(name=task_id)
-                .add_dataframe_asset(task_id)
-                .add_batch_definition_whole_dataframe(task_id)
+                context.data_sources.add_pandas_filesystem(
+                    name=task_id,
+                    base_directory=tmp_path,
+                )
+                .add_csv_asset(name=task_id)
+                .add_batch_definition_path(
+                    name=task_id,
+                    path=file_name,
+                )
             )
+
+        expect = gx.ExpectationSuite(
+            name=rand_name(),
+            expectations=[
+                gxe.ExpectColumnValuesToBeBetween(
+                    column="age",
+                    min_value=0,
+                    max_value=100,
+                ),
+                gxe.ExpectTableRowCountToEqual(value=2),
+            ],
+        )
 
         validate_cloud_batch = GXValidateBatchOperator(
             task_id=task_id,
             configure_batch_definition=configure_batch_definition,
             expect=expect,
-            batch_parameters=batch_parameters,
             context_type="ephemeral",
         )
 
@@ -74,9 +99,7 @@ class TestValidateBatchOperator:
 
         assert result["success"] is True
 
-    def test_validate_csv(self): ...
-
-    def test_validate_sql(
+    def test_sql_data_source(
         self,
         table_name: str,
         load_postgres_data: Callable[[list[dict]], None],
