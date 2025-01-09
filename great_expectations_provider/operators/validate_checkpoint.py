@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-from typing import Callable, Literal, TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable, Literal
 
 from airflow.models import BaseOperator
 
-
 if TYPE_CHECKING:
-    from great_expectations.data_context import AbstractDataContext, FileDataContext
-    from great_expectations import Checkpoint
-    from great_expectations.core.batch import BatchParameters
-    from great_expectations.checkpoint.checkpoint import CheckpointDescriptionDict
     from airflow.utils.context import Context
+    from great_expectations import Checkpoint
+    from great_expectations.checkpoint.checkpoint import CheckpointDescriptionDict
+    from great_expectations.core.batch import BatchParameters
+    from great_expectations.data_context import AbstractDataContext, FileDataContext
 
 
 class GXValidateCheckpointOperator(BaseOperator):
