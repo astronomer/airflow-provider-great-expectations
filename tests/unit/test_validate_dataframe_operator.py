@@ -15,7 +15,7 @@ from great_expectations.core import (
 
 
 class TestValidateDataFrameOperator:
-    def test_expectation(self):
+    def test_expectation(self) -> None:
         # arrange
         column_name = "col_A"
 
@@ -40,7 +40,7 @@ class TestValidateDataFrameOperator:
         deserialized_result = ExpectationValidationResult(**result)
         assert deserialized_result.success
 
-    def test_expectation_suite(self):
+    def test_expectation_suite(self) -> None:
         # arrange
         column_name = "col_A"
 
@@ -128,7 +128,7 @@ class TestValidateDataFrameOperator:
         self,
         result_format: Literal["BOOLEAN_ONLY", "BASIC", "SUMMARY", "COMPLETE"],
         expected_result: dict,
-    ):
+    ) -> None:
         # arrange
         column_name = "col_A"
 
@@ -140,7 +140,7 @@ class TestValidateDataFrameOperator:
             value_set=["a", "b", "c", "d", "e"],  # type: ignore[arg-type]
         )
 
-        validate_batch = GXValidateDataFrameOperator(
+        validate_df = GXValidateDataFrameOperator(
             task_id="test-result-format",
             configure_dataframe=configure_dataframe,
             expect=expect,
@@ -148,7 +148,7 @@ class TestValidateDataFrameOperator:
         )
 
         # act
-        result = validate_batch.execute(context={})
+        result = validate_df.execute(context={})
 
         # assert
         assert result["result"] == expected_result
