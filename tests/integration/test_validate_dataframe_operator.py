@@ -76,4 +76,7 @@ class TestGXValidateDataFrameOperator:
 
 @pytest.fixture
 def spark_session() -> pyspark.SparkSession:
+    import os
+
+    print(os.environ)
     return pyspark.SparkSession.builder.getOrCreate()

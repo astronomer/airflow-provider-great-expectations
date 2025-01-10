@@ -9,6 +9,7 @@ import pyspark.sql as pyspark
 if TYPE_CHECKING:
     from great_expectations.expectations import Expectation
     from great_expectations import ExpectationSuite
+    from great_expectations.data_context import AbstractDataContext
     from airflow.utils.context import Context
     from pandas import DataFrame
 
@@ -34,7 +35,7 @@ class GXValidateDataFrameOperator(BaseOperator):
     def execute(self, context: Context) -> dict:
         import great_expectations as gx
 
-        gx_context = gx.get_context(mode=self.context_type)
+        gx_context: AbstractDataContext = gx.get_context(mode=self.context_type)
         batch = (
             gx_context.data_sources.add_spark(name=self.task_id)
             .add_dataframe_asset(name=self.task_id)
