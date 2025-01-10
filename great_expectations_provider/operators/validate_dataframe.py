@@ -36,7 +36,7 @@ class GXValidateDataFrameOperator(BaseOperator):
 
         gx_context = gx.get_context(mode=self.context_type)
         batch = (
-            gx_context.data_sources.add_pandas(name=self.task_id)
+            gx_context.data_sources.add_spark(name=self.task_id)
             .add_dataframe_asset(name=self.task_id)
             .add_batch_definition_whole_dataframe(name=self.task_id)
             .get_batch(
