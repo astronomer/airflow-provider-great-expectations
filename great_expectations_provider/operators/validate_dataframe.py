@@ -7,16 +7,16 @@ from airflow.models import BaseOperator
 from great_expectations_provider.common.gx_context_actions import (
     run_validation_definition,
 )
+import pyspark.sql as pyspark
+from pandas import DataFrame
+from pyspark.sql.connect.dataframe import DataFrame as SparkConnectDataFrame
 
 if TYPE_CHECKING:
-    import pyspark.sql as pyspark
     from airflow.utils.context import Context
     from great_expectations import ExpectationSuite
     from great_expectations.core.batch_definition import BatchDefinition
     from great_expectations.data_context import AbstractDataContext
     from great_expectations.expectations import Expectation
-    from pandas import DataFrame
-    from pyspark.sql.connect.dataframe import DataFrame as SparkConnectDataFrame
 
 
 class GXValidateDataFrameOperator(BaseOperator):
@@ -47,6 +47,10 @@ class GXValidateDataFrameOperator(BaseOperator):
             batch_definition = self._get_pandas_batch_definition(gx_context)
         elif isinstance(self.dataframe, (pyspark.DataFrame, SparkConnectDataFrame)):
             batch_definition = self._get_spark_batch_definition(gx_context)
+        else:
+            raise ValueError(
+                f"Unsupported dataframe type: {type(self.dataframe).__name__}"
+            )
 
         batch_parameters = {
             "dataframe": self.dataframe,

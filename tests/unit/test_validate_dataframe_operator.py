@@ -166,7 +166,7 @@ class TestValidateDataFrameOperator:
 
         validate_df = GXValidateDataFrameOperator(
             task_id="validate_df_success",
-            configure_dataframe=Mock(),
+            configure_dataframe=Mock(return_value=Mock(spec=pd.DataFrame)),
             expect=Mock(),
             context_type=context_type,
         )
@@ -184,7 +184,7 @@ class TestValidateDataFrameOperator:
 
         validate_df = GXValidateDataFrameOperator(
             task_id="validate_df_success",
-            configure_dataframe=Mock(),
+            configure_dataframe=Mock(return_value=Mock(spec=pd.DataFrame)),
             expect=Mock(),
             context_type=context_type,
         )
