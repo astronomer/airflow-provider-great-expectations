@@ -43,7 +43,11 @@ class GXValidateDataFrameOperator(BaseOperator):
         import great_expectations as gx
 
         gx_context = gx.get_context(mode=self.context_type)
-        batch_definition = self._get_pandas_batch_definition(gx_context)
+        if isinstance(self.dataframe, DataFrame):
+            batch_definition = self._get_pandas_batch_definition(gx_context)
+        elif isinstance(self.dataframe, (pyspark.DataFrame, SparkConnectDataFrame)):
+            batch_definition = self._get_spark_batch_definition(gx_context)
+
         batch_parameters = {
             "dataframe": self.dataframe,
         }
