@@ -55,7 +55,7 @@ class TestGXValidateDataFrameOperator:
 
         def configure_dataframe() -> pyspark.DataFrame:
             data_frame = spark_session.createDataFrame(
-                pd.DataFrame({column_name: ["a", "b", "c", "z"]})
+                pd.DataFrame({column_name: ["a", "b", "c"]})
             )
             assert isinstance(data_frame, pyspark.DataFrame)
             return data_frame
