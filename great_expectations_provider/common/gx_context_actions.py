@@ -23,6 +23,7 @@ def run_validation_definition(
     """Given a BatchDefinition and an Expectation or ExpectationSuite, ensure a
     ValidationDefinition and run it."""
     import great_expectations as gx
+
     if isinstance(expect, gx.expectations.Expectation):
         suite = gx.ExpectationSuite(name=task_id, expectations=[expect])
     else:
