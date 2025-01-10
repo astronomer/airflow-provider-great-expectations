@@ -1,12 +1,12 @@
 from typing import Callable
 
-import pytest
-import pyspark.sql as pyspark
-from pyspark.sql.connect.session import SparkSession as SparkConnectSession
-from pyspark.sql.connect.dataframe import DataFrame as SparkConnectDataFrame
 import pandas as pd
+import pyspark.sql as pyspark
+import pytest
 from great_expectations import ExpectationSuite
 from great_expectations.expectations import ExpectColumnValuesToBeInSet
+from pyspark.sql.connect.dataframe import DataFrame as SparkConnectDataFrame
+from pyspark.sql.connect.session import SparkSession as SparkConnectSession
 
 from great_expectations_provider.operators.validate_dataframe import (
     GXValidateDataFrameOperator,

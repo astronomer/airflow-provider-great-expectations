@@ -6,11 +6,9 @@ from airflow.models import BaseOperator
 
 if TYPE_CHECKING:
     import pyspark.sql as pyspark
-    from great_expectations.expectations import Expectation
-    from great_expectations import ExpectationSuite
-    from great_expectations.data_context import AbstractDataContext
     from airflow.utils.context import Context
     from great_expectations import ExpectationSuite
+    from great_expectations.data_context import AbstractDataContext
     from great_expectations.expectations import Expectation
     from pandas import DataFrame
     from pyspark.sql.connect.dataframe import DataFrame as SparkConnectDataFrame

@@ -17,7 +17,6 @@ from pytest_mock import MockerFixture
 
 from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
 
-
 pytestmark = pytest.mark.unit
 
 
