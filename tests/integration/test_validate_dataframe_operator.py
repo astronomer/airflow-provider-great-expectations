@@ -11,24 +11,26 @@ from pyspark.sql.connect.session import SparkSession as SparkConnectSession
 from great_expectations_provider.operators.validate_dataframe import (
     GXValidateDataFrameOperator,
 )
-from integration.conftest import rand_name
+from integration.conftest import is_valid_gx_cloud_url, rand_name
 
 
 class TestGXValidateDataFrameOperator:
     @pytest.mark.integration
     def test_validate_dataframe_with_cloud(
-        self, ensure_data_source_cleanup: Callable[[str], None]
+        self,
+        ensure_data_source_cleanup: Callable[[str], None],
+        ensure_suite_cleanup: Callable[[str], None],
+        ensure_validation_definition_cleanup: Callable[[str], None],
     ) -> None:
         # arrange
         column_name = "col_A"
         task_id = f"test_validate_dataframe_with_cloud_{rand_name()}"
-        ensure_data_source_cleanup(task_id)
 
         def configure_dataframe() -> pd.DataFrame:
             return pd.DataFrame({column_name: ["a", "b", "c"]})
 
         expect = ExpectationSuite(
-            name="test suite",
+            name=task_id,
             expectations=[
                 ExpectColumnValuesToBeInSet(
                     column=column_name,
@@ -36,6 +38,9 @@ class TestGXValidateDataFrameOperator:
                 ),
             ],
         )
+        ensure_data_source_cleanup(task_id)
+        ensure_suite_cleanup(task_id)
+        ensure_validation_definition_cleanup(task_id)
 
         validate_df = GXValidateDataFrameOperator(
             context_type="cloud",
@@ -49,6 +54,7 @@ class TestGXValidateDataFrameOperator:
 
         # assert
         assert result["success"] is True
+        assert is_valid_gx_cloud_url(result["result_url"])
 
     @pytest.mark.spark_integration
     def test_spark(self, spark_session: pyspark.SparkSession) -> None:

@@ -20,9 +20,16 @@ pytestmark = pytest.mark.integration
 class TestValidateBatchOperator:
     COL_NAME = "my_column"
 
-    def test_with_cloud_context(self, ensure_data_source_cleanup) -> None:
+    def test_with_cloud_context(
+        self,
+        ensure_data_source_cleanup: Callable[[str], None],
+        ensure_suite_cleanup: Callable[[str], None],
+        ensure_validation_definition_cleanup: Callable[[str], None],
+    ) -> None:
         task_id = f"validate_batch_cloud_integration_test_{rand_name()}"
         ensure_data_source_cleanup(task_id)
+        ensure_suite_cleanup(task_id)
+        ensure_validation_definition_cleanup(task_id)
         dataframe = pd.DataFrame({self.COL_NAME: ["a", "b", "c"]})
         expect = gxe.ExpectColumnValuesToBeInSet(
             column=self.COL_NAME,

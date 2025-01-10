@@ -25,6 +25,10 @@ def rand_name() -> str:
     return "".join(random.choices(string.ascii_lowercase, k=10))
 
 
+def is_valid_gx_cloud_url(url: str) -> bool:
+    return url.startswith("https://app.greatexpectations.io/organizations/")
+
+
 @pytest.fixture
 def table_name() -> str:
     return "test_table"
