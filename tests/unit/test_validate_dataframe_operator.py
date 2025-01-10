@@ -8,7 +8,7 @@ from great_expectations import ExpectationSuite
 from great_expectations.core import (
     ExpectationValidationResult,
 )
-from great_expectations.expectations import ExpectColumnValuesToBeInSet
+from great_expectations.expectations import Expectation, ExpectColumnValuesToBeInSet
 from pytest_mock import MockerFixture
 
 from great_expectations_provider.operators.validate_dataframe import (
@@ -158,12 +158,11 @@ class TestValidateDataFrameOperator:
         # check the result of the first (only) expectation
         assert result["expectations"][0]["result"] == expected_result
 
-    def test_context_type_ephemeral(self, mocker: MockerFixture):
+    def test_context_type_ephemeral(self, mock_gx: Mock):
         """Expect that param context_type creates an EphemeralDataContext."""
         # arrange
         context_type: Literal["ephemeral"] = "ephemeral"
-        mock_gx = Mock()
-        mocker.patch.dict("sys.modules", {"great_expectations": mock_gx})
+
         validate_batch = GXValidateDataFrameOperator(
             task_id="validate_df_success",
             configure_dataframe=Mock(),
@@ -177,12 +176,11 @@ class TestValidateDataFrameOperator:
         # assert
         mock_gx.get_context.assert_called_once_with(mode=context_type)
 
-    def test_context_type_cloud(self, mocker: MockerFixture):
+    def test_context_type_cloud(self, mock_gx: Mock):
         """Expect that param context_type creates a CloudDataContext."""
         # arrange
         context_type: Literal["cloud"] = "cloud"
-        mock_gx = Mock()
-        mocker.patch.dict("sys.modules", {"great_expectations": mock_gx})
+
         validate_batch = GXValidateDataFrameOperator(
             task_id="validate_df_success",
             configure_dataframe=Mock(),
