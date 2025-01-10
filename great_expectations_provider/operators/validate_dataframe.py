@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, Literal
 
+import pyspark.sql as pyspark
 from airflow.models import BaseOperator
+from pandas import DataFrame
+from pyspark.sql.connect.dataframe import DataFrame as SparkConnectDataFrame
 
 from great_expectations_provider.common.gx_context_actions import (
     run_validation_definition,
 )
-import pyspark.sql as pyspark
-from pandas import DataFrame
-from pyspark.sql.connect.dataframe import DataFrame as SparkConnectDataFrame
 
 if TYPE_CHECKING:
     from airflow.utils.context import Context
