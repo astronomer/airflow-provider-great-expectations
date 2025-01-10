@@ -28,26 +28,13 @@ jobs:
           POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
           POSTGRES_DB: ${{ env.POSTGRES_DB }}
 
-      spark:
-        image: bitnami/spark:3.3.2
-        ports:
-          - "9090:8080"
-          - "7077:7077"
-      spark-connect:
-        image: bitnami/spark:3.5.2
-        ports:
-          - "15002:15002"
-        # See https://spark.apache.org/docs/latest/spark-connect-overview.html#download-and-start-spark-server-with-spark-connect
-        options: >-
-          -c "./sbin/start-connect-server.sh --packages org.apache.spark:spark-connect_2.12:3.5.2"
-    
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Start services
         run: |
-          docker compose -f tests/docker/spark/docker-compose.yml up -d --quiet-pull --wait --wait-timeout 90
+          docker compose -f docker/spark/docker-compose.yml up -d --quiet-pull --wait --wait-timeout 90
 
       - name: Set up Python
         uses: actions/setup-python@v5
