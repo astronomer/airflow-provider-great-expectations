@@ -9,7 +9,6 @@ from great_expectations.core import (
     ExpectationValidationResult,
 )
 from great_expectations.expectations import Expectation, ExpectColumnValuesToBeInSet
-from pytest_mock import MockerFixture
 
 from great_expectations_provider.operators.validate_dataframe import (
     GXValidateDataFrameOperator,
@@ -29,14 +28,14 @@ class TestValidateDataFrameOperator:
             value_set=["a", "b", "c", "d", "e"],  # type: ignore[arg-type]
         )
 
-        validate_batch = GXValidateDataFrameOperator(
-            task_id="validate_batch_success",
+        validate_df = GXValidateDataFrameOperator(
+            task_id="validate_df_success",
             configure_dataframe=configure_dataframe,
             expect=expect,
         )
 
         # act
-        result = validate_batch.execute(context={})
+        result = validate_df.execute(context={})
 
         # assert
         json.dumps(result)  # result must be json serializable
@@ -60,14 +59,14 @@ class TestValidateDataFrameOperator:
             ],
         )
 
-        validate_batch = GXValidateDataFrameOperator(
-            task_id="validate_batch_success",
+        validate_df = GXValidateDataFrameOperator(
+            task_id="validate_df_success",
             configure_dataframe=configure_dataframe,
             expect=expect,
         )
 
         # act
-        result = validate_batch.execute(context={})
+        result = validate_df.execute(context={})
 
         # assert
         json.dumps(result)  # result must be json serializable
@@ -163,7 +162,7 @@ class TestValidateDataFrameOperator:
         # arrange
         context_type: Literal["ephemeral"] = "ephemeral"
 
-        validate_batch = GXValidateDataFrameOperator(
+        validate_df = GXValidateDataFrameOperator(
             task_id="validate_df_success",
             configure_dataframe=Mock(),
             expect=Mock(),
@@ -171,7 +170,7 @@ class TestValidateDataFrameOperator:
         )
 
         # act
-        validate_batch.execute(context={})
+        validate_df.execute(context={})
 
         # assert
         mock_gx.get_context.assert_called_once_with(mode=context_type)
@@ -181,7 +180,7 @@ class TestValidateDataFrameOperator:
         # arrange
         context_type: Literal["cloud"] = "cloud"
 
-        validate_batch = GXValidateDataFrameOperator(
+        validate_df = GXValidateDataFrameOperator(
             task_id="validate_df_success",
             configure_dataframe=Mock(),
             expect=Mock(),
@@ -189,7 +188,7 @@ class TestValidateDataFrameOperator:
         )
 
         # act
-        validate_batch.execute(context={})
+        validate_df.execute(context={})
 
         # assert
         mock_gx.get_context.assert_called_once_with(mode=context_type)
