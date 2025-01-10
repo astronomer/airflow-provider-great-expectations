@@ -14,6 +14,8 @@ from great_expectations.datasource.fluent.interfaces import Batch
 from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
 from integration.conftest import rand_name
 
+pytestmark = pytest.mark.integration
+
 
 class TestValidateBatchOperator:
     COL_NAME = "my_column"

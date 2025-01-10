@@ -13,6 +13,8 @@ from great_expectations_provider.operators.validate_checkpoint import (
     GXValidateCheckpointOperator,
 )
 
+pytestmark = pytest.mark.unit
+
 
 class TestValidateCheckpointOperator:
     def test_validate_dataframe(self) -> None:

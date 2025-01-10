@@ -18,6 +18,9 @@ from pytest_mock import MockerFixture
 from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
 
 
+pytestmark = pytest.mark.unit
+
+
 class TestValidateBatchOperator:
     def test_expectation(self):
         """Expect that an Expectation can be used as an `expect` parameter to generate a result."""

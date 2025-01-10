@@ -15,6 +15,8 @@ from great_expectations_provider.operators.validate_dataframe import (
     GXValidateDataFrameOperator,
 )
 
+pytestmark = pytest.mark.unit
+
 
 class TestValidateDataFrameOperator:
     def test_expectation(self) -> None:
