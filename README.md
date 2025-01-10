@@ -8,7 +8,7 @@ GX validates it against the provided Expectations. It has two required parameter
 - `expect` is either a single Expectation or an ExpectationSuite
 
 Optionally, you can also pass a `result_format` parameter to control the verbosity of the output.
-The GXValidateDataFrameOperator will return a serialized ExpectationValidationResult, or ExpectationSuiteValidationResult.
+The GXValidateDataFrameOperator will return a serialized ExpectationSuiteValidationResult.
 
 ## GXValidateBatchOperator
 This Operator is similar to the GXValidateDataFrameOperator, except that GX is responsible
@@ -20,7 +20,7 @@ Its required parameters are:
 
 Optionally, you can also pass a `result_format` parameter to control the verbosity of the output, and
 `batch_parameters` to specify a batch of data at runtime. 
-The GXValidateBatchOperator will return a serialized ExpectationValidationResult, or ExpectationSuiteValidationResult.
+The GXValidateBatchOperator will return a serialized ExpectationSuiteValidationResult.
 
 ## GXValidateCheckpointOperator
 This Operator can take advantage of all the features of GX. The user configures a `Checkpoint`,
