@@ -155,7 +155,8 @@ class TestValidateDataFrameOperator:
         result = validate_df.execute(context={})
 
         # assert
-        assert result["result"] == expected_result
+        # check the result of the first (only) expectation
+        assert result["expectations"][0]["result"] == expected_result
 
     def test_context_type_ephemeral(self, mocker: MockerFixture):
         """Expect that param context_type creates an EphemeralDataContext."""
