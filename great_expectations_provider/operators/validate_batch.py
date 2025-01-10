@@ -4,6 +4,10 @@ from typing import TYPE_CHECKING, Callable, Literal
 
 from airflow.models import BaseOperator
 
+from great_expectations_provider.common.gx_context_actions import (
+    run_validation_definition,
+)
+
 if TYPE_CHECKING:
     from airflow.utils.context import Context
     from great_expectations import ExpectationSuite
@@ -41,25 +45,12 @@ class GXValidateBatchOperator(BaseOperator):
 
         gx_context = gx.get_context(mode=self.context_type)
         batch_definition = self.configure_batch_definition(gx_context)
-        if isinstance(self.expect, gx.expectations.Expectation):
-            suite = gx.ExpectationSuite(name=self.task_id, expectations=[self.expect])
-        else:
-            suite = self.expect
-        validation_definition = gx_context.validation_definitions.add_or_update(
-            validation=gx.ValidationDefinition(
-                name=self.task_id,
-                suite=suite,
-                data=batch_definition,
-            ),
+        result = run_validation_definition(
+            task_id=self.task_id,
+            expect=self.expect,
+            batch_definition=batch_definition,
+            result_format=self.result_format,
+            batch_parameters=self.batch_parameters,
+            gx_context=gx_context,
         )
-        if self.result_format:
-            result = validation_definition.run(
-                batch_parameters=self.batch_parameters,
-                result_format=self.result_format,
-            )
-        else:
-            result = validation_definition.run(
-                batch_parameters=self.batch_parameters,
-            )
-
         return result.describe_dict()
