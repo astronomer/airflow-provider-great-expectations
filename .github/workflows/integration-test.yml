@@ -39,7 +39,7 @@ jobs:
           - "15002:15002"
         # See https://spark.apache.org/docs/latest/spark-connect-overview.html#download-and-start-spark-server-with-spark-connect
         options: >-
-          -c ./sbin/start-connect-server.sh --packages org.apache.spark:spark-connect_2.12:3.5.2
+          -c "./sbin/start-connect-server.sh --packages org.apache.spark:spark-connect_2.12:3.5.2"
     
     steps:
       - name: Checkout
