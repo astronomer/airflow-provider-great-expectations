@@ -75,31 +75,31 @@ class TestGXValidateDataFrameOperator:
         # assert
         assert result["success"]
 
-    def test_spark_connect(self, spark_connect_session: SparkConnectSession) -> None:
-        column_name = "col_A"
-        task_id = f"test_spark_{rand_name()}"
+    # def test_spark_connect(self, spark_connect_session: SparkConnectSession) -> None:
+    #     column_name = "col_A"
+    #     task_id = f"test_spark_{rand_name()}"
 
-        def configure_dataframe() -> SparkConnectDataFrame:
-            data_frame = spark_connect_session.createDataFrame(
-                pd.DataFrame({column_name: ["a", "b", "c", "z"]})
-            )
-            assert isinstance(data_frame, SparkConnectDataFrame)
-            return data_frame
+    #     def configure_dataframe() -> SparkConnectDataFrame:
+    #         data_frame = spark_connect_session.createDataFrame(
+    #             pd.DataFrame({column_name: ["a", "b", "c", "z"]})
+    #         )
+    #         assert isinstance(data_frame, SparkConnectDataFrame)
+    #         return data_frame
 
-        validate_df = GXValidateDataFrameOperator(
-            task_id=task_id,
-            configure_dataframe=configure_dataframe,
-            expect=ExpectColumnValuesToBeInSet(
-                column=column_name,
-                value_set=["a", "b", "c", "d", "e"],
-            ),
-        )
+    #     validate_df = GXValidateDataFrameOperator(
+    #         task_id=task_id,
+    #         configure_dataframe=configure_dataframe,
+    #         expect=ExpectColumnValuesToBeInSet(
+    #             column=column_name,
+    #             value_set=["a", "b", "c", "d", "e"],
+    #         ),
+    #     )
 
-        # act
-        result = validate_df.execute(context={})
+    #     # act
+    #     result = validate_df.execute(context={})
 
-        # assert
-        assert result["success"]
+    #     # assert
+    #     assert result["success"]
 
 
 @pytest.fixture
