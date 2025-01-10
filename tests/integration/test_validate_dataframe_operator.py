@@ -1,5 +1,7 @@
 from typing import Callable
 
+import pytest
+import pyspark.sql as pyspark
 import pandas as pd
 from great_expectations import ExpectationSuite
 from great_expectations.expectations import ExpectColumnValuesToBeInSet
@@ -44,3 +46,34 @@ class TestGXValidateDataFrameOperator:
 
         # assert
         assert result["success"] is True
+
+    def test_spark(self, spark_session: pyspark.SparkSession) -> None:
+        column_name = "col_A"
+        task_id = f"test_spark_{rand_name()}"
+
+        def configure_dataframe() -> pyspark.DataFrame:
+            data_frame = spark_session.createDataFrame(
+                pd.DataFrame({column_name: ["a", "b", "c"]})
+            )
+            assert isinstance(data_frame, pyspark.DataFrame)
+            return data_frame
+
+        validate_df = GXValidateDataFrameOperator(
+            task_id=task_id,
+            configure_dataframe=configure_dataframe,
+            expect=ExpectColumnValuesToBeInSet(
+                column=column_name,
+                value_set=["a", "b", "c", "d", "e"],
+            ),
+        )
+
+        # act
+        result = validate_df.execute(context={})
+
+        # assert
+        assert result["success"]
+
+
+@pytest.fixture
+def spark_session() -> pyspark.SparkSession:
+    return pyspark.SparkSession.builder.getOrCreate()

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Callable, Literal, TYPE_CHECKING
 
 from airflow.models import BaseOperator
+import pyspark.sql as pyspark
 
 
 if TYPE_CHECKING:
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
 class GXValidateDataFrameOperator(BaseOperator):
     def __init__(
         self,
-        configure_dataframe: Callable[[], DataFrame],
+        configure_dataframe: Callable[[], DataFrame | pyspark.DataFrame],
         expect: Expectation | ExpectationSuite,
         context_type: Literal["ephemeral", "cloud"] = "ephemeral",
         result_format: Literal["BOOLEAN_ONLY", "BASIC", "SUMMARY", "COMPLETE"]

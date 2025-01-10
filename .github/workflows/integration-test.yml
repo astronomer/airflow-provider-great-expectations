@@ -32,6 +32,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Start services
+        run: |
+          docker compose -f tests/docker/spark/docker-compose.yml up -d --quiet-pull --wait --wait-timeout 90
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
