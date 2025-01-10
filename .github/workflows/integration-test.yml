@@ -18,9 +18,6 @@ jobs:
       POSTGRES_DB: postgres
       POSTGRES_PORT: 5433  # Using 5433 to avoid conflict with local postgres
 
-      # https://stackoverflow.com/questions/55292779/pyspark-error-java-gateway-process-exited-before-sending-its-port-number
-      PYSPARK_SUBMIT_ARGS: "--master local[3] pyspark-shell"
-
     services:
       postgres:
         image: postgres:13
