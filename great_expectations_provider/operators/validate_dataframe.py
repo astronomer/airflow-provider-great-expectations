@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable, Literal
 
 from airflow.models import BaseOperator
-from pandas import DataFrame
 
 from great_expectations_provider.common.gx_context_actions import (
     run_validation_definition,
@@ -11,6 +10,7 @@ from great_expectations_provider.common.gx_context_actions import (
 
 if TYPE_CHECKING:
     import pyspark.sql as pyspark
+    from pandas import DataFrame
     from airflow.utils.context import Context
     from great_expectations import ExpectationSuite
     from great_expectations.core.batch_definition import BatchDefinition
@@ -41,6 +41,7 @@ class GXValidateDataFrameOperator(BaseOperator):
 
     def execute(self, context: Context) -> dict:
         import great_expectations as gx
+        from pandas import DataFrame
 
         gx_context = gx.get_context(mode=self.context_type)
         if isinstance(self.dataframe, DataFrame):
