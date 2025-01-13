@@ -33,4 +33,4 @@ jobs:
         run: pip install -r test-requirements.txt
 
       - name: Run Unit Tests
-        run: pytest -vvv tests/unit
+        run: pytest -vvv -m unit tests/unit

@@ -9,18 +9,22 @@ from great_expectations_provider.common.gx_context_actions import (
 )
 
 if TYPE_CHECKING:
+    import pyspark.sql as pyspark
     from airflow.utils.context import Context
     from great_expectations import ExpectationSuite
     from great_expectations.core.batch_definition import BatchDefinition
     from great_expectations.data_context import AbstractDataContext
     from great_expectations.expectations import Expectation
     from pandas import DataFrame
+    from pyspark.sql.connect.dataframe import DataFrame as SparkConnectDataFrame
 
 
 class GXValidateDataFrameOperator(BaseOperator):
     def __init__(
         self,
-        configure_dataframe: Callable[[], DataFrame],
+        configure_dataframe: Callable[
+            [], DataFrame | pyspark.DataFrame | SparkConnectDataFrame
+        ],
         expect: Expectation | ExpectationSuite,
         context_type: Literal["ephemeral", "cloud"] = "ephemeral",
         result_format: Literal["BOOLEAN_ONLY", "BASIC", "SUMMARY", "COMPLETE"]
@@ -37,9 +41,19 @@ class GXValidateDataFrameOperator(BaseOperator):
 
     def execute(self, context: Context) -> dict:
         import great_expectations as gx
+        from pandas import DataFrame
 
         gx_context = gx.get_context(mode=self.context_type)
-        batch_definition = self._get_pandas_batch_definition(gx_context)
+        if isinstance(self.dataframe, DataFrame):
+            batch_definition = self._get_pandas_batch_definition(gx_context)
+        elif type(self.dataframe).__name__ == "DataFrame":
+            # if it's not pandas, but the classname is Dataframe, we assume spark
+            batch_definition = self._get_spark_batch_definition(gx_context)
+        else:
+            raise ValueError(
+                f"Unsupported dataframe type: {type(self.dataframe).__name__}"
+            )
+
         batch_parameters = {
             "dataframe": self.dataframe,
         }

@@ -12,6 +12,8 @@ from great_expectations_provider.operators.validate_checkpoint import (
 )
 from integration.conftest import is_valid_gx_cloud_url, rand_name
 
+pytestmark = pytest.mark.integration
+
 
 class TestValidateCheckpointOperator:
     """Test cases for GXValidateCheckpointOperator with different context types."""

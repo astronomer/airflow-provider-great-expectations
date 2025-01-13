@@ -8,6 +8,8 @@ from airflow.utils.session import NEW_SESSION, provide_session
 from airflow.utils.state import DagRunState, State
 from sqlalchemy.orm import Session
 
+pytestmark = pytest.mark.integration
+
 log = logging.getLogger(__name__)
 
 
