@@ -41,13 +41,12 @@ class GXValidateDataFrameOperator(BaseOperator):
 
     def execute(self, context: Context) -> dict:
         import great_expectations as gx
-        import pyspark.sql as pyspark
-        from pandas import DataFrame
 
         gx_context = gx.get_context(mode=self.context_type)
         if isinstance(self.dataframe, DataFrame):
             batch_definition = self._get_pandas_batch_definition(gx_context)
-        elif isinstance(self.dataframe, (pyspark.DataFrame, SparkConnectDataFrame)):
+        elif self.dataframe.__class__.__name__ == "DataFrame":
+            # if it's not pandas, but the classname is Dataframe, we assume spark
             batch_definition = self._get_spark_batch_definition(gx_context)
         else:
             raise ValueError(
