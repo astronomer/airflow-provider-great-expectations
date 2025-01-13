@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Generator, Literal
+import inspect
+from typing import TYPE_CHECKING, Callable, Generator, Literal, cast
 
 from airflow.models import BaseOperator
 
@@ -42,15 +43,31 @@ class GXValidateCheckpointOperator(BaseOperator):
         import great_expectations as gx
 
         gx_context: AbstractDataContext
+        file_context_generator: Generator[FileDataContext, None, None] | None = None
 
         if self.context_type == "file":
             if not self.configure_file_data_context:
                 raise ValueError(
                     "Parameter `configure_file_data_context` must be specified if `context_type` is `file`"
                 )
-            gx_context = self.configure_file_data_context()
+            elif inspect.isgeneratorfunction(self.configure_file_data_context):
+                file_context_generator = self.configure_file_data_context()
+                gx_context = next(file_context_generator)
+            else:
+                gx_context = self.configure_file_data_context()
         else:
             gx_context = gx.get_context(mode=self.context_type)
         checkpoint = self.configure_checkpoint(gx_context)
         result = checkpoint.run(batch_parameters=self.batch_parameters)
+
+        if file_context_generator:
+            try:
+                next(file_context_generator)
+            except StopIteration:
+                pass
+            else:
+                raise Exception(
+                    "configure_file_data_context generator must yield exactly once"
+                )
+
         return result.describe_dict()

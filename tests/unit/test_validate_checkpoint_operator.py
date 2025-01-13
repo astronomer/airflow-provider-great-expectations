@@ -193,7 +193,7 @@ class TestValidateCheckpointOperator:
         mock_checkpoint.run.assert_called_once_with(batch_parameters=batch_parameters)
 
     def test_configure_file_data_context_with_without_generator(self) -> None:
-        """Expect that configure_file_data_context can be a generator."""
+        """Expect that configure_file_data_context can just return a DataContext"""
         # arrange
         mock_context = Mock(spec=AbstractDataContext)
         setup = Mock()
@@ -216,11 +216,11 @@ class TestValidateCheckpointOperator:
 
         # assert
         setup.assert_called_once()
-        teardown.assert_not_called()
         configure_checkpoint.assert_called_once_with(mock_context)
+        teardown.assert_not_called()
 
     def test_configure_file_data_context_with_generator(self) -> None:
-        """Expect that configure_file_data_context can be a generator."""
+        """Expect that configure_file_data_context can return a generator that yeidls a DataContext."""
         # arrange
         mock_context = Mock(spec=AbstractDataContext)
         setup = Mock()
@@ -244,5 +244,5 @@ class TestValidateCheckpointOperator:
 
         # assert
         setup.assert_called_once()
-        teardown.assert_called_once()
         configure_checkpoint.assert_called_once_with(mock_context)
+        teardown.assert_called_once()
