@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, Literal
 
-from pandas import DataFrame
 from airflow.models import BaseOperator
-from pyspark.sql.connect.dataframe import DataFrame as SparkConnectDataFrame
+from pandas import DataFrame
 
 from great_expectations_provider.common.gx_context_actions import (
     run_validation_definition,
@@ -17,6 +16,7 @@ if TYPE_CHECKING:
     from great_expectations.core.batch_definition import BatchDefinition
     from great_expectations.data_context import AbstractDataContext
     from great_expectations.expectations import Expectation
+    from pyspark.sql.connect.dataframe import DataFrame as SparkConnectDataFrame
 
 
 class GXValidateDataFrameOperator(BaseOperator):
@@ -45,7 +45,7 @@ class GXValidateDataFrameOperator(BaseOperator):
         gx_context = gx.get_context(mode=self.context_type)
         if isinstance(self.dataframe, DataFrame):
             batch_definition = self._get_pandas_batch_definition(gx_context)
-        elif self.dataframe.__class__.__name__ == "DataFrame":
+        elif type(self.dataframe).__name__ == "DataFrame":
             # if it's not pandas, but the classname is Dataframe, we assume spark
             batch_definition = self._get_spark_batch_definition(gx_context)
         else:
