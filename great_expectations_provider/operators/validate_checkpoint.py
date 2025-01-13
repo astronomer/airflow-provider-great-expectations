@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import inspect
-from typing import TYPE_CHECKING, Callable, Generator, Literal
+from typing import TYPE_CHECKING, Callable, Generator, Literal, cast
 
 from airflow.models import BaseOperator
 
@@ -54,7 +54,10 @@ class GXValidateCheckpointOperator(BaseOperator):
                 file_context_generator = self.configure_file_data_context()
                 gx_context = self._get_value_from_generator(file_context_generator)
             else:
-                gx_context = self.configure_file_data_context()
+                file_context_fn = cast(
+                    Callable[[], FileDataContext], self.configure_file_data_context
+                )
+                gx_context = file_context_fn()
         else:
             gx_context = gx.get_context(mode=self.context_type)
         checkpoint = self.configure_checkpoint(gx_context)
