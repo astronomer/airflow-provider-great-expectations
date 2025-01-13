@@ -51,7 +51,7 @@ jobs:
           airflow db reset -y
           airflow db init
 
-      - name: Run Regulary Integration Tests
+      - name: Run Regular Integration Tests
         run: pytest -vvv -m integration tests/integration
 
   spark-integration-test:
