@@ -1,11 +1,11 @@
 import json
-from typing import Literal
+from typing import Generator, Literal
 from unittest.mock import Mock
 
 import pandas as pd
 import pytest
 from great_expectations import Checkpoint, ExpectationSuite, ValidationDefinition
-from great_expectations.data_context import AbstractDataContext
+from great_expectations.data_context import AbstractDataContext, FileDataContext
 from great_expectations.expectations import ExpectColumnValuesToBeInSet
 from pytest_mock import MockerFixture
 
@@ -191,3 +191,58 @@ class TestValidateCheckpointOperator:
 
         # assert
         mock_checkpoint.run.assert_called_once_with(batch_parameters=batch_parameters)
+
+    def test_configure_file_data_context_with_without_generator(self) -> None:
+        """Expect that configure_file_data_context can be a generator."""
+        # arrange
+        mock_context = Mock(spec=AbstractDataContext)
+        setup = Mock()
+        teardown = Mock()
+        configure_checkpoint = Mock()
+
+        def configure_file_data_context() -> FileDataContext:
+            setup()
+            return mock_context
+
+        validate_checkpoint = GXValidateCheckpointOperator(
+            task_id="validate_checkpoint_success",
+            configure_checkpoint=configure_checkpoint,
+            context_type="file",
+            configure_file_data_context=configure_file_data_context,
+        )
+
+        # act
+        validate_checkpoint.execute(context={})
+
+        # assert
+        setup.assert_called_once()
+        teardown.assert_not_called()
+        configure_checkpoint.assert_called_once_with(mock_context)
+
+    def test_configure_file_data_context_with_generator(self) -> None:
+        """Expect that configure_file_data_context can be a generator."""
+        # arrange
+        mock_context = Mock(spec=AbstractDataContext)
+        setup = Mock()
+        teardown = Mock()
+        configure_checkpoint = Mock()
+
+        def configure_file_data_context() -> Generator[FileDataContext, None, None]:
+            setup()
+            yield mock_context
+            teardown()
+
+        validate_checkpoint = GXValidateCheckpointOperator(
+            task_id="validate_checkpoint_success",
+            configure_checkpoint=configure_checkpoint,
+            context_type="file",
+            configure_file_data_context=configure_file_data_context,
+        )
+
+        # act
+        validate_checkpoint.execute(context={})
+
+        # assert
+        setup.assert_called_once()
+        teardown.assert_called_once()
+        configure_checkpoint.assert_called_once_with(mock_context)
