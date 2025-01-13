@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import inspect
-from typing import TYPE_CHECKING, Callable, Generator, Literal, cast
+from typing import TYPE_CHECKING, Callable, Generator, Literal
 
 from airflow.models import BaseOperator
 
@@ -52,7 +52,7 @@ class GXValidateCheckpointOperator(BaseOperator):
                 )
             elif inspect.isgeneratorfunction(self.configure_file_data_context):
                 file_context_generator = self.configure_file_data_context()
-                gx_context = next(file_context_generator)
+                gx_context = self._get_value_from_generator(file_context_generator)
             else:
                 gx_context = self.configure_file_data_context()
         else:
@@ -61,13 +61,33 @@ class GXValidateCheckpointOperator(BaseOperator):
         result = checkpoint.run(batch_parameters=self.batch_parameters)
 
         if file_context_generator:
-            try:
-                next(file_context_generator)
-            except StopIteration:
-                pass
-            else:
-                raise Exception(
-                    "configure_file_data_context generator must yield exactly once"
-                )
+            self._allow_generator_teardown(file_context_generator)
 
         return result.describe_dict()
+
+    def _get_value_from_generator(
+        self, generator: Generator[FileDataContext, None, None]
+    ) -> FileDataContext:
+        try:
+            return next(generator)
+        except StopIteration:
+            raise RuntimeError("Generator must yield exactly once; did not yield")
+
+    def _allow_generator_teardown(self, generator: Generator) -> None:
+        """Run the generator to completion to allow for any cleanup/teardown.
+
+        Also does some error handling to ensure the generator doesn't yield more than once.
+        """
+        try:
+            # Check if we have another yield (this is an error case)
+            next(generator)
+        except StopIteration:
+            pass
+        else:
+            # we had an extra yield; we'll raise, but first, let's run out the generator
+            # so it does any teardown/cleanup
+            for _ in generator:
+                ...
+            raise RuntimeError(
+                "Generator must yield exactly once; yielded more than once"
+            )

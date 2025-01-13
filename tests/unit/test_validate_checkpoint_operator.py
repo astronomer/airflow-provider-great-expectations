@@ -246,3 +246,63 @@ class TestValidateCheckpointOperator:
         setup.assert_called_once()
         configure_checkpoint.assert_called_once_with(mock_context)
         teardown.assert_called_once()
+
+    def test_configure_file_data_context_with_generator_no_yield(self) -> None:
+        """Expect that configure_file_data_context errors if it does not yield a DataContext."""
+        # arrange
+        mock_context = Mock(spec=AbstractDataContext)
+        setup = Mock()
+        teardown = Mock()
+        configure_checkpoint = Mock()
+
+        def configure_file_data_context() -> Generator[FileDataContext, None, None]:
+            setup()
+            if False:
+                # Force this to be a generator for the test
+                yield mock_context
+            teardown()
+
+        validate_checkpoint = GXValidateCheckpointOperator(
+            task_id="validate_checkpoint_success",
+            configure_checkpoint=configure_checkpoint,
+            context_type="file",
+            configure_file_data_context=configure_file_data_context,
+        )
+
+        # act
+        with pytest.raises(RuntimeError, match="did not yield"):
+            validate_checkpoint.execute(context={})
+
+        # assert
+        setup.assert_called_once()
+        configure_checkpoint.assert_not_called()
+        teardown.assert_called_once()
+
+    def test_configure_file_data_context_with_generator_multiple_yields(self) -> None:
+        """Expect that configure_file_data_context errors if it yields multiple times."""
+        # arrange
+        mock_context = Mock(spec=AbstractDataContext)
+        setup = Mock()
+        teardown = Mock()
+        configure_checkpoint = Mock()
+
+        def configure_file_data_context() -> Generator[FileDataContext, None, None]:
+            setup()
+            yield mock_context
+            yield mock_context
+            teardown()
+
+        validate_checkpoint = GXValidateCheckpointOperator(
+            task_id="validate_checkpoint_success",
+            configure_checkpoint=configure_checkpoint,
+            context_type="file",
+            configure_file_data_context=configure_file_data_context,
+        )
+
+        # act
+        with pytest.raises(RuntimeError, match="yielded more than once"):
+            validate_checkpoint.execute(context={})
+
+        # assert
+        setup.assert_called_once()
+        teardown.assert_called_once()
