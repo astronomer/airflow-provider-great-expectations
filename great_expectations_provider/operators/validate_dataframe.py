@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, Literal
 
+from pandas import DataFrame
 from airflow.models import BaseOperator
 from pyspark.sql.connect.dataframe import DataFrame as SparkConnectDataFrame
 
@@ -11,7 +12,6 @@ from great_expectations_provider.common.gx_context_actions import (
 
 if TYPE_CHECKING:
     import pyspark.sql as pyspark
-    from pandas import DataFrame
     from airflow.utils.context import Context
     from great_expectations import ExpectationSuite
     from great_expectations.core.batch_definition import BatchDefinition
