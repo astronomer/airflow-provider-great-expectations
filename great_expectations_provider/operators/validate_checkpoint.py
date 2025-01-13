@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Literal
+from typing import TYPE_CHECKING, Callable, Generator, Literal
 
 from airflow.models import BaseOperator
 
@@ -18,7 +18,9 @@ class GXValidateCheckpointOperator(BaseOperator):
         configure_checkpoint: Callable[[AbstractDataContext], Checkpoint],
         batch_parameters: BatchParameters | None = None,
         context_type: Literal["ephemeral", "cloud", "file"] = "ephemeral",
-        configure_file_data_context: Callable[[], FileDataContext] | None = None,
+        configure_file_data_context: Callable[[], FileDataContext]
+        | Callable[[], Generator[FileDataContext, None, None]]
+        | None = None,
         *args,
         **kwargs,
     ) -> None:
