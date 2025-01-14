@@ -1,17 +1,20 @@
 from typing import Callable
 
 import pandas as pd
-import pyspark.sql as pyspark
 import pytest
+from typing import TYPE_CHECKING
 from great_expectations import ExpectationSuite
 from great_expectations.expectations import ExpectColumnValuesToBeInSet
-from pyspark.sql.connect.dataframe import DataFrame as SparkConnectDataFrame
-from pyspark.sql.connect.session import SparkSession as SparkConnectSession
 
 from great_expectations_provider.operators.validate_dataframe import (
     GXValidateDataFrameOperator,
 )
 from integration.conftest import is_valid_gx_cloud_url, rand_name
+
+if TYPE_CHECKING:
+    import pyspark.sql as pyspark
+    from pyspark.sql.connect.dataframe import DataFrame as SparkConnectDataFrame
+    from pyspark.sql.connect.session import SparkSession as SparkConnectSession
 
 
 class TestGXValidateDataFrameOperator:
@@ -113,6 +116,8 @@ class TestGXValidateDataFrameOperator:
 
 @pytest.fixture
 def spark_session() -> pyspark.SparkSession:
+    import pyspark.sql as pyspark
+
     session = pyspark.SparkSession.builder.getOrCreate()
     assert isinstance(session, pyspark.SparkSession)
     return session
@@ -120,6 +125,9 @@ def spark_session() -> pyspark.SparkSession:
 
 @pytest.fixture
 def spark_connect_session() -> SparkConnectSession:
+    import pyspark.sql as pyspark
+    from pyspark.sql.connect.session import SparkSession as SparkConnectSession
+
     session = pyspark.SparkSession.builder.remote("sc://localhost:15002").getOrCreate()
     assert isinstance(session, SparkConnectSession)
     return session
