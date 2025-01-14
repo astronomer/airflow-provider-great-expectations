@@ -27,10 +27,7 @@ jobs:
         run: python -m pip install --upgrade pip
 
       - name: Install Library
-        run: pip install .
-
-      - name: Install Dependencies
-        run: pip install -r test-requirements.txt
+        run: pip install .[tests]
 
       - name: Run Unit Tests
         run: pytest -vvv -m unit tests/unit

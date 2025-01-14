@@ -1,17 +1,20 @@
-from typing import Callable
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Callable
 
 import pandas as pd
-import pyspark.sql as pyspark
 import pytest
 from great_expectations import ExpectationSuite
 from great_expectations.expectations import ExpectColumnValuesToBeInSet
-from pyspark.sql.connect.dataframe import DataFrame as SparkConnectDataFrame
-from pyspark.sql.connect.session import SparkSession as SparkConnectSession
 
 from great_expectations_provider.operators.validate_dataframe import (
     GXValidateDataFrameOperator,
 )
 from integration.conftest import is_valid_gx_cloud_url, rand_name
+
+if TYPE_CHECKING:
+    from pyspark.sql import SparkSession
+    from pyspark.sql.connect.session import SparkSession as SparkConnectSession
 
 
 class TestGXValidateDataFrameOperator:
@@ -57,7 +60,9 @@ class TestGXValidateDataFrameOperator:
         assert is_valid_gx_cloud_url(result["result_url"])
 
     @pytest.mark.spark_integration
-    def test_spark(self, spark_session: pyspark.SparkSession) -> None:
+    def test_spark(self, spark_session: SparkSession) -> None:
+        import pyspark.sql as pyspark
+
         column_name = "col_A"
         task_id = f"test_spark_{rand_name()}"
 
@@ -85,6 +90,8 @@ class TestGXValidateDataFrameOperator:
 
     @pytest.mark.spark_connect_integration
     def test_spark_connect(self, spark_connect_session: SparkConnectSession) -> None:
+        from pyspark.sql.connect.dataframe import DataFrame as SparkConnectDataFrame
+
         column_name = "col_A"
         task_id = f"test_spark_{rand_name()}"
 
@@ -112,7 +119,9 @@ class TestGXValidateDataFrameOperator:
 
 
 @pytest.fixture
-def spark_session() -> pyspark.SparkSession:
+def spark_session() -> SparkSession:
+    import pyspark.sql as pyspark
+
     session = pyspark.SparkSession.builder.getOrCreate()
     assert isinstance(session, pyspark.SparkSession)
     return session
@@ -120,6 +129,9 @@ def spark_session() -> pyspark.SparkSession:
 
 @pytest.fixture
 def spark_connect_session() -> SparkConnectSession:
+    import pyspark.sql as pyspark
+    from pyspark.sql.connect.session import SparkSession as SparkConnectSession
+
     session = pyspark.SparkSession.builder.remote("sc://localhost:15002").getOrCreate()
     assert isinstance(session, SparkConnectSession)
     return session
