@@ -20,7 +20,7 @@ jobs:
           python-version: 3.12
 
       - name: Install Library
-        run: pip install .[lint]
+        run: pip install ".[lint]"
 
       - name: Ruff Formatter
         run: ruff format --check .
