@@ -87,10 +87,6 @@ class GXValidateCheckpointOperator(BaseOperator):
         except StopIteration:
             pass
         else:
-            # we had an extra yield; we'll raise, but first, let's run out the generator
-            # so it does any teardown/cleanup
-            for _ in generator:
-                ...
             raise RuntimeError(
                 "Generator must yield exactly once; yielded more than once"
             )
