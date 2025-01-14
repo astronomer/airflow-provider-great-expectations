@@ -305,4 +305,4 @@ class TestValidateCheckpointOperator:
 
         # assert
         setup.assert_called_once()
-        teardown.assert_called_once()
+        teardown.assert_not_called()
