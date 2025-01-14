@@ -1,8 +1,9 @@
-from typing import Callable
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Callable
 
 import pandas as pd
 import pytest
-from typing import TYPE_CHECKING
 from great_expectations import ExpectationSuite
 from great_expectations.expectations import ExpectColumnValuesToBeInSet
 
@@ -13,7 +14,6 @@ from integration.conftest import is_valid_gx_cloud_url, rand_name
 
 if TYPE_CHECKING:
     from pyspark.sql import SparkSession
-    from pyspark.sql.connect.dataframe import DataFrame as SparkConnectDataFrame
     from pyspark.sql.connect.session import SparkSession as SparkConnectSession
 
 
@@ -90,6 +90,8 @@ class TestGXValidateDataFrameOperator:
 
     @pytest.mark.spark_connect_integration
     def test_spark_connect(self, spark_connect_session: SparkConnectSession) -> None:
+        from pyspark.sql.connect.dataframe import DataFrame as SparkConnectDataFrame
+
         column_name = "col_A"
         task_id = f"test_spark_{rand_name()}"
 

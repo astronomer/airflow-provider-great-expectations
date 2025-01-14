@@ -41,7 +41,7 @@ jobs:
         run: python -m pip install --upgrade pip
 
       - name: Install Library
-        run: pip install ".[tests]"
+        run: pip install ".[postgresql,tests]"
 
       - name: Setup
         run: |

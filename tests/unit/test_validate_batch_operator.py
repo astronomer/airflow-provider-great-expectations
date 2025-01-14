@@ -13,7 +13,6 @@ from great_expectations.data_context import AbstractDataContext
 from great_expectations.expectations import (
     ExpectColumnValuesToBeInSet,
 )
-from pytest_mock import MockerFixture
 
 from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
 
