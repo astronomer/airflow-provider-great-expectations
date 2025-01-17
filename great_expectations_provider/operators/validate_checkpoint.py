@@ -4,13 +4,13 @@ import inspect
 from typing import TYPE_CHECKING, Callable, Generator, Literal, cast
 
 from airflow.models import BaseOperator
-from great_expectations.data_context import AbstractDataContext, FileDataContext
 
 if TYPE_CHECKING:
     from airflow.utils.context import Context
     from great_expectations import Checkpoint
     from great_expectations.checkpoint.checkpoint import CheckpointDescriptionDict
     from great_expectations.core.batch import BatchParameters
+    from great_expectations.data_context import AbstractDataContext, FileDataContext
 
 
 class GXValidateCheckpointOperator(BaseOperator):
@@ -41,6 +41,7 @@ class GXValidateCheckpointOperator(BaseOperator):
 
     def execute(self, context: Context) -> CheckpointDescriptionDict:
         import great_expectations as gx
+        from great_expectations.data_context import AbstractDataContext, FileDataContext
 
         gx_context: AbstractDataContext
         file_context_generator: Generator[FileDataContext, None, None] | None = None
@@ -61,7 +62,13 @@ class GXValidateCheckpointOperator(BaseOperator):
         else:
             gx_context = gx.get_context(mode=self.context_type)
         checkpoint = self.configure_checkpoint(gx_context)
-        result = checkpoint.run(batch_parameters=self.batch_parameters)
+
+        runtime_batch_params = context.get("params", {}).get("gx_batch_parameters")  # type: ignore[call-overload]
+        if runtime_batch_params:
+            batch_parameters = runtime_batch_params
+        else:
+            batch_parameters = self.batch_parameters
+        result = checkpoint.run(batch_parameters=batch_parameters)
 
         if file_context_generator:
             self._allow_generator_teardown(file_context_generator)

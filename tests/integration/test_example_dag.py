@@ -41,3 +41,17 @@ class TestExampleDag:
 
         assert dag_run.get_state() == DagRunState.SUCCESS
         assert all([ti.state == State.SUCCESS for ti in dag_run.get_task_instances()])
+
+
+class TestBatchParametersDag:
+    def test(self, session: Session):
+        dag_id = "gx_provider_example_dag_with_batch_parameters"
+        dag_bag = get_dag_bag()
+        dag = dag_bag.get_dag(dag_id)
+        assert dag
+
+        dag.clear()
+        dag_run = dag.test()
+
+        assert dag_run.get_state() == DagRunState.SUCCESS
+        assert all([ti.state == State.SUCCESS for ti in dag_run.get_task_instances()])

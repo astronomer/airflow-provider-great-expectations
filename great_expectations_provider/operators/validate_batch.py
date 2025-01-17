@@ -45,12 +45,18 @@ class GXValidateBatchOperator(BaseOperator):
 
         gx_context = gx.get_context(mode=self.context_type)
         batch_definition = self.configure_batch_definition(gx_context)
+
+        runtime_batch_params = context.get("params", {}).get("gx_batch_parameters")  # type: ignore[call-overload]
+        if runtime_batch_params:
+            batch_parameters = runtime_batch_params
+        else:
+            batch_parameters = self.batch_parameters
         result = run_validation_definition(
             task_id=self.task_id,
             expect=self.expect,
             batch_definition=batch_definition,
             result_format=self.result_format,
-            batch_parameters=self.batch_parameters,
+            batch_parameters=batch_parameters,
             gx_context=gx_context,
         )
         return result.describe_dict()

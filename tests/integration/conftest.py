@@ -1,17 +1,24 @@
+from __future__ import annotations
+
 import os
 import random
 import string
-from pathlib import Path
-from typing import Callable, Generator
+from typing import TYPE_CHECKING, Callable, Generator
 
 import great_expectations as gx
 import pytest
-from great_expectations.data_context import AbstractDataContext
 from sqlalchemy import create_engine, text
 
+if TYPE_CHECKING:
+    from pathlib import Path
 
-def pytest_collection_modifyitems(items):
-    missing_markers: str = []
+    from _pytest.config import Config
+    from _pytest.nodes import Item
+    from great_expectations.data_context import AbstractDataContext
+
+
+def pytest_collection_modifyitems(config: Config, items: list[Item]) -> None:
+    missing_markers: list[str] = []
     for item in items:
         if not any(item.iter_markers()):
             missing_markers.append(item.nodeid)
