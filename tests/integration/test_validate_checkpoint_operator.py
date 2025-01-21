@@ -5,15 +5,12 @@ import great_expectations as gx
 import great_expectations.expectations as gxe
 import pandas as pd
 import pytest
-from great_expectations.data_context import (
-    AbstractDataContext,
-    FileDataContext,
-)
+from great_expectations.data_context import AbstractDataContext, FileDataContext
+from integration.conftest import is_valid_gx_cloud_url, rand_name
 
 from great_expectations_provider.operators.validate_checkpoint import (
     GXValidateCheckpointOperator,
 )
-from integration.conftest import is_valid_gx_cloud_url, rand_name
 
 pytestmark = pytest.mark.integration
 
@@ -128,9 +125,7 @@ class TestValidateCheckpointOperator:
 
         assert result["success"] is True
         # make sure we have something that looks like a valid result url
-        assert is_valid_gx_cloud_url(
-            result["validation_results"][0]["result_url"]
-        )
+        assert is_valid_gx_cloud_url(result["validation_results"][0]["result_url"])
 
     def test_with_file_context(
         self,

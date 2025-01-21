@@ -7,9 +7,7 @@ from pathlib import Path
 
 repo_dir = Path(__file__).parent.parent.parent
 
-path_of_init_file = Path(
-    repo_dir / "great_expectations_provider" / "__init__.py"
-)
+path_of_init_file = Path(repo_dir / "great_expectations_provider" / "__init__.py")
 version_file = path_of_init_file.read_text()
 git_ref = os.getenv("GITHUB_REF", "")
 git_tag = git_ref.replace("refs/tags/", "")

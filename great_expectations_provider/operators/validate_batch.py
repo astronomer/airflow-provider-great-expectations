@@ -20,9 +20,7 @@ if TYPE_CHECKING:
 class GXValidateBatchOperator(BaseOperator):
     def __init__(
         self,
-        configure_batch_definition: Callable[
-            [AbstractDataContext], BatchDefinition
-        ],
+        configure_batch_definition: Callable[[AbstractDataContext], BatchDefinition],
         expect: Expectation | ExpectationSuite,
         batch_parameters: BatchParameters | None = None,
         context_type: Literal["ephemeral", "cloud"] = "ephemeral",

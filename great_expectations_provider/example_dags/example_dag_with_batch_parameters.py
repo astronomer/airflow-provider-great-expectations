@@ -7,15 +7,9 @@ import great_expectations.expectations as gxe
 from airflow import DAG
 from airflow.decorators import task
 from airflow.models.baseoperator import chain
-from great_expectations import (
-    Checkpoint,
-    ExpectationSuite,
-    ValidationDefinition,
-)
+from great_expectations import Checkpoint, ExpectationSuite, ValidationDefinition
 
-from great_expectations_provider.operators.validate_batch import (
-    GXValidateBatchOperator,
-)
+from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
 from great_expectations_provider.operators.validate_checkpoint import (
     GXValidateCheckpointOperator,
 )
