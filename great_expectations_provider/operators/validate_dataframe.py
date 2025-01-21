@@ -27,8 +27,9 @@ class GXValidateDataFrameOperator(BaseOperator):
         ],
         expect: Expectation | ExpectationSuite,
         context_type: Literal["ephemeral", "cloud"] = "ephemeral",
-        result_format: Literal["BOOLEAN_ONLY", "BASIC", "SUMMARY", "COMPLETE"]
-        | None = None,
+        result_format: (
+            Literal["BOOLEAN_ONLY", "BASIC", "SUMMARY", "COMPLETE"] | None
+        ) = None,
         *args,
         **kwargs,
     ) -> None:
