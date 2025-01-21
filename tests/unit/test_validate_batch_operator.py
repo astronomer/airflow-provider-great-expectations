@@ -10,9 +10,7 @@ from great_expectations.core.batch_definition import BatchDefinition
 from great_expectations.data_context import AbstractDataContext
 from great_expectations.expectations import ExpectColumnValuesToBeInSet
 
-from great_expectations_provider.operators.validate_batch import (
-    GXValidateBatchOperator,
-)
+from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
 
 pytestmark = pytest.mark.unit
 
@@ -250,9 +248,7 @@ class TestValidateBatchOperator:
             batch_parameters=batch_parameters
         )
 
-    def test_batch_parameters_passed_through_context_parameters(
-        self, mock_gx: Mock
-    ):
+    def test_batch_parameters_passed_through_context_parameters(self, mock_gx: Mock):
         """Expect that param batch_parameters is passed to BatchDefinition.get_batch"""
         # arrange
         mock_context = mock_gx.get_context.return_value
@@ -314,9 +310,7 @@ class TestValidateBatchOperator:
 
         # act
         validate_batch.execute(
-            context={
-                "params": {"gx_batch_parameters": context_batch_parameters}
-            }  # type: ignore[typeddict-item]
+            context={"params": {"gx_batch_parameters": context_batch_parameters}}  # type: ignore[typeddict-item]
         )
 
         # assert
@@ -331,9 +325,7 @@ class TestValidateBatchOperator:
         # arrange
         task_id = "test_validation_definition_construction"
         mock_context = mock_gx.get_context.return_value
-        mock_validation_definition_factory = (
-            mock_context.validation_definitions
-        )
+        mock_validation_definition_factory = mock_context.validation_definitions
         mock_validation_definition = mock_gx.ValidationDefinition.return_value
         mock_batch_definition = create_autospec(BatchDefinition)
         expect = create_autospec(ExpectationSuite)

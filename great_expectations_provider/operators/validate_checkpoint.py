@@ -8,14 +8,9 @@ from airflow.models import BaseOperator
 if TYPE_CHECKING:
     from airflow.utils.context import Context
     from great_expectations import Checkpoint
-    from great_expectations.checkpoint.checkpoint import (
-        CheckpointDescriptionDict,
-    )
+    from great_expectations.checkpoint.checkpoint import CheckpointDescriptionDict
     from great_expectations.core.batch import BatchParameters
-    from great_expectations.data_context import (
-        AbstractDataContext,
-        FileDataContext,
-    )
+    from great_expectations.data_context import AbstractDataContext, FileDataContext
 
 
 class GXValidateCheckpointOperator(BaseOperator):
@@ -51,9 +46,7 @@ class GXValidateCheckpointOperator(BaseOperator):
         from great_expectations.data_context import FileDataContext
 
         gx_context: AbstractDataContext
-        file_context_generator: (
-            Generator[FileDataContext, None, None] | None
-        ) = None
+        file_context_generator: Generator[FileDataContext, None, None] | None = None
 
         if self.context_type == "file":
             if not self.configure_file_data_context:
@@ -62,22 +55,17 @@ class GXValidateCheckpointOperator(BaseOperator):
                 )
             elif inspect.isgeneratorfunction(self.configure_file_data_context):
                 file_context_generator = self.configure_file_data_context()
-                gx_context = self._get_value_from_generator(
-                    file_context_generator
-                )
+                gx_context = self._get_value_from_generator(file_context_generator)
             else:
                 file_context_fn = cast(
-                    Callable[[], FileDataContext],
-                    self.configure_file_data_context,
+                    Callable[[], FileDataContext], self.configure_file_data_context
                 )
                 gx_context = file_context_fn()
         else:
             gx_context = gx.get_context(mode=self.context_type)
         checkpoint = self.configure_checkpoint(gx_context)
 
-        runtime_batch_params = context.get("params", {}).get(
-            "gx_batch_parameters"
-        )  # type: ignore[call-overload]
+        runtime_batch_params = context.get("params", {}).get("gx_batch_parameters")  # type: ignore[call-overload]
         if runtime_batch_params:
             batch_parameters = runtime_batch_params
         else:
@@ -95,9 +83,7 @@ class GXValidateCheckpointOperator(BaseOperator):
         try:
             return next(generator)
         except StopIteration:
-            raise RuntimeError(
-                "Generator must yield exactly once; did not yield"
-            )
+            raise RuntimeError("Generator must yield exactly once; did not yield")
 
     def _allow_generator_teardown(self, generator: Generator) -> None:
         """Run the generator to completion to allow for any cleanup/teardown.

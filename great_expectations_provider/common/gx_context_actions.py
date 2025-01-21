@@ -16,8 +16,7 @@ def run_validation_definition(
     task_id: str,
     expect: Expectation | ExpectationSuite,
     batch_definition: BatchDefinition,
-    result_format: Literal["BOOLEAN_ONLY", "BASIC", "SUMMARY", "COMPLETE"]
-    | None,
+    result_format: Literal["BOOLEAN_ONLY", "BASIC", "SUMMARY", "COMPLETE"] | None,
     batch_parameters: dict,
     gx_context: AbstractDataContext,
 ) -> ExpectationSuiteValidationResult:

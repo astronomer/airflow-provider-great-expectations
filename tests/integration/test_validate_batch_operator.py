@@ -8,9 +8,7 @@ from great_expectations import expectations as gxe
 from great_expectations.core.batch_definition import BatchDefinition
 from great_expectations.data_context import AbstractDataContext
 
-from great_expectations_provider.operators.validate_batch import (
-    GXValidateBatchOperator,
-)
+from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
 from integration.conftest import rand_name
 
 pytestmark = pytest.mark.integration

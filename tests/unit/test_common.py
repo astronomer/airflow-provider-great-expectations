@@ -49,9 +49,7 @@ class TestRunValidationDefinition:
         task_id = "test_run_validation_definition"
         mock_context = Mock()
         validation_definition_factory = mock_context.validation_definitions
-        validation_definition = (
-            validation_definition_factory.add_or_update.return_value
-        )
+        validation_definition = validation_definition_factory.add_or_update.return_value
         batch_definition = Mock()
         expect = Mock()
         batch_parameters = {
@@ -74,16 +72,12 @@ class TestRunValidationDefinition:
             batch_parameters=batch_parameters, result_format=result_format
         )
 
-    def test_null_result_format_is_not_passed_through(
-        self, mock_gx: Mock
-    ) -> None:
+    def test_null_result_format_is_not_passed_through(self, mock_gx: Mock) -> None:
         # arrange
         task_id = "test_run_validation_definition"
         mock_context = Mock()
         validation_definition_factory = mock_context.validation_definitions
-        validation_definition = (
-            validation_definition_factory.add_or_update.return_value
-        )
+        validation_definition = validation_definition_factory.add_or_update.return_value
         batch_definition = Mock()
         expect = Mock()
         batch_parameters = {
@@ -142,9 +136,7 @@ class TestRunValidationDefinition:
         batch_definition = Mock()
         expect = Mock()
         validation_definition_factory = mock_context.validation_definitions
-        validation_definition = (
-            validation_definition_factory.add_or_update.return_value
-        )
+        validation_definition = validation_definition_factory.add_or_update.return_value
 
         # act
         result = run_validation_definition(
