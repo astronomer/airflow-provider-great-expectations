@@ -39,7 +39,9 @@ pip install "airflow-provider-great-expectations[snowflake]"
 
 ### GXValidateDataFrameOperator
 ```python
-from great_expectations_provider.operators.validate_dataframe import GXValidateDataFrameOperator
+from great_expectations_provider.operators.validate_dataframe import (
+    GXValidateDataFrameOperator,
+)
 ```
 This Operator has the simplest API. The user is responsible for loading data into a DataFrame, and
 GX validates it against the provided Expectations. It has two required parameters:
@@ -47,8 +49,8 @@ GX validates it against the provided Expectations. It has two required parameter
 - `expect` is either a single Expectation or an ExpectationSuite
 
 Optionally, you can also pass a `result_format` parameter to control the verbosity of the output.
-Param `context_type` allows you to specify the type of DataContext used by the Operator. 
-The default value `ephemeral` uses an EphemeralDataContext, which does not persist configuration between runs. 
+Param `context_type` allows you to specify the type of DataContext used by the Operator.
+The default value `ephemeral` uses an EphemeralDataContext, which does not persist configuration between runs.
 You can also use `cloud` to store operator configuration and validation results in GX Cloud.
 Visit `https://app.greatexpectations.io/` to create a free account and get your cloud credentials.
 To use the Operator in cloud mode, you must set the following Airflow variables:
@@ -63,14 +65,14 @@ from great_expectations_provider.operators.validate_batch import GXValidateBatch
 ```
 This Operator is similar to the GXValidateDataFrameOperator, except that GX is responsible
 for loading the data. The Operator can load and validate data from any data source
-supported by GX. 
+supported by GX.
 Its required parameters are:
 - `configure_batch_definition` is a function that takes a single argument, a DataContext, and returns a BatchDefinition. This is how you configure GX to read your data.
 - `expect` is either a single Expectation or an ExpectationSuite
 
-Optionally, you can also pass a `result_format` parameter to control the verbosity of the output, and `batch_parameters` to specify a batch of data at runtime. 
-Param `context_type` allows you to specify the type of DataContext used by the Operator. 
-The default value `ephemeral` uses an EphemeralDataContext, which does not persist configuration between runs. 
+Optionally, you can also pass a `result_format` parameter to control the verbosity of the output, and `batch_parameters` to specify a batch of data at runtime.
+Param `context_type` allows you to specify the type of DataContext used by the Operator.
+The default value `ephemeral` uses an EphemeralDataContext, which does not persist configuration between runs.
 You can also use `cloud` to store operator configuration and validation results in GX Cloud.
 Visit `https://app.greatexpectations.io/` to create a free account and get your cloud credentials.
 To use the Operator in cloud mode, you must set the following Airflow variables:
@@ -81,18 +83,20 @@ The GXValidateBatchOperator will return a serialized ExpectationSuiteValidationR
 
 ### GXValidateCheckpointOperator
 ```python
-from great_expectations_provider.operators.validate_checkpoint import GXValidateCheckpointOperator
+from great_expectations_provider.operators.validate_checkpoint import (
+    GXValidateCheckpointOperator,
+)
 ```
 This Operator can take advantage of all the features of GX. The user configures a `Checkpoint`,
 which orchestrates a `BatchDefinition`, `ValidationDefinition`, and `ExpectationSuite`.
-Actions can also be triggered after a Checkpoint run, which can send Slack messages, 
+Actions can also be triggered after a Checkpoint run, which can send Slack messages,
 MicrosoftTeam messages, email alerts, and more.
 It has a single required parameter:
-- `configure_checkpoint` is a function that takes a single argument, a DataContext, and returns a Checkpoint. 
+- `configure_checkpoint` is a function that takes a single argument, a DataContext, and returns a Checkpoint.
 
 Optionally, you can pass in `batch_parameters` to specify a batch of data at runtime.
-Param `context_type` allows you to specify the type of DataContext used by the Operator. 
-The default value `ephemeral` uses an EphemeralDataContext, which does not persist configuration between runs. 
+Param `context_type` allows you to specify the type of DataContext used by the Operator.
+The default value `ephemeral` uses an EphemeralDataContext, which does not persist configuration between runs.
 You can also use `cloud` to store operator configuration and validation results in GX Cloud.
 Visit `https://app.greatexpectations.io/` to create a free account and get your cloud credentials.
 To use the Operator in cloud mode, you must set the following Airflow variables:
