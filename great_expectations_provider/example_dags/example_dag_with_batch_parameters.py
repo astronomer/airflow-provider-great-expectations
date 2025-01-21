@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import great_expectations.expectations as gxe
+import pandas as pd
 from airflow import DAG
 from airflow.decorators import task
 from airflow.models.baseoperator import chain
@@ -12,6 +13,9 @@ from great_expectations import Checkpoint, ExpectationSuite, ValidationDefinitio
 from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
 from great_expectations_provider.operators.validate_checkpoint import (
     GXValidateCheckpointOperator,
+)
+from great_expectations_provider.operators.validate_dataframe import (
+    GXValidateDataFrameOperator,
 )
 
 if TYPE_CHECKING:
