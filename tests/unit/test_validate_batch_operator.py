@@ -315,8 +315,8 @@ class TestValidateBatchOperator:
         # act
         validate_batch.execute(
             context={
-                "params": {"gx_batch_parameters": context_batch_parameters}  # type: ignore[typeddict-item]
-            }
+                "params": {"gx_batch_parameters": context_batch_parameters}
+            }  # type: ignore[typeddict-item]
         )
 
         # assert
