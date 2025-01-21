@@ -40,7 +40,9 @@ class TestExampleDag:
         dag_run = dag.test()
 
         assert dag_run.get_state() == DagRunState.SUCCESS
-        assert all([ti.state == State.SUCCESS for ti in dag_run.get_task_instances()])
+        assert all(
+            [ti.state == State.SUCCESS for ti in dag_run.get_task_instances()]
+        )
 
 
 class TestBatchParametersDag:
@@ -54,4 +56,6 @@ class TestBatchParametersDag:
         dag_run = dag.test()
 
         assert dag_run.get_state() == DagRunState.SUCCESS
-        assert all([ti.state == State.SUCCESS for ti in dag_run.get_task_instances()])
+        assert all(
+            [ti.state == State.SUCCESS for ti in dag_run.get_task_instances()]
+        )

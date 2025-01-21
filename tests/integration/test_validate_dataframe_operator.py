@@ -90,7 +90,9 @@ class TestGXValidateDataFrameOperator:
 
     @pytest.mark.spark_connect_integration
     def test_spark_connect(self, spark_connect_session: SparkConnectSession) -> None:
-        from pyspark.sql.connect.dataframe import DataFrame as SparkConnectDataFrame
+        from pyspark.sql.connect.dataframe import (
+            DataFrame as SparkConnectDataFrame,
+        )
 
         column_name = "col_A"
         task_id = f"test_spark_{rand_name()}"

@@ -5,7 +5,10 @@ import great_expectations as gx
 import great_expectations.expectations as gxe
 import pandas as pd
 import pytest
-from great_expectations.data_context import AbstractDataContext, FileDataContext
+from great_expectations.data_context import (
+    AbstractDataContext,
+    FileDataContext,
+)
 
 from great_expectations_provider.operators.validate_checkpoint import (
     GXValidateCheckpointOperator,
@@ -26,13 +29,17 @@ class TestValidateCheckpointOperator:
         return pd.DataFrame({self.COL_NAME: [1, 2, 3, 4, 5]})
 
     @pytest.fixture
-    def configure_checkpoint(self) -> Callable[[AbstractDataContext], gx.Checkpoint]:
+    def configure_checkpoint(
+        self,
+    ) -> Callable[[AbstractDataContext], gx.Checkpoint]:
         """Configure an arbitrary checkpoint to a given context.
 
         This will pass for the data_frame fixture.
         """
 
-        def _configure_checkpoint(context: AbstractDataContext) -> gx.Checkpoint:
+        def _configure_checkpoint(
+            context: AbstractDataContext,
+        ) -> gx.Checkpoint:
             batch_definition = (
                 context.data_sources.add_pandas(name=rand_name())
                 .add_dataframe_asset(rand_name())
@@ -59,7 +66,8 @@ class TestValidateCheckpointOperator:
             )
             checkpoint = context.checkpoints.add(
                 gx.Checkpoint(
-                    name=rand_name(), validation_definitions=[validation_definition]
+                    name=rand_name(),
+                    validation_definitions=[validation_definition],
                 )
             )
 
@@ -82,7 +90,9 @@ class TestValidateCheckpointOperator:
         This will pass for the data_frame fixture.
         """
 
-        def _configure_checkpoint(context: AbstractDataContext) -> gx.Checkpoint:
+        def _configure_checkpoint(
+            context: AbstractDataContext,
+        ) -> gx.Checkpoint:
             # get the checkpoint
             checkpoint = configure_checkpoint(context)
 
@@ -118,7 +128,9 @@ class TestValidateCheckpointOperator:
 
         assert result["success"] is True
         # make sure we have something that looks like a valid result url
-        assert is_valid_gx_cloud_url(result["validation_results"][0]["result_url"])
+        assert is_valid_gx_cloud_url(
+            result["validation_results"][0]["result_url"]
+        )
 
     def test_with_file_context(
         self,
@@ -173,7 +185,9 @@ class TestValidateCheckpointOperator:
             ]
         )
 
-        def configure_checkpoint(context: AbstractDataContext) -> gx.Checkpoint:
+        def configure_checkpoint(
+            context: AbstractDataContext,
+        ) -> gx.Checkpoint:
             bd = (
                 context.data_sources.add_postgres(
                     name=rand_name(),
@@ -231,7 +245,9 @@ class TestValidateCheckpointOperator:
             ],
         )
 
-        def configure_checkpoint(context: AbstractDataContext) -> gx.Checkpoint:
+        def configure_checkpoint(
+            context: AbstractDataContext,
+        ) -> gx.Checkpoint:
             bd = (
                 context.data_sources.add_pandas_filesystem(
                     name=rand_name(),

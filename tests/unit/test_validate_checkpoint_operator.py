@@ -4,8 +4,15 @@ from unittest.mock import Mock
 
 import pandas as pd
 import pytest
-from great_expectations import Checkpoint, ExpectationSuite, ValidationDefinition
-from great_expectations.data_context import AbstractDataContext, FileDataContext
+from great_expectations import (
+    Checkpoint,
+    ExpectationSuite,
+    ValidationDefinition,
+)
+from great_expectations.data_context import (
+    AbstractDataContext,
+    FileDataContext,
+)
 from great_expectations.expectations import ExpectColumnValuesToBeInSet
 from pytest_mock import MockerFixture
 

@@ -47,7 +47,9 @@ def postgres_connection_string() -> str:
     pg_pw = os.environ["POSTGRES_PASSWORD"]
     pg_port = os.environ["POSTGRES_PORT"]
     pg_db = os.environ["POSTGRES_DB"]
-    return f"postgresql+psycopg2://{pg_user}:{pg_pw}@localhost:{pg_port}/{pg_db}"
+    return (
+        f"postgresql+psycopg2://{pg_user}:{pg_pw}@localhost:{pg_port}/{pg_db}"
+    )
 
 
 @pytest.fixture
@@ -137,10 +139,14 @@ def load_postgres_data(
         engine = create_engine(url=postgres_connection_string)
         with engine.connect() as conn, conn.begin():
             conn.execute(
-                text(f"CREATE TABLE {table_name} (name VARCHAR(255), age INT);")
+                text(
+                    f"CREATE TABLE {table_name} (name VARCHAR(255), age INT);"
+                )
             )
             conn.execute(
-                text(f"INSERT INTO {table_name} (name, age) VALUES (:name, :age);"),
+                text(
+                    f"INSERT INTO {table_name} (name, age) VALUES (:name, :age);"
+                ),
                 data,
             )
 
@@ -152,7 +158,9 @@ def load_postgres_data(
 
 
 @pytest.fixture
-def load_csv_data() -> Generator[Callable[[Path, list[dict]], None], None, None]:
+def load_csv_data() -> (
+    Generator[Callable[[Path, list[dict]], None], None, None]
+):
     def _load_csv_data(path: Path, data: list[dict]) -> None:
         with path.open("w") as f:
             f.write("name,age\n")

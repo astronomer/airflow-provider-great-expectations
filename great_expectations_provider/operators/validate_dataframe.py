@@ -16,7 +16,9 @@ if TYPE_CHECKING:
     from great_expectations.data_context import AbstractDataContext
     from great_expectations.expectations import Expectation
     from pandas import DataFrame
-    from pyspark.sql.connect.dataframe import DataFrame as SparkConnectDataFrame
+    from pyspark.sql.connect.dataframe import (
+        DataFrame as SparkConnectDataFrame,
+    )
 
 
 class GXValidateDataFrameOperator(BaseOperator):
