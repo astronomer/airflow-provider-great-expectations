@@ -8,10 +8,7 @@ follow_untyped_imports = true
 check_untyped_defs = true
 
 [tool.ruff]
-line-length = 88
-indent-width = 4
 lint.select = [
     "I",
     "TC",
-    "F",
 ]
