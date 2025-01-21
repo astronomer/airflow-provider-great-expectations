@@ -19,9 +19,11 @@ class GXValidateCheckpointOperator(BaseOperator):
         configure_checkpoint: Callable[[AbstractDataContext], Checkpoint],
         batch_parameters: BatchParameters | None = None,
         context_type: Literal["ephemeral", "cloud", "file"] = "ephemeral",
-        configure_file_data_context: Callable[[], FileDataContext]
-        | Callable[[], Generator[FileDataContext, None, None]]
-        | None = None,
+        configure_file_data_context: (
+            Callable[[], FileDataContext]
+            | Callable[[], Generator[FileDataContext, None, None]]
+            | None
+        ) = None,
         *args,
         **kwargs,
     ) -> None:

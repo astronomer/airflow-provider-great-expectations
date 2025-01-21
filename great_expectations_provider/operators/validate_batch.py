@@ -24,8 +24,9 @@ class GXValidateBatchOperator(BaseOperator):
         expect: Expectation | ExpectationSuite,
         batch_parameters: BatchParameters | None = None,
         context_type: Literal["ephemeral", "cloud"] = "ephemeral",
-        result_format: Literal["BOOLEAN_ONLY", "BASIC", "SUMMARY", "COMPLETE"]
-        | None = None,
+        result_format: (
+            Literal["BOOLEAN_ONLY", "BASIC", "SUMMARY", "COMPLETE"] | None
+        ) = None,
         *args,
         **kwargs,
     ) -> None:
