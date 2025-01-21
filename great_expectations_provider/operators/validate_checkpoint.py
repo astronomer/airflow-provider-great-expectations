@@ -43,7 +43,7 @@ class GXValidateCheckpointOperator(BaseOperator):
 
     def execute(self, context: Context) -> CheckpointDescriptionDict:
         import great_expectations as gx
-        from great_expectations.data_context import AbstractDataContext, FileDataContext
+        from great_expectations.data_context import FileDataContext
 
         gx_context: AbstractDataContext
         file_context_generator: Generator[FileDataContext, None, None] | None = None
