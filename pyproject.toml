@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.mypy]
+exclude = ["env/", ".env/","venv/", ".venv/", "build/"]
+follow_untyped_imports = true
+check_untyped_defs = true
+
+[tool.ruff]
+lint.select = [
+    "I",
+    "TC",
+]
