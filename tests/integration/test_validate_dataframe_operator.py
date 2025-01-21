@@ -6,11 +6,11 @@ import pandas as pd
 import pytest
 from great_expectations import ExpectationSuite
 from great_expectations.expectations import ExpectColumnValuesToBeInSet
+from integration.conftest import is_valid_gx_cloud_url, rand_name
 
 from great_expectations_provider.operators.validate_dataframe import (
     GXValidateDataFrameOperator,
 )
-from integration.conftest import is_valid_gx_cloud_url, rand_name
 
 if TYPE_CHECKING:
     from pyspark.sql import SparkSession
