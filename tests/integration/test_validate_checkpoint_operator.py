@@ -6,11 +6,11 @@ import great_expectations.expectations as gxe
 import pandas as pd
 import pytest
 from great_expectations.data_context import AbstractDataContext, FileDataContext
-from integration.conftest import is_valid_gx_cloud_url, rand_name
 
 from great_expectations_provider.operators.validate_checkpoint import (
     GXValidateCheckpointOperator,
 )
+from integration.conftest import is_valid_gx_cloud_url, rand_name
 
 pytestmark = pytest.mark.integration
 
