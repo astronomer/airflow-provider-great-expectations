@@ -5,9 +5,9 @@ A set of Airflow operators for [Great Expectations](https://greatexpectations.io
 Due to apply_default decorator removal, this version of the provider requires Airflow 2.1.0+. If your Airflow version is < 2.1.0, and you want to install this provider version, first upgrade Airflow to at least version 2.1.0. Otherwise, your Airflow package version will be upgraded automatically, and you will have to manually run airflow upgrade db to complete the migration.
 
 ### Notes on compatibility
-* This operator uses Great Expectations v1.3.1 and above.
+* This operator uses Great Expectations v1.3.3 and above.
 
-This package has been most recently unit tested with `apache-airflow=2.4.3` and `great-expectation=1.3.1`.
+This package has been most recently unit tested with `apache-airflow=2.4.3` and `great-expectation=1.3.3`.
 
 [comment]: <> (The example DAG has been most recently tested in the `quay.io/astronomer/astro-runtime:6.0.4` Docker image using the [Astro CLI]&#40;https://www.astronomer.io/docs/cloud/stable/develop/cli-quickstart&#41;, with `great-expectation=0.15.34` and `SQLAlchemy=1.4.44`)
 
