@@ -7,6 +7,7 @@ from airflow.models import BaseOperator
 from great_expectations_provider.common.gx_context_actions import (
     run_validation_definition,
 )
+from great_expectations_provider.operators.constants import USER_AGENT_STR
 
 if TYPE_CHECKING:
     from airflow.utils.context import Context
@@ -44,7 +45,10 @@ class GXValidateBatchOperator(BaseOperator):
     def execute(self, context: Context) -> dict:
         import great_expectations as gx
 
-        gx_context = gx.get_context(mode=self.context_type)
+        gx_context = gx.get_context(
+            mode=self.context_type,
+            user_agent_str=USER_AGENT_STR,
+        )
         batch_definition = self.configure_batch_definition(gx_context)
 
         runtime_batch_params = context.get("params", {}).get("gx_batch_parameters")  # type: ignore[call-overload]

@@ -8,6 +8,7 @@ from great_expectations import ExpectationSuite
 from great_expectations.core import ExpectationValidationResult
 from great_expectations.expectations import ExpectColumnValuesToBeInSet
 
+from great_expectations_provider.operators.constants import USER_AGENT_STR
 from great_expectations_provider.operators.validate_dataframe import (
     GXValidateDataFrameOperator,
 )
@@ -173,7 +174,10 @@ class TestValidateDataFrameOperator:
         validate_df.execute(context={})
 
         # assert
-        mock_gx.get_context.assert_called_once_with(mode=context_type)
+        mock_gx.get_context.assert_called_once_with(
+            mode=context_type,
+            user_agent_str=USER_AGENT_STR,
+        )
 
     def test_context_type_cloud(self, mock_gx: Mock):
         """Expect that param context_type creates a CloudDataContext."""
@@ -191,4 +195,7 @@ class TestValidateDataFrameOperator:
         validate_df.execute(context={})
 
         # assert
-        mock_gx.get_context.assert_called_once_with(mode=context_type)
+        mock_gx.get_context.assert_called_once_with(
+            mode=context_type,
+            user_agent_str=USER_AGENT_STR,
+        )

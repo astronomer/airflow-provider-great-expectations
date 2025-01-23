@@ -7,6 +7,7 @@ from airflow.models import BaseOperator
 from great_expectations_provider.common.gx_context_actions import (
     run_validation_definition,
 )
+from great_expectations_provider.operators.constants import USER_AGENT_STR
 
 if TYPE_CHECKING:
     import pyspark.sql as pyspark
@@ -44,7 +45,10 @@ class GXValidateDataFrameOperator(BaseOperator):
         import great_expectations as gx
         from pandas import DataFrame
 
-        gx_context = gx.get_context(mode=self.context_type)
+        gx_context = gx.get_context(
+            mode=self.context_type,
+            user_agent_str=USER_AGENT_STR,
+        )
         if isinstance(self.dataframe, DataFrame):
             batch_definition = self._get_pandas_batch_definition(gx_context)
         elif type(self.dataframe).__name__ == "DataFrame":

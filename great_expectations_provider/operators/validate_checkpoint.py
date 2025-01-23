@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING, Callable, Generator, Literal, cast
 
 from airflow.models import BaseOperator
 
+from great_expectations_provider.operators.constants import USER_AGENT_STR
+
 if TYPE_CHECKING:
     from airflow.utils.context import Context
     from great_expectations import Checkpoint
@@ -61,8 +63,12 @@ class GXValidateCheckpointOperator(BaseOperator):
                     Callable[[], FileDataContext], self.configure_file_data_context
                 )
                 gx_context = file_context_fn()
+            gx_context.set_user_agent_str(USER_AGENT_STR)
         else:
-            gx_context = gx.get_context(mode=self.context_type)
+            gx_context = gx.get_context(
+                mode=self.context_type,
+                user_agent_str=USER_AGENT_STR,
+            )
         checkpoint = self.configure_checkpoint(gx_context)
 
         runtime_batch_params = context.get("params", {}).get("gx_batch_parameters")  # type: ignore[call-overload]

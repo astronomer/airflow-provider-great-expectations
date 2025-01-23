@@ -9,6 +9,7 @@ from great_expectations.data_context import AbstractDataContext, FileDataContext
 from great_expectations.expectations import ExpectColumnValuesToBeInSet
 from pytest_mock import MockerFixture
 
+from great_expectations_provider.operators.constants import USER_AGENT_STR
 from great_expectations_provider.operators.validate_checkpoint import (
     GXValidateCheckpointOperator,
 )
@@ -89,7 +90,9 @@ class TestValidateCheckpointOperator:
         validate_checkpoint.execute(context={})
 
         # assert
-        mock_gx.get_context.assert_called_once_with(mode=context_type)
+        mock_gx.get_context.assert_called_once_with(
+            mode=context_type, user_agent_str=USER_AGENT_STR
+        )
 
     def test_context_type_cloud(self, mocker: MockerFixture) -> None:
         """Expect that param context_type creates a CloudDataContext."""
@@ -108,7 +111,9 @@ class TestValidateCheckpointOperator:
         validate_checkpoint.execute(context={})
 
         # assert
-        mock_gx.get_context.assert_called_once_with(mode=context_type)
+        mock_gx.get_context.assert_called_once_with(
+            mode=context_type, user_agent_str=USER_AGENT_STR
+        )
 
     def test_context_type_filesystem(self, mocker: MockerFixture) -> None:
         """Expect that param context_type defers creation of data context to user."""
@@ -216,6 +221,7 @@ class TestValidateCheckpointOperator:
 
         # assert
         setup.assert_called_once()
+        mock_context.set_user_agent_str.assert_called_once_with(USER_AGENT_STR)
         configure_checkpoint.assert_called_once_with(mock_context)
         teardown.assert_not_called()
 
@@ -244,6 +250,7 @@ class TestValidateCheckpointOperator:
 
         # assert
         setup.assert_called_once()
+        mock_context.set_user_agent_str.assert_called_once_with(USER_AGENT_STR)
         configure_checkpoint.assert_called_once_with(mock_context)
         teardown.assert_called_once()
 

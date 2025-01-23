@@ -10,6 +10,7 @@ from great_expectations.core.batch_definition import BatchDefinition
 from great_expectations.data_context import AbstractDataContext
 from great_expectations.expectations import ExpectColumnValuesToBeInSet
 
+from great_expectations_provider.operators.constants import USER_AGENT_STR
 from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
 
 pytestmark = pytest.mark.unit
@@ -197,7 +198,10 @@ class TestValidateBatchOperator:
         validate_batch.execute(context={})
 
         # assert
-        mock_gx.get_context.assert_called_once_with(mode=context_type)
+        mock_gx.get_context.assert_called_once_with(
+            mode=context_type,
+            user_agent_str=USER_AGENT_STR,
+        )
 
     def test_context_type_cloud(self, mock_gx: Mock):
         """Expect that param context_type creates a CloudDataContext."""
@@ -215,7 +219,10 @@ class TestValidateBatchOperator:
         validate_batch.execute(context={})
 
         # assert
-        mock_gx.get_context.assert_called_once_with(mode=context_type)
+        mock_gx.get_context.assert_called_once_with(
+            mode=context_type,
+            user_agent_str=USER_AGENT_STR,
+        )
 
     def test_batch_parameters_passed_on_init(self, mock_gx: Mock):
         """Expect that param batch_parameters is passed to BatchDefinition.get_batch"""
