@@ -131,7 +131,8 @@ The example DAG can be exercised in one of two ways:
 
 **With a vanilla Airflow installation**:
 1. Add the example DAG to your `dags/` folder
-2. Set the appropriate Airflow variables and connection as detailed in the above instructions for using the `astro` CLI
+2. Copy the `include/data` directory into your environment
+3. Set the appropriate Airflow variables and connection as detailed in the above instructions for using the `astro` CLI
 
 ## Development
 
