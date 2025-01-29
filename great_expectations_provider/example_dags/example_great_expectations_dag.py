@@ -93,9 +93,6 @@ def configure_checkpoint(context: AbstractDataContext) -> Checkpoint:
     return checkpoint
 
 
-# Batch Parameters will also be available as DAG params, to be consumed directly by the
-# operator through the context. Users can still provide batch_parameters on operator init
-# (critical for validating data frames), but batch_parameters provided as DAG params should take precedence.
 # To demo validation failure, use FAILURE_MONTH as a batch parameter instead of SUCCESS_MONTH
 SUCCESS_MONTH = "01"
 FAILURE_MONTH = "02"
