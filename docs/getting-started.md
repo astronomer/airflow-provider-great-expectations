@@ -89,11 +89,11 @@ After deciding [which Operator best fits your use case](#operator-use-cases), fo
     - **`configure_dataframe`**: function that returns a DataFrame to pass data to the Operator.
     - **`expect`**: either a [single Expectation](https://docs.greatexpectations.io/docs/core/define_expectations/create_an_expectation) or an [Expectation Suite](https://docs.greatexpectations.io/docs/core/define_expectations/organize_expectation_suites) to validate against your data. 
     - **`result_format` (optional)**: dictionary that sets the [verbosity of returned Validation Results](https://docs.greatexpectations.io/docs/core/trigger_actions_based_on_results/choose_a_result_format/). Defaults to `SUMMARY`.
-    - **`context_type` (optional)**: accepts `ephemeral` or `cloud` to set the [Data Context](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context) used by the Operator. Defaults to `ephemeral`, which does not persist results between runs. To save and view Validation Results in GX Cloud, use `cloud` and complete the additional Cloud configuration below.
+    - **`context_type` (optional)**: accepts `ephemeral` or `cloud` to set the [Data Context](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context) used by the Operator. Defaults to `ephemeral`, which does not persist results between runs. To save and view Validation Results in GX Cloud, use `cloud` and complete the additional Cloud Data Context configuration below.
 
     For more detail, explore this [end-to-end code sample](https://github.com/joshua-stauffer/airflow-provider-great-expectations/blob/v1_gx_provider/great_expectations_provider/example_dags/example_great_expectations_dag.py#L134-L138).
     
-3. If you are using a cloud Data Context, create a [free GX Cloud account](https://app.greatexpectations.io/) to get your [Cloud credentials](https://docs.greatexpectations.io/docs/cloud/connect/connect_python#get-your-user-access-token-and-organization-id) and then set the following Airflow variables.
+3. If you are using a Cloud Data Context, create a [free GX Cloud account](https://app.greatexpectations.io/) to get your [Cloud credentials](https://docs.greatexpectations.io/docs/cloud/connect/connect_python#get-your-user-access-token-and-organization-id) and then set the following Airflow variables.
 
     - `GX_CLOUD_ACCESS_TOKEN`
     - `GX_CLOUD_ORGANIZATION_ID`
@@ -124,16 +124,57 @@ After deciding [which Operator best fits your use case](#operator-use-cases), fo
     - **`expect`**: either a [single Expectation](https://docs.greatexpectations.io/docs/core/define_expectations/create_an_expectation) or an [Expectation Suite](https://docs.greatexpectations.io/docs/core/define_expectations/organize_expectation_suites) to validate against your data. 
     - **`batch_parameters` (optional)**: dictionary that sepecifies a [time-based Batch of data](https://docs.greatexpectations.io/docs/core/define_expectations/retrieve_a_batch_of_test_data) to validate your Expectations against. Defaults to the first valid Batch found, which is the most recent Batch (with default sort ascending) or the oldest Batch if the Batch Definition has been configured to sort descending.
     - **`result_format` (optional)**: dictionary that sets the [verbosity of returned Validation Results](https://docs.greatexpectations.io/docs/core/trigger_actions_based_on_results/choose_a_result_format/). Defaults to `SUMMARY`.
-    - **`context_type` (optional)**: accepts `ephemeral` or `cloud` to set the [Data Context](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context) used by the Operator. Defaults to `ephemeral`, which does not persist results between runs. To save and view Validation Results in GX Cloud, use `cloud` and complete the additional Cloud configuration below.
+    - **`context_type` (optional)**: accepts `ephemeral` or `cloud` to set the [Data Context](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context) used by the Operator. Defaults to `ephemeral`, which does not persist results between runs. To save and view Validation Results in GX Cloud, use `cloud` and complete the additional Cloud Data Context configuration below.
 
     For more detail, explore this [end-to-end code sample](https://github.com/joshua-stauffer/airflow-provider-great-expectations/blob/v1_gx_provider/great_expectations_provider/example_dags/example_dag_with_batch_parameters.py#L123-L127).
     
-3. If you are using a cloud Data Context, create a [free GX Cloud account](https://app.greatexpectations.io/) to get your [Cloud credentials](https://docs.greatexpectations.io/docs/cloud/connect/connect_python#get-your-user-access-token-and-organization-id) and then set the following Airflow variables.
+3. If you are using a Cloud Data Context, create a [free GX Cloud account](https://app.greatexpectations.io/) to get your [Cloud credentials](https://docs.greatexpectations.io/docs/cloud/connect/connect_python#get-your-user-access-token-and-organization-id) and then set the following Airflow variables.
 
     - `GX_CLOUD_ACCESS_TOKEN`
     - `GX_CLOUD_ORGANIZATION_ID`
 
-
-
 ### Checkpoint Operator
 
+1. Import the operator.
+
+    ```python
+    from great_expectations_provider.operators.validate_checkpoint import (
+        GXValidateCheckpointOperator,
+    )
+    ```
+
+2. Instantiate the Operator with required and optional parameters.
+
+    ```python
+    my_checkpoint_validation = GXValidateCheckpointOperator(
+        task_id="my_checkpoint_validation",
+        configure_checkpoint=my_checkpoint,
+    )
+    ```
+
+    - **`task_id`**: alphanumeric display name for the task in the Airflow UI.
+    - **`configure_checkpoint`**: function that returns a [Checkpoint](https://docs.greatexpectations.io/docs/core/trigger_actions_based_on_results/create_a_checkpoint_with_actions), which orchestrates a ValidationDefinition, BatchDefinition, and ExpectationSuite. The Checkpoint can also specify a Result Format and trigger actions based on Validation Results.
+    - **`batch_parameters` (optional)**: dictionary that sepecifies a [time-based Batch of data](https://docs.greatexpectations.io/docs/core/define_expectations/retrieve_a_batch_of_test_data) to validate your Expectations against. Defaults to the first valid Batch found, which is the most recent Batch (with default sort ascending) or the oldest Batch if the Batch Definition has been configured to sort descending..
+    - **`context_type` (optional)**: accepts `ephemeral`, `cloud`, or `file` to set the [Data Context](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context) used by the Operator. Defaults to `ephemeral`, which does not persist results between runs. To save and view Validation Results in GX Cloud, use `cloud` and complete the additional Cloud Data Context configuration below. To manage Validation Results yourself, use `file` and complete the additional File Data Context configuration below.
+
+    For more detail, explore this [end-to-end code sample](https://github.com/joshua-stauffer/airflow-provider-great-expectations/blob/v1_gx_provider/great_expectations_provider/example_dags/example_dag_with_batch_parameters.py#L134-L137).
+    
+3. If you are using a Cloud Data Context, create a [free GX Cloud account](https://app.greatexpectations.io/) to get your [Cloud credentials](https://docs.greatexpectations.io/docs/cloud/connect/connect_python#get-your-user-access-token-and-organization-id) and then set the following Airflow variables.
+
+    - `GX_CLOUD_ACCESS_TOKEN`
+    - `GX_CLOUD_ORGANIZATION_ID`
+
+4. If you are using a File Data Context, pass the `configure_file_data_context` parameter. This takes a function that returns a [FileDataContext](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context?context_type=file). By default, GX will write results in the configuration directory. If you are retrieving your FileDataContext from a remote location, you can yield the FileDataContext in the `configure_file_data_context` function, and write the directory back to the remote after control is returned to the generator.
+
+## Add the configured Operator to a DAG
+
+After configuring an Operator, add it to a DAG. Explore our [example DAGs](https://github.com/joshua-stauffer/airflow-provider-great-expectations/tree/v1_gx_provider/great_expectations_provider/example_dags) which have sample tasks that demonstrate Operator functionality.
+
+Note that the shape of the Validation Results depends on both the Operator type and whether or not you set the optional `result_format` parameter.
+- `GXValidateDataFrameOperator` and `GXValidateBatchOperator` return a serialized [ExpectationSuiteValidationResult](https://docs.greatexpectations.io/docs/reference/api/core/expectationsuitevalidationresult_class/)
+- `GXValidateCheckpointOperator` returns a [CheckpointResult](https://docs.greatexpectations.io/docs/reference/api/checkpoint/CheckpointResult_class).
+- The included fields depend on the [Result Format verbosity](https://docs.greatexpectations.io/docs/core/trigger_actions_based_on_results/choose_a_result_format/?results=verbosity#validation-results-reference-tables).
+
+## Run the DAG 
+
+[Trigger the DAG manually](https://www.astronomer.io/docs/learn/get-started-with-airflow#step-7-run-the-new-dag) or [run it on a schedule](https://www.astronomer.io/docs/learn/scheduling-in-airflow/). 
