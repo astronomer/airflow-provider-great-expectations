@@ -177,4 +177,4 @@ Note that the shape of the Validation Results depends on both the Operator type 
 
 ## Run the DAG 
 
-[Trigger the DAG manually](https://www.astronomer.io/docs/learn/get-started-with-airflow#step-7-run-the-new-dag) or [run it on a schedule](https://www.astronomer.io/docs/learn/scheduling-in-airflow/). 
+[Trigger the DAG manually](https://www.astronomer.io/docs/learn/get-started-with-airflow#step-7-run-the-new-dag) or [run it on a schedule](https://www.astronomer.io/docs/learn/scheduling-in-airflow/) to start validating your expectations of your data. 
