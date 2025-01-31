@@ -65,7 +65,7 @@ To get the most out of this getting started guide, make sure you have an underst
 
 After deciding [which Operator best fits your use case](#operator-use-cases), follow the Operator-specific instructions below to configure it.
 
-=== "Data Frame Operator"
+### Data Frame Operator
 
     1. Import the operator.
 
@@ -101,9 +101,9 @@ After deciding [which Operator best fits your use case](#operator-use-cases), fo
     
    For more detail, explore this [end-to-end code sample](https://github.com/joshua-stauffer/airflow-provider-great-expectations/blob/v1_gx_provider/great_expectations_provider/example_dags/example_great_expectations_dag.py#L134-L138)
 
-=== "Batch Operator"
+### Batch Operator
 
 
 
-=== "Checkpoint Operator"
+### Checkpoint Operator
 
