@@ -6,9 +6,9 @@ Here is an overview of key differences between versions:
 
 | Provider version | V0 | V1 |
 |---|---|---|
-| Operators | `GreatExpectationsOperator` | `GXValidateDataFrameOperator`<br><br>`GXValidateBatchOperator`<br><br>`GXValidateCheckpointOperator` |
+| Operators | `GreatExpectationsOperator` | `GXValidateDataFrameOperator`<br>`GXValidateBatchOperator`<br>`GXValidateCheckpointOperator` |
 | GX version | 0.18 and earlier | 1.3.3 and later |
-| Data Contexts | File | Ephemeral<br><br>Cloud<br><br>File (`GXValidateCheckpointOperator` only) |
+| Data Contexts | File | Ephemeral<br>Cloud<br>File (`GXValidateCheckpointOperator` only) |
 | Response handling | By default, any Expectation failure raises an `AirflowException`. To override this behavior and continue running the pipeline even if tests fail, you can set the `fail_task_on_validation_failure` flag to `False`. | Regardless of Expectation failure or success, a Validation Result is made available to subsequent tasks, which can decide what to do with the result. |
 
 For guidance on which Operator and Data Context best fit your needs, see [Operator use cases](/getting-started.md#operator-use-cases). Note that while File Data Contexts are still supported with `GXValidateCheckpointOperator`, they require extra configuration and can be challenging to use when Airflow is running in a distributed environment. Most uses of the legacy `GreatExpectationsOperator` can now be satisfied with an Ephemeral or Cloud Data Context with either the `GXValidateDataFrameOperator` or the `GXValidateBatchOperator` to minimize configuration.
