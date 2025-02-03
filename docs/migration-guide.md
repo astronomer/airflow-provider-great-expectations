@@ -41,7 +41,7 @@ If you want to update your existing `GreatExpectationsOperator` configuration to
         )
     ``` 
 
-    Here's a more advanced example for running Airflow in an environment where the underlying file system is not stable. The steps here are as follow:
+    Here's a more advanced example for running Airflow in an environment where the underlying file system is not stable. The steps here are as follows:
     - fetch your GX project
     - load the context
     - yield the context to the Operator
