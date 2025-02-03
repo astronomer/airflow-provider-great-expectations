@@ -63,7 +63,7 @@ You can use any virtual environment tool. The following example uses the `venv` 
 
 You can test with `pytest` or functional testing. 
 
-To test with `pytest`
+To test with `pytest`:
 
 1. Install `pytest` as a dependency
    ```bash
@@ -71,20 +71,20 @@ To test with `pytest`
    ```
 2. Run `pytest -p no:warnings`, which will provide a concise output when all tests pass and minimum necessary details when they dont. The `no:warnings` flag filters out deprecation messages that may be issued by Airflow.
 
-```
-(my-af-ge-venv) $ pytest -p no:warnings
-====================================== test session starts ========================================
-platform darwin -- Python 3.12.8, pytest-6.2.4, py-1.10.0, pluggy-0.13.1
-rootdir: /Users/my-user/my-repos/airflow-provider-great-expectations, configfile: pytest.ini, testpaths: tests
-plugins: anyio-3.3.0
-collected 7 items
+   ```
+   (my-af-ge-venv) $ pytest -p no:warnings
+   ====================================== test session starts ========================================
+   platform darwin -- Python 3.12.8, pytest-6.2.4, py-1.10.0, pluggy-0.13.1
+   rootdir: /Users/my-user/my-repos/airflow-provider-great-expectations, configfile: pytest.ini, testpaths: tests
+   plugins: anyio-3.3.0
+   collected 7 items
 
-tests/operators/test_great_expectations.py .......                                                [100%]
+   tests/operators/test_great_expectations.py .......                                                [100%]
+   ====================================== 7 passed in 11.99s =========================================
+   ```
 
-====================================== 7 passed in 11.99s =========================================
-```
+To run functional tests:
 
-To run functional tests
 1. Install your local development package in an Airflow environment for testing.
 2. [Exercise the example DAGs](/docs/examples.md). 
 
