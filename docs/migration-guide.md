@@ -13,14 +13,14 @@ Here is an overview of key differences between versions:
 
 For guidance on which Operator and Data Context best fit your needs, see [Operator use cases](/getting-started.md#operator-use-cases). Note that while File Data Contexts are still supported with `GXValidateCheckpointOperator`, they require extra configuration and can be challenging to use when Airflow is running in a distributed environment. Most uses of the legacy `GreatExpectationsOperator` can now be satisfied with an Ephemeral or Cloud Data Context with either the `GXValidateDataFrameOperator` or the `GXValidateBatchOperator` to minimize configuration.
 
-## Switch from the legacy `GreatExpectationsOperator` to the new Data Frame or Batch Operator (recommended)
+## Switch to the new Data Frame or Batch Operator (recommended)
 
 The configuration options for the new `GXValidateDataFrameOperator` and `GXValidateBatchOperator` are streamlined compared to the old `GreatExpectationsOperator`. Switching to one of these doesn’t involve translating existing configuration into new syntax line for line but rather paring back to a more minimal configuration.
 
 - See [getting started](/getting-started.md) for an overview of required configuration.
 - Explore [examples](https://github.com/klavavej/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags) of end-to-end configuration and usage.
 
-## Migrate from the legacy `GreatExpectationsOperator` to the new Checkpoint Operator
+## Migrate to the new Checkpoint Operator
 
 If you want to update your existing `GreatExpectationsOperator` configuration to use the new `GXValidateCheckpointOperator` with a File Data Context, follow these steps:
 
