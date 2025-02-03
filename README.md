@@ -1,7 +1,8 @@
-# Apache Airflow Provider for Great Expectations
+# Great Expectations Airflow Provider
+
 A set of Airflow operators for [Great Expectations](https://greatexpectations.io/), a framework for describing data using expressive tests and then validating that the data meets test criteria.
 
-Visit the [docs](/docs/index.md) to learn more about the Apache Airflow Provider for Great Expectations:
+Visit the [docs](/docs/index.md) to learn more about the Great Expectations Airflow Provider:
 
 [Getting started](/docs/getting-started.md)
 [Examples](/docs/examples.md)
