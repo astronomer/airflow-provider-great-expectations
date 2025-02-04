@@ -2,9 +2,9 @@
 
 All contributions, bug reports, bug fixes, documentation improvements, and enhancements are welcome.
 
-All contributors and maintainers to this project should abide by the [Contributor Code of Conduct](docs/contributing/code-of-conduct.md).
+All contributors and maintainers to this project should abide by the [Contributor Code of Conduct](/docs/contributing/code-of-conduct.md).
 
-Learn more about the contributors' roles in the [Roles](docs/contributing/contributor-roles.md) page.
+Learn more about the contributors' roles in the [Roles](/docs/contributing/contributor-roles.md) page.
 
 This document describes how to contribute to the Great Expectations Airflow Provider, covering:
 
