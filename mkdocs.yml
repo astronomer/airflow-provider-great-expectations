@@ -1,0 +1,59 @@
+site_name: Great Expectations Airflow Provider
+site_url: https://astronomer.github.io/airflow-provider-great-expectations
+copyright: © Copyright 2025, Astronomer.
+
+repo_url: https://github.com/astronomer/airflow-provider-great-expectations
+repo_name: astronomer/airflow-provider-great-expectations
+
+edit_uri: "blob/main/docs"
+
+theme:
+  name: material
+  features:
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    - content.tooltips
+    - navigation.sections
+    - navigation.tabs
+    - navigation.footer
+    - navigation.indexes
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+
+extra:
+  version:
+    provider: mike
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      check_paths: true
+      base_path: [ "." ]
+  - pymdownx.superfences
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Examples: examples.md
+  - Migration guide: migration-guide.md
+  - Contributing:
+      - Code of Conduct: contributing/code-of-conduct.md
+      - Contributors: contributing/contributors.md
+      - Contributing guide: contributing/contributing-guide.md
+      - Contributor roles: contributing/contributor-roles.md
+
+plugins:
+  - mike:
+      alias_type: symlink
+  - search
