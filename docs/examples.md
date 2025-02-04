@@ -13,7 +13,7 @@ To exercise an example DAG with the open-source Astro CLI:
 3. Copy the directories in the `include/` folder of this repository into the `include/` directory of your Astro project.
 4. Add the following to your `Dockerfile` to install the `airflow-provider-great-expectations` package:
    ```
-   RUN pip install --user airflow_provider_great_expectations
+   RUN pip install --user airflow-provider-great-expectations
    ```
 5. Start Docker.
 6. Run `astro dev start` to view the DAG on a local Airflow instance.
