@@ -65,14 +65,14 @@ You can test with `pytest` or functional testing.
 
 To test with `pytest`:
 
-1. Install `pytest` as a dependency
+1. Install `pytest` as a dependency.
    ```bash
    pip install "airflow-provider-great-expectations[tests]"
    ```
-2. Run `pytest -p no:warnings`, which will provide a concise output when all tests pass and minimum necessary details when they dont. The `no:warnings` flag filters out deprecation messages that may be issued by Airflow.
+2. Run `pytest -p no:warnings`, which will provide a concise output when all tests pass and minimum necessary details when they don't. The `no:warnings` flag filters out deprecation messages that may be issued by Airflow.
 
    ```
-   (my-af-ge-venv) $ pytest -p no:warnings
+   (my-af-gx-venv) $ pytest -p no:warnings
    ====================================== test session starts ========================================
    platform darwin -- Python 3.12.8, pytest-6.2.4, py-1.10.0, pluggy-0.13.1
    rootdir: /Users/my-user/my-repos/airflow-provider-great-expectations, configfile: pytest.ini, testpaths: tests
