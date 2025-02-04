@@ -72,7 +72,7 @@ If you want to update your existing `GreatExpectationsOperator` configuration to
         return context.checkpoints.get(name="<YOUR CHECKPOINT NAME>")
     ```
 
-- See [getting started](/getting-started.md) for more infomation about required and optional configuration.
+- See [getting started](/getting-started.md) for more information about required and optional configuration.
 - Explore [examples](https://github.com/klavavej/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags) of end-to-end configuration and usage.
 
 

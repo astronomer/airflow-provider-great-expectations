@@ -9,7 +9,7 @@ The example DAGs can be exercised with the open-source Astro CLI or with the Air
 To exercise an example DAG with the open-source Astro CLI:
 
 1. Initialize a project with the [Astro CLI](https://www.astronomer.io/docs/astro/cli/get-started-cli/).
-2. Copy the example DAG into the `dags/` folder of your astro project.
+2. Copy the example DAG into the `dags/` folder of your Astro project.
 3. Copy the directories in the `include/` folder of this repository into the `include/` directory of your Astro project.
 4. Add the following to your `Dockerfile` to install the `airflow-provider-great-expectations` package:
    ```

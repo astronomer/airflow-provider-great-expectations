@@ -95,12 +95,12 @@ To run functional tests:
 We use Markdown to author Great Expectations Airflow Provider documentation. We use hatch to build and release the docs.
 
 1. Update Markdown files in the [`docs/` folder](https://github.com/klavavej/airflow-provider-great-expectations/tree/docs/docs).
-2. Build and serve the documentation locally to preview your changes
+2. Build and serve the documentation locally to preview your changes.
    ```bash
    hatch run docs:dev
    ```
 3. [Open an issue and PR](#overview-of-how-to-contribute) for your changes.
-4. Once approved, release the documentation with the current project version and set it to the latest:
+4. Once approved, release the documentation with the current project version and set it to the latest.
    ```
    hatch run docs:gh-release
    ```

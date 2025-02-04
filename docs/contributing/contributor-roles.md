@@ -9,7 +9,7 @@ For more information, check the [contributing guide](contributing-guide.md).
 
 A contributor is anyone who wants to contribute code, documentation, tests, ideas, or anything to the Great Expectations Airflow Provider project.
 
-Great Expectations Airflow Provider contributors are listed in the Github [insights page](https://github.com/astronomer/airflow-provider-great-expectations/graphs/contributors).
+Great Expectations Airflow Provider contributors are listed in the GitHub [insights page](https://github.com/astronomer/airflow-provider-great-expectations/graphs/contributors).
 
 Contributors are responsible for:
 
@@ -35,13 +35,13 @@ If you know you are not going to be able to contribute for a long time (for inst
 Emeritus committers will no longer have write access to the repo.
 As merit earned never expires, once an emeritus committer becomes active again, they can email a maintainer from Astronomer and ask to be reinstated.
 
-### Pre-requisites to becoming a committer
+### Prerequisites to becoming a committer
 
 General prerequisites that we look for in all candidates:
 
-1. Consistent contribution over last few months
+1. Consistent contribution over the last few months
 2. Visibility on discussions on the Slack channel or GitHub issues/discussions
-3. Contributes to community health and project's sustainability for the long-term
+3. Contributes to community health and project's sustainability for the long term
 4. Understands the project's [contributors' guidelines](contributing-guide.md)
 
 Astronomer is responsible and accountable for releasing new versions of the Great Expectations Airflow Provider in [PyPI](https://pypi.org/project/airflow-provider-great-expectations/), following the [milestones](https://github.com/astronomer/airflow-provider-great-expectations/milestones).

@@ -17,11 +17,11 @@ When deciding which Operator best fits your use case, consider the location of t
 
 The Operators vary in which [Data Contexts](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context) they support. All 3 Operators support Ephemeral and GX Cloud Data Contexts. Only the `GXValidateCheckpointOperator` supports the File Data Context.
 
-- If the results are used only within the Airflow DAG by other tasks, we recommend using an Ephemeral Data Context. The serialized ValidationResult will be available within the DAG as the task result, but will not persist externally for viewing the results across multiple runs. All 3 Operators support the Ephemeral Data Context.
+- If the results are used only within the Airflow DAG by other tasks, we recommend using an Ephemeral Data Context. The serialized Validation Result will be available within the DAG as the task result, but will not persist externally for viewing the results across multiple runs. All 3 Operators support the Ephemeral Data Context.
 
-- To persist and view results outside of Airflow, we recommend using a Cloud Data Context. ValidationResults are automatically visible in the GX Cloud UI when using a Cloud Data Context, and the task result contains a link to the stored validation result. All 3 Operators support the Cloud Data Context.
+- To persist and view results outside of Airflow, we recommend using a Cloud Data Context. Validation Results are automatically visible in the GX Cloud UI when using a Cloud Data Context, and the task result contains a link to the stored validation result. All 3 Operators support the Cloud Data Context.
 
-- If you want to manage ValidationResults yourself, use a File Data Context. With this option, ValidationResults can be viewed in [Data Docs](https://docs.greatexpectations.io/docs/core/configure_project_settings/configure_data_docs/). Only the `GXValidateCheckpointOperator` supports the File Data Context.
+- If you want to manage Validation Results yourself, use a File Data Context. With this option, Validation Results can be viewed in [Data Docs](https://docs.greatexpectations.io/docs/core/configure_project_settings/configure_data_docs/). Only the `GXValidateCheckpointOperator` supports the File Data Context.
 
 ## Prerequisites
 
@@ -165,7 +165,7 @@ After deciding [which Operator best fits your use case](#operator-use-cases), fo
     - `GX_CLOUD_ACCESS_TOKEN`
     - `GX_CLOUD_ORGANIZATION_ID`
 
-4. If you use a File Data Context, pass the `configure_file_data_context` parameter. This takes a function that returns a [FileDataContext](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context?context_type=file). By default, GX will write results in the configuration directory. If you are retrieving your FileDataContext from a remote location, you can yield the FileDataContext in the `configure_file_data_context` function, and write the directory back to the remote after control is returned to the generator.
+4. If you use a File Data Context, pass the `configure_file_data_context` parameter. This takes a function that returns a [FileDataContext](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context?context_type=file). By default, GX will write results in the configuration directory. If you are retrieving your FileDataContext from a remote location, you can yield the FileDataContext in the `configure_file_data_context` function and write the directory back to the remote after control is returned to the generator.
 
 ## Add the configured Operator to a DAG
 
