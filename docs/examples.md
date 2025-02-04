@@ -1,7 +1,6 @@
 # Examples
 
-- Visit the Great Expectations Airflow Provider repository to explore [examples](https://github.com/klavavej/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags) of end-to-end configuration and usage.
-Link to example_dags directory for end-to-end examples of configuration 
+Visit the Great Expectations Airflow Provider repository to explore [examples](https://github.com/klavavej/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags) of end-to-end configuration and usage.
 
 ## Exercise an example DAG
 

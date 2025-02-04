@@ -6,7 +6,7 @@ All contributors and maintainers to this project should abide by the [Contributo
 
 Learn more about the contributors' roles in the [Roles](docs/contributing/contributor-roles.md) page.
 
-This document describes how to contribute to DAG Factory, covering:
+This document describes how to contribute to the Great Expectations Airflow Provider, covering:
 
 - Overview of how to contribute
 - How to set up the local development environment

@@ -22,8 +22,8 @@ Report bugs, questions, and feature requests in our [ticket tracker](https://git
 
 The Great Expectations Airflow Provider is an open-source project. Learn about its development process and about how you can contribute:
 
-[Contributing guide](docs/contributing/contributing-guide.md)
-[Github repository](https://github.com/astronomer/airflow-provider-great-expectations)
+- [Contributing guide](docs/contributing/contributing-guide.md)
+- [Github repository](https://github.com/astronomer/airflow-provider-great-expectations)
 
 ## License
 
