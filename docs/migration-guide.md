@@ -134,7 +134,7 @@ my_expectations = gx.ExpectationSuite(
     ],
 )
 
-validate_batch = GXValidateBatchOperator(
+my_batch_operator = GXValidateBatchOperator(
     task_id="my_batch_operator",
     configure_batch_definition=my_batch_definition_function,
     expect=my_expectations,
