@@ -24,7 +24,7 @@ The Operators vary in which [Data Contexts](https://docs.greatexpectations.io/do
 ## Prerequisites
 
 - [Python](https://www.python.org/) version 3.9 to 3.12
-- [Great Expectations](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/install_gx) version 1.3.3+
+- [Great Expectations](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/install_gx) version 1.3.5+
 - [Apache Airflow®](https://airflow.apache.org/) version 2.1.0+ 
 
 ## Assumed knowledge
@@ -76,19 +76,18 @@ After deciding [which Operator best fits your use case](#operator-use-cases), fo
 2. Instantiate the Operator with required and optional parameters.
 
     ```python
-
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
         from pandas import DataFrame
     
-    def configure_data_frame(): DataFrame:
-        import pandas as pd  # airflow best practice is to not import heavy dependencies top level
+    def my_data_frame_configuration(): DataFrame:
+        import pandas as pd  # airflow best practice is to not import heavy dependencies in the top level
         return pd.read_csv(my_data_file)
     
-    my_data_frame_validation = GXValidateDataFrameOperator(
-        task_id="my_data_frame_validation",
-        configure_dataframe=configure_data_frame,
+    my_data_frame_operator = GXValidateDataFrameOperator(
+        task_id="my_data_frame_operator",
+        configure_dataframe=my_data_frame_configuration,
         expect=my_expectation_suite,
     )
     ```
@@ -120,8 +119,8 @@ After deciding [which Operator best fits your use case](#operator-use-cases), fo
 2. Instantiate the Operator with required and optional parameters.
 
     ```python
-    my_batch_validation = GXValidateBatchOperator(
-        task_id="my_batch_validation",
+    my_batch_operator = GXValidateBatchOperator(
+        task_id="my_batch_operator",
         configure_batch_definition=my_batch_definition_function,
         expect=my_expectation_suite,
     )
@@ -154,8 +153,8 @@ After deciding [which Operator best fits your use case](#operator-use-cases), fo
 2. Instantiate the Operator with required and optional parameters.
 
     ```python
-    my_checkpoint_validation = GXValidateCheckpointOperator(
-        task_id="my_checkpoint_validation",
+    my_checkpoint_operator = GXValidateCheckpointOperator(
+        task_id="my_checkpoint_operator",
         configure_checkpoint=my_checkpoint_function,
     )
     ```

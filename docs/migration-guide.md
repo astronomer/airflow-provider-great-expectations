@@ -7,7 +7,7 @@ Here is an overview of key differences between versions:
 | Provider version | V0 | V1 |
 |---|---|---|
 | Operators | `GreatExpectationsOperator` | `GXValidateDataFrameOperator`<br>`GXValidateBatchOperator`<br>`GXValidateCheckpointOperator` |
-| GX version | 0.18 and earlier | 1.3.3 and later |
+| GX version | 0.18 and earlier | 1.3.5 and later |
 | Data Contexts | File | Ephemeral<br>Cloud<br>File (`GXValidateCheckpointOperator` only) |
 | Response handling | By default, any Expectation failure raises an `AirflowException`. To override this behavior and continue running the pipeline even if tests fail, you can set the `fail_task_on_validation_failure` flag to `False`. | Regardless of Expectation failure or success, a Validation Result is made available to subsequent tasks, which can decide what to do with the result. |
 
@@ -108,7 +108,7 @@ def get_private_key():
         encryption_algorithm=serialization.NoEncryption(),
     )
 
-def configure_batch_definition(context: AbstractDataContext) -> BatchDefinition:
+def my_batch_definition_function(context: AbstractDataContext) -> BatchDefinition:
     return (
         context.data_sources.add_snowflake(
             name="snowflake sandbox",
@@ -127,7 +127,7 @@ def configure_batch_definition(context: AbstractDataContext) -> BatchDefinition:
         )
     )
 
-expect = gx.ExpectationSuite(
+my_expectations = gx.ExpectationSuite(
     name="<SUITE_NAME>",
     expectations=[
         # define expectations
@@ -135,9 +135,9 @@ expect = gx.ExpectationSuite(
 )
 
 validate_batch = GXValidateBatchOperator(
-    task_id="my_batch_validation",
-    configure_batch_definition=configure_batch_definition,
-    expect=expect,
+    task_id="my_batch_operator",
+    configure_batch_definition=my_batch_definition_function,
+    expect=my_expectations,
     context_type="ephemeral",
 )
 ```
