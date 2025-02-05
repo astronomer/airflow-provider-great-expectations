@@ -18,14 +18,16 @@ This document describes how to contribute to the Great Expectations Airflow Prov
 To contribute to the Great Expectations Airflow Provider project:
 
 1. Create a [GitHub Issue](https://github.com/astronomer/airflow-provider-great-expectations/issues) describing a bug, enhancement, or feature request.
-2. Open a branch off of the `main` branch and create a Pull Request into the `main` branch from your feature branch.
-3. Link your issue to the pull request.
-4. After you complete development on your feature branch, request a review. A maintainer will merge your PR after all reviewers approve it.
+2. Fork the repository.
+3. In your fork, open a branch off of the `main` branch.
+4. Create a Pull Request into the `main` branch of the Provider repo from your forked feature branch.
+5. Link your issue to the Pull Request.
+6. After you complete development on your feature branch, request a review. A maintainer will merge your PR after all reviewers approve it.
 
 
 ## Set up a local development environment
 
-Setting up a local development environment involves fulfilling requirements, cloning the repo, and setting up a virtual environment.
+Setting up a local development environment involves fulfilling requirements, getting a copy of the repository, and setting up a virtual environment.
 
 ### Requirements
 
@@ -34,11 +36,14 @@ Setting up a local development environment involves fulfilling requirements, clo
 - [Great Expectations](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/install_gx) version 1.3.3+
 - [Apache Airflow®](https://airflow.apache.org/) version 2.1.0+ 
 
-### Clone the repo
+### Get a copy of the repository
 
-```bash
-git clone https://github.com/astronomer/airflow-provider-great-expectations.git
-```
+1. Fork the [Provider repository](https://github.com/astronomer/airflow-provider-great-expectations).
+
+2. Clone your fork.
+   ```bash
+   git clone https://github.com/my-user/airflow-provider-great-expectations.git
+   ```
 
 ### Set up a virtual environment
 
@@ -46,7 +51,7 @@ You can use any virtual environment tool. The following example uses the `venv` 
 
 1. Create the virtual environment.
    ```bash
-   $ python -m venv --prompt my-af-gx-venv .venv
+   $ python -m venv .venv
    ```
 
 2. Activate the virtual environment.
