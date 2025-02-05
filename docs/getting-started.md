@@ -83,7 +83,7 @@ After deciding [which Operator best fits your use case](#operator-use-cases), fo
     )
     ```
 
-    - **`task_id`**: alphanumeric display name for the task in the Airflow UI.
+    - **`task_id`**: alphanumeric name used in the Airflow UI and GX Cloud.
     - **`configure_dataframe`**: function that returns a DataFrame to pass data to the Operator.
     - **`expect`**: either a [single Expectation](https://docs.greatexpectations.io/docs/core/define_expectations/create_an_expectation) or an [Expectation Suite](https://docs.greatexpectations.io/docs/core/define_expectations/organize_expectation_suites) to validate against your data. 
     - **`result_format` (optional)**: dictionary that sets the [verbosity of returned Validation Results](https://docs.greatexpectations.io/docs/core/trigger_actions_based_on_results/choose_a_result_format/). Defaults to `SUMMARY`.
@@ -112,12 +112,12 @@ After deciding [which Operator best fits your use case](#operator-use-cases), fo
     ```python
     my_batch_validation = GXValidateBatchOperator(
         task_id="my_batch_validation",
-        configure_batch_definition=my_batch_definition,
+        configure_batch_definition=my_batch_definition_function,
         expect=my_expectation_suite,
     )
     ```
 
-    - **`task_id`**: alphanumeric display name for the task in the Airflow UI.
+    - **`task_id`**: alphanumeric name used in the Airflow UI and GX Cloud.
     - **`configure_batch_definition`**: function that returns a [BatchDefinition](https://docs.greatexpectations.io/docs/core/connect_to_data/filesystem_data/#create-a-batch-definition) to configure GX to read your data.
     - **`expect`**: either a [single Expectation](https://docs.greatexpectations.io/docs/core/define_expectations/create_an_expectation) or an [Expectation Suite](https://docs.greatexpectations.io/docs/core/define_expectations/organize_expectation_suites) to validate against your data. 
     - **`batch_parameters` (optional)**: dictionary that specifies a [time-based Batch of data](https://docs.greatexpectations.io/docs/core/define_expectations/retrieve_a_batch_of_test_data) to validate your Expectations against. Defaults to the first valid Batch found, which is the most recent Batch (with default sort ascending) or the oldest Batch if the Batch Definition has been configured to sort descending.
@@ -146,11 +146,11 @@ After deciding [which Operator best fits your use case](#operator-use-cases), fo
     ```python
     my_checkpoint_validation = GXValidateCheckpointOperator(
         task_id="my_checkpoint_validation",
-        configure_checkpoint=my_checkpoint,
+        configure_checkpoint=my_checkpoint_function,
     )
     ```
 
-    - **`task_id`**: alphanumeric display name for the task in the Airflow UI.
+    - **`task_id`**: alphanumeric name used in the Airflow UI and GX Cloud.
     - **`configure_checkpoint`**: function that returns a [Checkpoint](https://docs.greatexpectations.io/docs/core/trigger_actions_based_on_results/create_a_checkpoint_with_actions), which orchestrates a ValidationDefinition, BatchDefinition, and ExpectationSuite. The Checkpoint can also specify a Result Format and trigger actions based on Validation Results.
     - **`batch_parameters` (optional)**: dictionary that specifies a [time-based Batch of data](https://docs.greatexpectations.io/docs/core/define_expectations/retrieve_a_batch_of_test_data) to validate your Expectations against. Defaults to the first valid Batch found, which is the most recent Batch (with default sort ascending) or the oldest Batch if the Batch Definition has been configured to sort descending.
     - **`context_type` (optional)**: accepts `ephemeral`, `cloud`, or `file` to set the [Data Context](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context) used by the Operator. Defaults to `ephemeral`, which does not persist results between runs. To save and view Validation Results in GX Cloud, use `cloud` and complete the additional Cloud Data Context configuration below. To manage Validation Results yourself, use `file` and complete the additional File Data Context configuration below.
