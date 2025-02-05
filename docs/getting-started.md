@@ -76,9 +76,19 @@ After deciding [which Operator best fits your use case](#operator-use-cases), fo
 2. Instantiate the Operator with required and optional parameters.
 
     ```python
+
+    from typing import TYPE_CHECKING
+
+    if TYPE_CHECKING:
+        from pandas import DataFrame
+    
+    def configure_data_frame(): DataFrame:
+        import pandas as pd  # airflow best practice is to not import heavy dependencies top level
+        return pd.read_csv(my_data_file)
+    
     my_data_frame_validation = GXValidateDataFrameOperator(
         task_id="my_data_frame_validation",
-        configure_dataframe=lambda: pd.read_csv(my_data_file),
+        configure_dataframe=configure_data_frame,
         expect=my_expectation_suite,
     )
     ```
