@@ -61,7 +61,7 @@ You can use any virtual environment tool. The following example uses the `venv` 
 
 3. Install the package and testing dependencies.
    ```bash
-   (my-af-gx-venv) $ pip install -e '.[tests]'
+   (.venv) $ pip install -e '.[tests]'
    ```
 
 ## Run tests
