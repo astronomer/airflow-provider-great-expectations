@@ -2,10 +2,13 @@
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[tool.black]
-line-length = 119
-target-version = ['py39']
+[tool.mypy]
+exclude = ["env/", ".env/","venv/", ".venv/", "build/"]
+follow_untyped_imports = true
+check_untyped_defs = true
 
-[tool.isort]
-profile = "black"
-multi_line_output = 3
+[tool.ruff]
+lint.select = [
+    "I",
+    "TC",
+]
