@@ -2,6 +2,7 @@
 
 ## 0.3.0 (2025-02-10)
 * [MAINTENANCE] Add deprecation warnings for existing operators by @pankajkoti in https://github.com/astronomer/airflow-provider-great-expectations/pull/164
+* [MAINTENANCE] Drop support for Python < 3.8 by @pankajkoti in https://github.com/astronomer/airflow-provider-great-expectations/pull/167
 
 ## 0.2.9 (2024-09-02)
 * [FEATURE] Add schema as a template field by @antelmoa https://github.com/astronomer/airflow-provider-great-expectations/pull/135
