@@ -31,6 +31,7 @@ from great_expectations.exceptions.exceptions import CheckpointNotFoundError
 from sqlalchemy.engine import URL
 
 from great_expectations_provider.operators.great_expectations import (
+    GreatExpectationsDataDocsLink,
     GreatExpectationsOperator,
 )
 
@@ -1203,3 +1204,17 @@ def test_great_expectations_operator__make_connection_string_raise_error():
     operator.conn_type = operator.conn.conn_type
     with pytest.raises(ValueError):
         operator.make_connection_configuration()
+
+
+def test_great_expectations_data_docs_link_deprecation():
+    with pytest.warns(DeprecationWarning, match="This class is deprecated and will be removed in an upcoming release"):
+        GreatExpectationsDataDocsLink()
+
+
+def test_great_expectations_operator_deprecation():
+    with pytest.warns(DeprecationWarning, match="This class is deprecated and will be removed in an upcoming release"):
+        GreatExpectationsOperator(
+            task_id="task_id",
+            data_context_config=in_memory_data_context_config,
+            expectation_suite_name="taxi.demo",
+        )

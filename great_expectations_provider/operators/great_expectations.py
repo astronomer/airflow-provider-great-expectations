@@ -18,6 +18,7 @@
 #
 
 import os
+import warnings
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
@@ -48,7 +49,23 @@ if TYPE_CHECKING:
 
 
 class GreatExpectationsDataDocsLink(BaseOperatorLink):
-    """Constructs a link to Great Expectations data docs site."""
+    """
+    This class is deprecated and will be removed in an upcoming release where operators supporting GX Core 1.x will be
+    added.
+
+    Constructs a link to Great Expectations data docs site.
+    """
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        warnings.warn(
+            (
+                "This class is deprecated and will be removed in an upcoming release where operators supporting "
+                "GX Core 1.x will be added."
+            ),
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        super().__init__(*args, **kwargs)
 
     @property
     def name(self):
@@ -70,6 +87,9 @@ class GreatExpectationsDataDocsLink(BaseOperatorLink):
 
 class GreatExpectationsOperator(BaseOperator):
     """
+    This class is deprecated and will be removed in an upcoming release where operators supporting GX Core 1.x will be
+    added.
+
     An operator to leverage Great Expectations as a task in your Airflow DAG.
 
     Current list of expectations types:
@@ -153,6 +173,14 @@ class GreatExpectationsOperator(BaseOperator):
         *args,
         **kwargs,
     ) -> None:
+        warnings.warn(
+            (
+                "This class is deprecated and will be removed in an upcoming release where operators supporting "
+                "GX Core 1.x will be added."
+            ),
+            DeprecationWarning,
+            stacklevel=2,
+        )
         super().__init__(*args, **kwargs)
 
         self.data_asset_name: Optional[str] = data_asset_name
