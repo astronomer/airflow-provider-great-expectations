@@ -121,7 +121,7 @@ The example DAG can be exercised in one of two ways:
 1. Initialize a project with the [Astro CLI](https://www.astronomer.io/docs/cloud/stable/develop/cli-quickstart)
 2. Copy the example DAG into the `dags/` folder of your astro project
 3. Copy the directories in the `include` folder of this repository into the `include` directory of your Astro project
-4. Add the following to your `Dockerfile` to install the `airflow-provider-great-expectations` package, and add the required Airflow variables and connection to run the example DAG:
+4. Add the following to your `Dockerfile` to install the `airflow-provider-great-expectations` package:
 
    ```
    RUN pip install --user airflow_provider_great_expectations
@@ -132,7 +132,6 @@ The example DAG can be exercised in one of two ways:
 **With a vanilla Airflow installation**:
 1. Add the example DAG to your `dags/` folder
 2. Copy the `include/data` directory into your environment
-3. Set the appropriate Airflow variables and connection as detailed in the above instructions for using the `astro` CLI
 
 ## Development
 
