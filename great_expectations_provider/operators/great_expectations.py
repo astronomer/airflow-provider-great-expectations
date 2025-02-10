@@ -55,6 +55,7 @@ class GreatExpectationsDataDocsLink(BaseOperatorLink):
 
     Constructs a link to Great Expectations data docs site.
     """
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         warnings.warn(
             (
