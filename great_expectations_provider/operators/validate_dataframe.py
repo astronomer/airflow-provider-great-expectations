@@ -21,6 +21,24 @@ if TYPE_CHECKING:
 
 
 class GXValidateDataFrameOperator(BaseOperator):
+    """
+    An operator to use Great Expectations to validate Expectations against a DataFrame in your Airflow DAG.
+
+    Args:
+        task_id: Airflow task ID. Alphanumeric name used in the Airflow UI and to name components in GX Cloud.
+        configure_dataframe: A callable which returns the DataFrame to be validated.
+        expect: An Expectation or ExpectationSuite to validate against the DataFrame. Available Expectations can
+            be found at https://greatexpectations.io/expectations.
+        result_format: control the verbosity of returned Validation Results. Possible values are
+            "BOOLEAN_ONLY", "BASIC", "SUMMARY", "COMPLETE". Defaults to "SUMMARY". See
+            https://docs.greatexpectations.io/docs/core/trigger_actions_based_on_results/choose_a_result_format
+            for more information.
+        context_type: accepts `ephemeral` or `cloud` to set the DataContext used by the Operator.
+            Defaults to `ephemeral`, which does not persist results between runs.
+            To save and view Validation Results in GX Cloud, use `cloud` and include
+            GX Cloud credentials in your environment.
+    """
+
     def __init__(
         self,
         configure_dataframe: Callable[
