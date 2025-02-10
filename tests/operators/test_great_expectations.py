@@ -31,7 +31,8 @@ from great_expectations.exceptions.exceptions import CheckpointNotFoundError
 from sqlalchemy.engine import URL
 
 from great_expectations_provider.operators.great_expectations import (
-    GreatExpectationsOperator, GreatExpectationsDataDocsLink,
+    GreatExpectationsDataDocsLink,
+    GreatExpectationsOperator,
 )
 
 logger = logging.getLogger(__name__)
@@ -1217,4 +1218,3 @@ def test_great_expectations_operator_deprecation():
             data_context_config=in_memory_data_context_config,
             expectation_suite_name="taxi.demo",
         )
-
