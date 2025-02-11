@@ -1,0 +1,32 @@
+name: "Lint"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  format-and-type-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Install Library
+        run: pip install .[lint]
+
+      - name: Ruff Formatter
+        run: ruff format --check .
+
+      - name: Ruff Linter
+        run: ruff check .
+
+      - name: MyPy
+        run: mypy --pretty  --no-error-summary .

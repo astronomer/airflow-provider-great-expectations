@@ -1,4 +1,6 @@
-__version__ = "0.3.0"
+from great_expectations_provider.operators.constants import VERSION
+
+__version__ = VERSION
 
 
 def get_provider_info():

@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import great_expectations.expectations as gxe
-import pandas as pd
 from airflow import DAG
 from airflow.decorators import task
 from airflow.models.baseoperator import chain
@@ -13,9 +12,6 @@ from great_expectations import Checkpoint, ExpectationSuite, ValidationDefinitio
 from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
 from great_expectations_provider.operators.validate_checkpoint import (
     GXValidateCheckpointOperator,
-)
-from great_expectations_provider.operators.validate_dataframe import (
-    GXValidateDataFrameOperator,
 )
 
 if TYPE_CHECKING:
@@ -93,12 +89,7 @@ def configure_checkpoint(context: AbstractDataContext) -> Checkpoint:
     return checkpoint
 
 
-# To demo validation failure, use FAILURE_MONTH as a batch parameter instead of SUCCESS_MONTH
-SUCCESS_MONTH = "01"
-FAILURE_MONTH = "02"
-batch_parameters = {"year": "2019", "month": SUCCESS_MONTH}
-
-
+# define a consistent set of expectations we'll use throughout the pipeline
 expectation_suite = ExpectationSuite(
     name="Taxi Data Expectations",
     expectations=[
@@ -114,16 +105,25 @@ expectation_suite = ExpectationSuite(
 )
 
 
-with DAG(
-    dag_id="gx_provider_example_dag",
-) as dag:
-    # define a consistent set of expectations we'll use throughout the pipeline
+# Batch Parameters are available as DAG params, to be consumed directly by the
+# operator through the context. Users can still provide batch_parameters on operator init
+# (critical for validating data frames), but batch_parameters provided as DAG params should take precedence.
+# To demo validation failure, use FAILURE_MONTH as a batch parameter instead of SUCCESS_MONTH
+SUCCESS_MONTH = "01"
+FAILURE_MONTH = "02"
+_batch_parameters = {"year": "2019", "month": SUCCESS_MONTH}
 
+
+with DAG(
+    dag_id="gx_provider_example_dag_with_batch_parameters",
+    params={
+        "gx_batch_parameters": _batch_parameters,
+    },
+) as dag:
     validate_extract = GXValidateBatchOperator(
         task_id="validate_extract",
         configure_batch_definition=configure_pandas_batch_definition,
         expect=expectation_suite,
-        batch_parameters=batch_parameters,
     )
 
     @task.short_circuit()
@@ -131,21 +131,9 @@ with DAG(
         result = task_instance.xcom_pull(task_ids="validate_extract")
         return result.get("success")
 
-    validate_transform = GXValidateDataFrameOperator(
-        task_id="validate_transform",
-        configure_dataframe=lambda: pd.read_csv(data_file),
-        expect=expectation_suite,
-    )
-
-    @task.short_circuit()
-    def check_validate_transform(task_instance):
-        result = task_instance.xcom_pull(task_ids="validate_transform")
-        return result.get("success")
-
     validate_load = GXValidateCheckpointOperator(
         task_id="validate_load",
         configure_checkpoint=configure_checkpoint,
-        batch_parameters=batch_parameters,
     )
 
     @task.short_circuit()
@@ -156,8 +144,6 @@ with DAG(
     chain(
         validate_extract,
         check_validate_extract(),  # type: ignore[call-arg, misc]
-        validate_transform,
-        check_validate_transform(),  # type: ignore[call-arg, misc]
         validate_load,
         check_validate_load(),  # type: ignore[call-arg, misc]
     )

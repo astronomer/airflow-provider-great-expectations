@@ -15,4 +15,6 @@ version = re.findall('__version__ = "(.*)"', version_file)[0]
 
 if git_tag is not None:
     if version != git_tag:
-        raise SystemExit(f"The version in {path_of_init_file} ({version}) does not match the Git Tag ({git_tag}).")
+        raise SystemExit(
+            f"The version in {path_of_init_file} ({version}) does not match the Git Tag ({git_tag})."
+        )
