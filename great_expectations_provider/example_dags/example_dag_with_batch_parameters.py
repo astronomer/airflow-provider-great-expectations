@@ -34,7 +34,7 @@ def configure_pandas_batch_definition(context: AbstractDataContext) -> BatchDefi
     asset = data_source.add_csv_asset(name="Extract CSV Asset")
     batch_definition = asset.add_batch_definition_monthly(
         name="Extract Batch Definition",
-        regex="yellow_tripdata_sample_(?P<year>\d{4})-(?P<month>\d{2}).csv",
+        regex=r"yellow_tripdata_sample_(?P<year>\d{4})-(?P<month>\d{2}).csv",
     )
     return batch_definition
 
@@ -51,7 +51,7 @@ def configure_checkpoint(context: AbstractDataContext) -> Checkpoint:
         .add_csv_asset("Load Asset")
         .add_batch_definition_monthly(
             name="Load Batch Definition",
-            regex="yellow_tripdata_sample_(?P<year>\d{4})-(?P<month>\d{2}).csv",
+            regex=r"yellow_tripdata_sample_(?P<year>\d{4})-(?P<month>\d{2}).csv",
         )
     )
     # setup expectation suite
