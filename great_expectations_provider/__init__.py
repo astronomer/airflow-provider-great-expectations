@@ -9,11 +9,11 @@ def get_provider_info():
         "name": "Great Expectations Provider",
         "description": "An Apache Airflow provider for Great Expectations.",
         "versions": [__version__],
-        "connection_types": [
+        "connection-types": [
             {
-                "connection_type": "gx_cloud",
-                "hook_class_name": "great_expectations_provider.hooks.gx_cloud:GXCloudConnection",
-                "hook_name": "Great Expectations Cloud",
+                "connection-type": "gx_cloud",
+                "hook-class-name": "great_expectations_provider.hooks.gx_cloud:GXCloudConnection",
+                "hook-name": "Great Expectations Cloud",
             }
         ],
     }
