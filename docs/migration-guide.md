@@ -39,14 +39,14 @@ If you want to update your existing `GreatExpectationsOperator` configuration to
             mode="file",
             project_root_dir="./path_to_your_existing_project"
         )
-    ``` 
+    ```
 
     Here's a more advanced example for running Airflow in an environment where the underlying file system is not stable. The steps here are as follows:
     - fetch your GX project
     - load the context
     - yield the context to the Operator
     - after the Operator has finished, write your project configuration back to the remote
-    
+
     Be aware that you are responsible for managing concurrency, in the case that multiple tasks are reading and writing back to the remote simultaneously.
 
     ```
@@ -67,7 +67,7 @@ If you want to update your existing `GreatExpectationsOperator` configuration to
     ```
     from great_expectations import Checkpoint
     from great_expectations.data_context import AbstractDataContext
-    
+
     def configure_checkpoint(context: AbstractDataContext) -> Checkpoint:
         return context.checkpoints.get(name="<YOUR CHECKPOINT NAME>")
     ```

@@ -23,4 +23,4 @@ To exercise an example DAG with the Airflow web UI:
 1. Add the example DAG to your `dags/` folder.
 2. Make the `include/` directory available in your environment.
 3. Go to the [DAGs View](https://airflow.apache.org/docs/apache-airflow/stable/ui.html#dags-view) in the Airflow UI.
-4. Find the example DAG in the list and click the play button next to it. 
+4. Find the example DAG in the list and click the play button next to it.
