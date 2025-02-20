@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Callable, Literal, Union
 from airflow.models import BaseOperator
 
 from great_expectations_provider.common.gx_context_actions import (
+    load_data_context,
     run_validation_definition,
 )
 from great_expectations_provider.hooks.gx_cloud import GXCloudConnection
@@ -63,23 +64,16 @@ class GXValidateDataFrameOperator(BaseOperator):
         self.conn_id = conn_id
 
     def execute(self, context: Context) -> dict:
-        import great_expectations as gx
         from pandas import DataFrame
 
-        if self.context_type == "cloud" and self.conn_id:
-            gx_cloud_hook = GXCloudConnection(gx_cloud_config_id=self.conn_id)
-            gx_cloud_config = gx_cloud_hook.get_conn()
-            gx_context = gx.get_context(
-                mode="cloud",
-                cloud_access_token=gx_cloud_config.cloud_access_token,
-                cloud_organization_id=gx_cloud_config.cloud_organization_id,
-            )
+        if self.conn_id:
+            gx_cloud_config = GXCloudConnection(gx_cloud_conn_id=self.conn_id).get_conn()
         else:
-            # EphemeralDataContext or CloudDataContext with env vars
-            gx_context = gx.get_context(
-                mode=self.context_type,
-                user_agent_str=USER_AGENT_STR,
-            )
+            gx_cloud_config = None
+        gx_context = load_data_context(
+            gx_cloud_config=gx_cloud_config, context_type=self.context_type
+        )
+
         if isinstance(self.dataframe, DataFrame):
             batch_definition = self._get_pandas_batch_definition(gx_context)
         elif type(self.dataframe).__name__ == "DataFrame":
