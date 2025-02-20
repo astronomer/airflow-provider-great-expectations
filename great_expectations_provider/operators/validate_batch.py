@@ -71,7 +71,9 @@ class GXValidateBatchOperator(BaseOperator):
 
     def execute(self, context: Context) -> dict:
         if self.conn_id:
-            gx_cloud_config = GXCloudConnection(gx_cloud_conn_id=self.conn_id).get_conn()
+            gx_cloud_config = GXCloudConnection(
+                gx_cloud_conn_id=self.conn_id
+            ).get_conn()
         else:
             gx_cloud_config = None
         gx_context = load_data_context(
