@@ -18,7 +18,7 @@ For guidance on which Operator and Data Context best fit your needs, see [Operat
 The configuration options for the new `GXValidateDataFrameOperator` and `GXValidateBatchOperator` are streamlined compared to the old `GreatExpectationsOperator`. Switching to one of these doesn’t involve translating existing configuration into new syntax line for line but rather paring back to a more minimal configuration.
 
 - See [getting started](/docs/getting-started.md) for an overview of required configuration.
-- Explore [examples](https://github.com/klavavej/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags) of end-to-end configuration and usage.
+- Explore [examples](https://github.com/astronomer/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags) of end-to-end configuration and usage.
 
 ## Migrate to the new Checkpoint Operator
 
@@ -73,7 +73,7 @@ If you want to update your existing `GreatExpectationsOperator` configuration to
     ```
 
 - See [getting started](/docs/getting-started.md) for more information about required and optional configuration.
-- Explore [examples](https://github.com/klavavej/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags) of end-to-end configuration and usage.
+- Explore [examples](https://github.com/astronomer/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags) of end-to-end configuration and usage.
 
 
 ## Migrate Snowflake private key authentication

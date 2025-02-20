@@ -57,3 +57,4 @@ plugins:
   - mike:
       alias_type: symlink
   - search
+  

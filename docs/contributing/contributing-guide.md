@@ -83,7 +83,7 @@ Test with `pytest`:
 
 We use Markdown to author Great Expectations Airflow Provider documentation. We use hatch to build and release the docs.
 
-1. Update Markdown files in the [`docs/` folder](https://github.com/klavavej/airflow-provider-great-expectations/tree/docs/docs).
+1. Update Markdown files in the [`docs/` folder](https://github.com/astronomer/airflow-provider-great-expectations/tree/docs/docs).
 2. Build and serve the documentation locally to preview your changes.
    ```bash
    hatch run docs:dev
