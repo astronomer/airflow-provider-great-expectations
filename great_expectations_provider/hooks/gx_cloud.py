@@ -18,8 +18,7 @@ class GXCloudHook(BaseHook):
     """
     Connect to the GX Cloud managed backend.
 
-    :param organization_id: Organization ID of the GX cloud account.
-    :param token: GX cloud access token.
+    :gx_cloud_conn_id str: name of the GX Cloud connection
     """
 
     conn_name_attr = "gx_cloud_conn_id"
@@ -41,10 +40,10 @@ class GXCloudHook(BaseHook):
     def get_ui_field_behaviour(cls) -> dict[str, Any]:
         """Return custom field behaviour."""
         return {
-            "hidden_fields": ["schema", "port", "extra"],
+            "hidden_fields": ["schema", "port", "extra", "host"],
             "relabeling": {
-                "login": "Organization ID",
-                "password": "API Key",
+                "login": "GX Cloud Organization ID",
+                "password": "GX Cloud Access Token",
             },
             "placeholders": {},
         }
