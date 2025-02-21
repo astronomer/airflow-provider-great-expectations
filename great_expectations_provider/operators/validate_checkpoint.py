@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import inspect
-from typing import TYPE_CHECKING, Callable, Generator, Literal, cast
+from typing import TYPE_CHECKING, Callable, Generator, Literal, Union, cast
 
 from airflow.models import BaseOperator
 
-from great_expectations_provider.operators.constants import USER_AGENT_STR
+from great_expectations_provider.common.constants import USER_AGENT_STR
+from great_expectations_provider.common.gx_context_actions import load_data_context
+from great_expectations_provider.hooks.gx_cloud import GXCloudHook
 
 if TYPE_CHECKING:
     from airflow.utils.context import Context
@@ -50,6 +52,7 @@ class GXValidateCheckpointOperator(BaseOperator):
             | Callable[[], Generator[FileDataContext, None, None]]
             | None
         ) = None,
+        conn_id: Union[str, None] = None,
         *args,
         **kwargs,
     ) -> None:
@@ -66,9 +69,9 @@ class GXValidateCheckpointOperator(BaseOperator):
         self.context_type = context_type
         self.configure_file_data_context = configure_file_data_context
         self.configure_checkpoint = configure_checkpoint
+        self.conn_id = conn_id
 
     def execute(self, context: Context) -> CheckpointDescriptionDict:
-        import great_expectations as gx
         from great_expectations.data_context import AbstractDataContext, FileDataContext
 
         gx_context: AbstractDataContext
@@ -89,9 +92,12 @@ class GXValidateCheckpointOperator(BaseOperator):
                 gx_context = file_context_fn()
             gx_context.set_user_agent_str(USER_AGENT_STR)
         else:
-            gx_context = gx.get_context(
-                mode=self.context_type,
-                user_agent_str=USER_AGENT_STR,
+            if self.conn_id:
+                gx_cloud_config = GXCloudHook(gx_cloud_conn_id=self.conn_id).get_conn()
+            else:
+                gx_cloud_config = None
+            gx_context = load_data_context(
+                gx_cloud_config=gx_cloud_config, context_type=self.context_type
             )
         checkpoint = self.configure_checkpoint(gx_context)
 

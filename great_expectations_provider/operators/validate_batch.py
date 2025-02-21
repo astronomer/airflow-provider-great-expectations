@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Literal
+from typing import TYPE_CHECKING, Callable, Literal, Union
 
 from airflow.models import BaseOperator
 
 from great_expectations_provider.common.gx_context_actions import (
+    load_data_context,
     run_validation_definition,
 )
-from great_expectations_provider.operators.constants import USER_AGENT_STR
+from great_expectations_provider.hooks.gx_cloud import GXCloudHook
 
 if TYPE_CHECKING:
     from airflow.utils.context import Context
@@ -51,6 +52,7 @@ class GXValidateBatchOperator(BaseOperator):
         result_format: (
             Literal["BOOLEAN_ONLY", "BASIC", "SUMMARY", "COMPLETE"] | None
         ) = None,
+        conn_id: Union[str, None] = None,
         *args,
         **kwargs,
     ) -> None:
@@ -64,13 +66,15 @@ class GXValidateBatchOperator(BaseOperator):
         self.configure_batch_definition = configure_batch_definition
         self.expect = expect
         self.result_format = result_format
+        self.conn_id = conn_id
 
     def execute(self, context: Context) -> dict:
-        import great_expectations as gx
-
-        gx_context = gx.get_context(
-            mode=self.context_type,
-            user_agent_str=USER_AGENT_STR,
+        if self.conn_id:
+            gx_cloud_config = GXCloudHook(gx_cloud_conn_id=self.conn_id).get_conn()
+        else:
+            gx_cloud_config = None
+        gx_context = load_data_context(
+            gx_cloud_config=gx_cloud_config, context_type=self.context_type
         )
         batch_definition = self.configure_batch_definition(gx_context)
 
