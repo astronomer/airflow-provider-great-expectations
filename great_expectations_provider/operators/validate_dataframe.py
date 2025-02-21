@@ -8,7 +8,7 @@ from great_expectations_provider.common.gx_context_actions import (
     load_data_context,
     run_validation_definition,
 )
-from great_expectations_provider.hooks.gx_cloud import GXCloudConnection
+from great_expectations_provider.hooks.gx_cloud import GXCloudHook
 from great_expectations_provider.operators.constants import USER_AGENT_STR
 
 if TYPE_CHECKING:
@@ -67,7 +67,7 @@ class GXValidateDataFrameOperator(BaseOperator):
         from pandas import DataFrame
 
         if self.conn_id:
-            gx_cloud_config = GXCloudConnection(
+            gx_cloud_config = GXCloudHook(
                 gx_cloud_conn_id=self.conn_id
             ).get_conn()
         else:

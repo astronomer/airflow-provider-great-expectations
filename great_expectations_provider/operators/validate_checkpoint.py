@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Callable, Generator, Literal, Union, cast
 from airflow.models import BaseOperator
 
 from great_expectations_provider.common.gx_context_actions import load_data_context
-from great_expectations_provider.hooks.gx_cloud import GXCloudConnection
+from great_expectations_provider.hooks.gx_cloud import GXCloudHook
 from great_expectations_provider.operators.constants import USER_AGENT_STR
 
 if TYPE_CHECKING:
@@ -94,7 +94,7 @@ class GXValidateCheckpointOperator(BaseOperator):
             gx_context.set_user_agent_str(USER_AGENT_STR)
         else:
             if self.conn_id:
-                gx_cloud_config = GXCloudConnection(
+                gx_cloud_config = GXCloudHook(
                     gx_cloud_conn_id=self.conn_id
                 ).get_conn()
             else:

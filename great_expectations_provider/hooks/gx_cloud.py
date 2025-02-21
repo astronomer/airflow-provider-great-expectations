@@ -14,7 +14,7 @@ class GXCloudConfig:
     cloud_organization_id: str
 
 
-class GXCloudConnection(BaseHook):
+class GXCloudHook(BaseHook):
     """
     Connect to the GX Cloud managed backend.
 
