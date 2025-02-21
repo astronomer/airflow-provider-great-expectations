@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING, Callable, Generator, Literal, Union, cast
 
 from airflow.models import BaseOperator
 
+from great_expectations_provider.common.constants import USER_AGENT_STR
 from great_expectations_provider.common.gx_context_actions import load_data_context
 from great_expectations_provider.hooks.gx_cloud import GXCloudHook
-from great_expectations_provider.operators.constants import USER_AGENT_STR
 
 if TYPE_CHECKING:
     from airflow.utils.context import Context
@@ -72,7 +72,6 @@ class GXValidateCheckpointOperator(BaseOperator):
         self.conn_id = conn_id
 
     def execute(self, context: Context) -> CheckpointDescriptionDict:
-        import great_expectations as gx
         from great_expectations.data_context import AbstractDataContext, FileDataContext
 
         gx_context: AbstractDataContext

@@ -8,7 +8,7 @@ from great_expectations import ExpectationSuite
 from great_expectations.core import ExpectationValidationResult
 from great_expectations.expectations import ExpectColumnValuesToBeInSet
 
-from great_expectations_provider.operators.constants import USER_AGENT_STR
+from great_expectations_provider.common.constants import USER_AGENT_STR
 from great_expectations_provider.operators.validate_dataframe import (
     GXValidateDataFrameOperator,
 )

@@ -1,4 +1,4 @@
-from great_expectations_provider.operators.constants import VERSION
+from great_expectations_provider.common.constants import VERSION
 
 
 def get_provider_info():

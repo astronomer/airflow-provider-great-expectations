@@ -10,7 +10,7 @@ from great_expectations.core.batch_definition import BatchDefinition
 from great_expectations.data_context import AbstractDataContext
 from great_expectations.expectations import ExpectColumnValuesToBeInSet
 
-from great_expectations_provider.operators.constants import USER_AGENT_STR
+from great_expectations_provider.common.constants import USER_AGENT_STR
 from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
 
 pytestmark = pytest.mark.unit

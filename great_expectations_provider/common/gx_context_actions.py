@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal, Union
 
-from great_expectations_provider.operators.constants import USER_AGENT_STR
+from great_expectations_provider.common.constants import USER_AGENT_STR
 
 if TYPE_CHECKING:
     from great_expectations import ExpectationSuite

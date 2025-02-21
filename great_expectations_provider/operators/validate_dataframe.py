@@ -9,7 +9,6 @@ from great_expectations_provider.common.gx_context_actions import (
     run_validation_definition,
 )
 from great_expectations_provider.hooks.gx_cloud import GXCloudHook
-from great_expectations_provider.operators.constants import USER_AGENT_STR
 
 if TYPE_CHECKING:
     import pyspark.sql as pyspark
