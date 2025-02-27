@@ -8,7 +8,9 @@ from great_expectations_provider.common.gx_context_actions import (
     load_data_context,
     run_validation_definition,
 )
+from great_expectations_provider.exceptions.exceptions import ExistingDataSourceTypeMismatch
 from great_expectations_provider.hooks.gx_cloud import GXCloudHook
+from great_expectations.datasource.fluent import PandasDatasource, SparkDatasource
 
 if TYPE_CHECKING:
     import pyspark.sql as pyspark
@@ -99,17 +101,53 @@ class GXValidateDataFrameOperator(BaseOperator):
     def _get_spark_batch_definition(
         self, gx_context: AbstractDataContext
     ) -> BatchDefinition:
-        return (
-            gx_context.data_sources.add_or_update_spark(name=self.task_id)
-            .add_dataframe_asset(name=self.task_id)
-            .add_batch_definition_whole_dataframe(name=self.task_id)
-        )
+        name = self.task_id
+        try:
+            data_source = gx_context.data_sources.get(name=name)
+            if not isinstance(data_source, SparkDatasource):
+                raise ExistingDataSourceTypeMismatch(
+                    expected_type=SparkDatasource,
+                    actual_type=type(data_source),
+                    name=name,
+                )
+        except KeyError:
+            data_source = gx_context.data_sources.add_spark(name=name)
+
+        try:
+            asset = data_source.get_asset(name=name)
+        except LookupError:
+            asset = data_source.add_dataframe_asset(name=name)
+
+        try:
+            batch_definition = asset.get_batch_definition(name=name)
+        except KeyError:
+            batch_definition = asset.add_batch_definition_whole_dataframe(name=name)
+
+        return batch_definition
 
     def _get_pandas_batch_definition(
         self, gx_context: AbstractDataContext
     ) -> BatchDefinition:
-        return (
-            gx_context.data_sources.add_or_update_pandas(name=self.task_id)
-            .add_dataframe_asset(name=self.task_id)
-            .add_batch_definition_whole_dataframe(name=self.task_id)
-        )
+        name = self.task_id
+        try:
+            data_source = gx_context.data_sources.get(name=name)
+            if not isinstance(data_source, PandasDatasource):
+                raise ExistingDataSourceTypeMismatch(
+                    expected_type=PandasDatasource,
+                    actual_type=type(data_source),
+                    name=name,
+                )
+        except KeyError:
+            data_source = gx_context.data_sources.add_pandas(name=name)
+
+        try:
+            asset = data_source.get_asset(name=name)
+        except LookupError:
+            asset = data_source.add_dataframe_asset(name=name)
+
+        try:
+            batch_definition = asset.get_batch_definition(name=name)
+        except KeyError:
+            batch_definition = asset.add_batch_definition_whole_dataframe(name=name)
+
+        return batch_definition
