@@ -1,12 +1,14 @@
 import json
 from typing import Literal
-from unittest.mock import Mock
+from unittest.mock import Mock, create_autospec
 
 import pandas as pd
 import pytest
 from great_expectations import ExpectationSuite
 from great_expectations.core import ExpectationValidationResult
 from great_expectations.expectations import ExpectColumnValuesToBeInSet
+from great_expectations.datasource.fluent import PandasDatasource, SparkDatasource
+from great_expectations.data_context import EphemeralDataContext
 
 from great_expectations_provider.common.constants import USER_AGENT_STR
 from great_expectations_provider.operators.validate_dataframe import (
@@ -158,7 +160,7 @@ class TestValidateDataFrameOperator:
         # check the result of the first (only) expectation
         assert result["expectations"][0]["result"] == expected_result
 
-    def test_context_type_ephemeral(self, mock_gx: Mock):
+    def test_context_type_ephemeral(self, mock_gx_with_pandas_datasource: Mock):
         """Expect that param context_type creates an EphemeralDataContext."""
         # arrange
         context_type: Literal["ephemeral"] = "ephemeral"
@@ -174,12 +176,12 @@ class TestValidateDataFrameOperator:
         validate_df.execute(context={})
 
         # assert
-        mock_gx.get_context.assert_called_once_with(
+        mock_gx_with_pandas_datasource.get_context.assert_called_once_with(
             mode=context_type,
             user_agent_str=USER_AGENT_STR,
         )
 
-    def test_context_type_cloud(self, mock_gx: Mock):
+    def test_context_type_cloud(self, mock_gx_with_pandas_datasource: Mock):
         """Expect that param context_type creates a CloudDataContext."""
         # arrange
         context_type: Literal["cloud"] = "cloud"
@@ -195,7 +197,20 @@ class TestValidateDataFrameOperator:
         validate_df.execute(context={})
 
         # assert
-        mock_gx.get_context.assert_called_once_with(
+        mock_gx_with_pandas_datasource.get_context.assert_called_once_with(
             mode=context_type,
             user_agent_str=USER_AGENT_STR,
         )
+
+    @pytest.fixture
+    def mock_gx_with_pandas_datasource(
+        self,
+        mock_gx: Mock,
+    ) -> Mock:
+        mock_datasource = create_autospec(spec=PandasDatasource)
+        mock_context = create_autospec(
+            spec=EphemeralDataContext,
+            data_sources=Mock(get=Mock(return_value=mock_datasource)),
+        )
+        mock_gx.get_context.return_value = mock_context
+        return mock_gx
