@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable, Literal, Union
 
 from airflow.models import BaseOperator
+from great_expectations.datasource.fluent import PandasDatasource, SparkDatasource
 
 from great_expectations_provider.common.gx_context_actions import (
     load_data_context,
@@ -12,7 +13,6 @@ from great_expectations_provider.exceptions.exceptions import (
     ExistingDataSourceTypeMismatch,
 )
 from great_expectations_provider.hooks.gx_cloud import GXCloudHook
-from great_expectations.datasource.fluent import PandasDatasource, SparkDatasource
 
 if TYPE_CHECKING:
     import pyspark.sql as pyspark

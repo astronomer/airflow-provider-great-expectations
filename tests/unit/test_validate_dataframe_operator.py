@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 from great_expectations import ExpectationSuite
 from great_expectations.core import ExpectationValidationResult
-from great_expectations.expectations import ExpectColumnValuesToBeInSet
+from great_expectations.data_context import EphemeralDataContext
 from great_expectations.datasource.fluent import PandasDatasource, SparkDatasource
 from great_expectations.datasource.fluent.pandas_datasource import (
     DataFrameAsset as PandasDataFrameAsset,
@@ -14,7 +14,7 @@ from great_expectations.datasource.fluent.pandas_datasource import (
 from great_expectations.datasource.fluent.spark_datasource import (
     DataFrameAsset as SparkDataFrameAsset,
 )
-from great_expectations.data_context import EphemeralDataContext
+from great_expectations.expectations import ExpectColumnValuesToBeInSet
 
 from great_expectations_provider.common.constants import USER_AGENT_STR
 from great_expectations_provider.operators.validate_dataframe import (
