@@ -71,7 +71,7 @@ class TestGXValidateDataFrameOperator:
         This validates that botht he add_* and update_* code paths work."""
         # arrange
         column_name = "col_A"
-        task_id = f"test_validate_dataframe_with_cloud_{rand_name()}"
+        task_id = f"test_validate_dataframe_multiple_{rand_name()}"
 
         def configure_dataframe() -> pd.DataFrame:
             return pd.DataFrame({column_name: ["a", "b", "c"]})
