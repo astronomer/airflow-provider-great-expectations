@@ -59,6 +59,51 @@ class TestGXValidateDataFrameOperator:
         assert result["success"] is True
         assert is_valid_gx_cloud_url(result["result_url"])
 
+    @pytest.mark.integration
+    def test_multiple_runs(
+        self,
+        ensure_data_source_cleanup: Callable[[str], None],
+        ensure_suite_cleanup: Callable[[str], None],
+        ensure_validation_definition_cleanup: Callable[[str], None],
+    ) -> None:
+        """Test to ensure we don't error when running multiple times.
+
+        This validates that botht he add_* and update_* code paths work."""
+        # arrange
+        column_name = "col_A"
+        task_id = f"test_validate_dataframe_with_cloud_{rand_name()}"
+
+        def configure_dataframe() -> pd.DataFrame:
+            return pd.DataFrame({column_name: ["a", "b", "c"]})
+
+        expect = ExpectationSuite(
+            name=task_id,
+            expectations=[
+                ExpectColumnValuesToBeInSet(
+                    column=column_name,
+                    value_set=["a", "b", "c", "d", "e"],  # type: ignore[arg-type]
+                ),
+            ],
+        )
+        ensure_data_source_cleanup(task_id)
+        ensure_suite_cleanup(task_id)
+        ensure_validation_definition_cleanup(task_id)
+
+        validate_df = GXValidateDataFrameOperator(
+            context_type="cloud",
+            task_id=task_id,
+            configure_dataframe=configure_dataframe,
+            expect=expect,
+        )
+
+        # act
+        result_a = validate_df.execute(context={})
+        result_b = validate_df.execute(context={})
+
+        # assert
+        assert result_a["success"] is True
+        assert result_b["success"] is True
+
     @pytest.mark.spark_integration
     def test_spark(self, spark_session: SparkSession) -> None:
         import pyspark.sql as pyspark
