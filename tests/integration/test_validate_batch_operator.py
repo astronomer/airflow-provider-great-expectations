@@ -91,6 +91,7 @@ class TestValidateBatchOperator:
         result = validate_cloud_batch.execute(context={})
         assert result["success"] is True
 
+        # execute again to verify it works when updating a validation definition
         result = validate_cloud_batch.execute(context={})
         assert result["success"] is True
 
