@@ -33,8 +33,6 @@ jobs:
           POSTGRES_DB: ${{ env.POSTGRES_DB }}
 
     steps:
-      - name: Debug PR SHA
-        run: echo "PR SHA is ${{ github.event.pull_request.head.sha }}"
       - name: Checkout
         uses: actions/checkout@v4
         with:
