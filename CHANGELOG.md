@@ -1,5 +1,10 @@
 # Apache Airflow Provider for Great Expectations
 
+## 1.0.0a1(2025-02-21)
+* [FEATURE] Add support for GX Core 1.0 by @joshua-stauffer in #161
+* [DOCUMENTATION] Add documentation for the new operators added for supporting GX Core 1.0 by @klavavej in #163
+* [FEATURE] Add GX Cloud connection hook by @joshua-stauffer in #169
+
 ## 0.3.0 (2025-02-10)
 * [MAINTENANCE] Add deprecation warnings for existing operators by @pankajkoti in https://github.com/astronomer/airflow-provider-great-expectations/pull/164
 * [MAINTENANCE] Drop support for Python < 3.8 by @pankajkoti in https://github.com/astronomer/airflow-provider-great-expectations/pull/167
