@@ -24,7 +24,7 @@ The Operators vary in which [Data Contexts](https://docs.greatexpectations.io/do
 ## Prerequisites
 
 - [Python](https://www.python.org/) version 3.9 to 3.12
-- [Great Expectations](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/install_gx) version 1.3.5+
+- [Great Expectations](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/install_gx) version 1.3.9+
 - [Apache Airflow®](https://airflow.apache.org/) version 2.1.0+
 
 ## Assumed knowledge
