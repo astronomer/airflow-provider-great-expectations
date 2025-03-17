@@ -87,7 +87,7 @@ class GXValidateCheckpointOperator(BaseOperator):
                 gx_context = self._get_value_from_generator(file_context_generator)
             else:
                 file_context_fn = cast(
-                    Callable[[], FileDataContext], self.configure_file_data_context
+                    "Callable[[], FileDataContext]", self.configure_file_data_context
                 )
                 gx_context = file_context_fn()
             gx_context.set_user_agent_str(USER_AGENT_STR)
