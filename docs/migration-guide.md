@@ -11,13 +11,13 @@ Here is an overview of key differences between versions:
 | Data Contexts | File | Ephemeral<br>Cloud<br>File (`GXValidateCheckpointOperator` only) |
 | Response handling | By default, any Expectation failure raises an `AirflowException`. To override this behavior and continue running the pipeline even if tests fail, you can set the `fail_task_on_validation_failure` flag to `False`. | Regardless of Expectation failure or success, a Validation Result is made available to subsequent tasks, which can decide what to do with the result. |
 
-For guidance on which Operator and Data Context best fit your needs, see [Operator use cases](https://github.com/astronomer/airflow-provider-great-expectations/blob/main/docs/getting-started.md/#operator-use-cases). Note that while File Data Contexts are still supported with `GXValidateCheckpointOperator`, they require extra configuration and can be challenging to use when Airflow is running in a distributed environment. Most uses of the legacy `GreatExpectationsOperator` can now be satisfied with an Ephemeral or Cloud Data Context with either the `GXValidateDataFrameOperator` or the `GXValidateBatchOperator` to minimize configuration.
+For guidance on which Operator and Data Context best fit your needs, see [Operator use cases](/docs/getting-started.md/#operator-use-cases). Note that while File Data Contexts are still supported with `GXValidateCheckpointOperator`, they require extra configuration and can be challenging to use when Airflow is running in a distributed environment. Most uses of the legacy `GreatExpectationsOperator` can now be satisfied with an Ephemeral or Cloud Data Context with either the `GXValidateDataFrameOperator` or the `GXValidateBatchOperator` to minimize configuration.
 
 ## Switch to the new Data Frame or Batch Operator (recommended)
 
 The configuration options for the new `GXValidateDataFrameOperator` and `GXValidateBatchOperator` are streamlined compared to the old `GreatExpectationsOperator`. Switching to one of these doesn’t involve translating existing configuration into new syntax line for line but rather paring back to a more minimal configuration.
 
-- See [getting started](https://github.com/astronomer/airflow-provider-great-expectations/blob/main/docs/getting-started.md) for an overview of required configuration.
+- See [getting started](/docs/getting-started.md) for an overview of required configuration.
 - Explore [examples](https://github.com/astronomer/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags) of end-to-end configuration and usage.
 
 ## Migrate to the new Checkpoint Operator
@@ -72,7 +72,7 @@ If you want to update your existing `GreatExpectationsOperator` configuration to
         return context.checkpoints.get(name="<YOUR CHECKPOINT NAME>")
     ```
 
-- See [getting started](https://github.com/astronomer/airflow-provider-great-expectations/blob/main/docs/getting-started.md) for more information about required and optional configuration.
+- See [getting started](/docs/getting-started.md) for more information about required and optional configuration.
 - Explore [examples](https://github.com/astronomer/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags) of end-to-end configuration and usage.
 
 
