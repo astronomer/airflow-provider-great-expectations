@@ -1,6 +1,13 @@
 # Apache Airflow Provider for Great Expectations
 
-## 1.0.0a1(2025-02-21)
+## 1.0.0a2 (2025-03-18)
+* [BUGFIX] Replace use of add_or_update with explicit get or update by @tyler-hoffman in #174
+* [MAINTENANCE] Fix integration test around multiple runs of ValidateDataFrame by @tyler-hoffman in #176
+* [MAINTENANCE] Bump gx version to 1.3.9 by @tyler-hoffman in #178
+* [DOCUMENTATION]Mention Committers in the documentation by @pankajkoti in #180
+* [MAINTENANCE] pre-commit autoupdate by @pre-commit-ci in #173, #175, #183
+
+## 1.0.0a1 (2025-02-21)
 * [FEATURE] Add support for GX Core 1.0 by @joshua-stauffer in #161
 * [DOCUMENTATION] Add documentation for the new operators added for supporting GX Core 1.0 by @klavavej in #163
 * [FEATURE] Add GX Cloud connection hook by @joshua-stauffer in #169
