@@ -3,7 +3,7 @@
 Contributors are welcome and are greatly appreciated! Every little bit helps, and we give credit to them.
 
 This document aims to explain the current roles in the Great Expectations Airflow Provider project.
-For more information, check the [contributing guide](/docs/contributing/contributing-guide.md).
+For more information, check the [contributing guide](./contributing-guide.md).
 
 ## Contributors
 
@@ -24,7 +24,7 @@ Contributors are responsible for:
 Committers are community members with write access to the [Great Expectations Airflow Provider GitHub repository](https://github.com/astronomer/airflow-provider-great-expectations).
 They can modify the code and the documentation and accept others' contributions to the repo.
 
-Check [contributors](/docs/contributing/contributors.md) for the official list of Great Expectations Airflow Provider committers.
+Check [contributors](./contributors.md) for the official list of Great Expectations Airflow Provider committers.
 
 Committers have the same responsibilities as standard contributors and also perform the following actions:
 
@@ -42,7 +42,7 @@ General prerequisites that we look for in all candidates:
 1. Consistent contribution over the last few months
 2. Visibility on discussions on the Slack channel or GitHub issues/discussions
 3. Contributes to community health and project's sustainability for the long term
-4. Understands the project's [contributors' guidelines](/docs/contributing/contributing-guide.md)
+4. Understands the project's [contributors' guidelines](./contributing-guide.md)
 
 Astronomer is responsible and accountable for releasing new versions of the Great Expectations Airflow Provider in [PyPI](https://pypi.org/project/airflow-provider-great-expectations/), following the [milestones](https://github.com/astronomer/airflow-provider-great-expectations/milestones).
 Astronomer has the right to grant and revoke write access permissions to the project's official repository for any reason it sees fit.

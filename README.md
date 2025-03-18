@@ -2,13 +2,13 @@
 
 A set of Airflow operators for [Great Expectations](https://greatexpectations.io/), a framework for describing data using expressive tests and then validating that the data meets test criteria.
 
-Visit the [docs](/docs/index.md) to learn more about the Great Expectations Airflow Provider:
+Visit the [docs](https://astronomer.github.io/airflow-provider-great-expectations/latest/) to learn more about the Great Expectations Airflow Provider:
 
-- [Getting started](/docs/getting-started.md)
-- [Examples](/docs/examples.md)
-- [Migration guide](/docs/migration-guide.md)
+- [Getting started](https://astronomer.github.io/airflow-provider-great-expectations/latest/getting-started.md)
+- [Examples](https://astronomer.github.io/airflow-provider-great-expectations/latest/examples.md)
+- [Migration guide](https://astronomer.github.io/airflow-provider-great-expectations/latest/migration-guide.md)
 - Contributing
-   - [Code of conduct](/docs/contributing/code-of-conduct.md)
-   - [Contributors](/docs/contributing/contributors.md)
-   - [Contributing guide](/docs/contributing/contributing-guide.md)
-   - [Contributor roles](/docs/contributing/contributor-roles.md)
+   - [Code of conduct](https://astronomer.github.io/airflow-provider-great-expectations/latest/contributing/code-of-conduct.md)
+   - [Contributors](https://astronomer.github.io/airflow-provider-great-expectations/latest/contributing/contributors.md)
+   - [Contributing guide](https://astronomer.github.io/airflow-provider-great-expectations/latest/contributing/contributing-guide.md)
+   - [Contributor roles](https://astronomer.github.io/airflow-provider-great-expectations/latest/contributing/contributor-roles.md)
