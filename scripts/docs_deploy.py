@@ -12,18 +12,18 @@ def deploy_docs(deploy_type: str):
     set_default = False
 
     if deploy_type == "release":
-        if _version.pre is not None:
-            command = ["mike", "deploy", "--push", "dev"]
-        else:
-            command = [
-                "mike",
-                "deploy",
-                "--push",
-                "--update-aliases",
-                str(_version),
-                "latest",
-            ]
-            set_default = True
+        # if _version.pre is not None:
+        #     command = ["mike", "deploy", "--push", "dev"]
+        # else:
+        command = [
+            "mike",
+            "deploy",
+            "--push",
+            "--update-aliases",
+            str(_version),
+            "latest",
+        ]
+        set_default = True
     else:
         command = ["mike", "deploy", "--push", "dev"]
 
