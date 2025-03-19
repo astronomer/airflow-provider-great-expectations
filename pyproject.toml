@@ -1,6 +1,81 @@
 [build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "airflow-provider-great-expectations"
+dynamic = ["version"]
+description = "An Apache Airflow provider for Great Expectations"
+readme = "README.md"
+authors = [
+  {name = "Great Expectations & Astronomer", email = "humans@astronomer.io"}
+]
+license = "Apache-2.0"
+license-files = { paths = ["LICENSE"] }
+requires-python = ">=3.9, <3.13"
+keywords = ["airflow", "great expectations", "provider"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Web Environment",
+    "Framework :: Apache Airflow",
+    "Framework :: Apache Airflow :: Provider",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12"
+]
+dependencies = [
+    "great-expectations>=1.3.9",
+    "apache-airflow>=2.1",
+    "setuptools>=41.0.0",
+]
+
+[project.optional-dependencies]
+athena = ["great-expectations[athena]>=1.3.9"]
+azure = ["great-expectations[azure]>=1.3.9"]
+bigquery = ["great-expectations[bigquery]>=1.3.9"]
+lint = [
+    "mypy==1.14.1",
+    "ruff==0.8.3",
+    "pytest==8.3.4",
+    "pytest-mock==3.14.0",
+    "great-expectations[spark, spark-connect]>=1.3.9"
+]
+gcp = ["great-expectations[gcp]>=1.3.9"]
+mssql = ["great-expectations[mssql]>=1.3.9"]
+postgresql = ["great-expectations[postgresql]>=1.3.9"]
+s3 = ["great-expectations[s3]>=1.3.9"]
+snowflake = ["great-expectations[snowflake]>=1.3.9"]
+spark = [
+    "great-expectations[spark, spark-connect]>=1.3.9",
+    "pyarrow>=4.0.0"
+]
+tests = [
+    "pytest==8.3.4",
+    "pytest-mock==3.14.0"
+]
+
+[project.entry-points.apache_airflow_provider]
+provider_info = "great_expectations_provider.get_provider_info:get_provider_info"
+
+[project.urls]
+Homepage = "https://github.com/astronomer/airflow-provider-great-expectations"
+Documentation = "https://astronomer.github.io/airflow-provider-great-expectations/latest"
+"Source Code" = "https://github.com/astronomer/airflow-provider-great-expectations"
+"Changelog" = "https://github.com/astronomer/airflow-provider-great-expectations/blob/main/CHANGELOG.md"
+
+[tool.hatch.version]
+path = "great_expectations_provider/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = ["/great_expectations_provider"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["/great_expectations_provider"]
 
 [tool.mypy]
 exclude = ["env/", ".env/","venv/", ".venv/", "build/"]
@@ -12,3 +87,23 @@ lint.select = [
     "I",
     "TC",
 ]
+
+[tool.distutils.bdist_wheel]
+universal = true
+
+######################################
+# DOCS
+######################################
+
+[tool.hatch.envs.docs]
+dependencies = [
+    "mkdocs",
+    "mike",
+    "pymdown-extensions",
+    "mkdocs-material",
+]
+
+[tool.hatch.envs.docs.scripts]
+dev = "mkdocs build && mkdocs serve" # For local development and preventing publishing
+gh-deploy = "python scripts/docs_deploy.py dev"
+gh-release = "python scripts/docs_deploy.py release"

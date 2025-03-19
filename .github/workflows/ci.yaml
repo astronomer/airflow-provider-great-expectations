@@ -13,6 +13,35 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  Deploy-Pages:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          architecture: "x64"
+
+      - name: Install packages and dependencies
+        run: pip install hatch
+
+      - name: Deploy Docs
+        run: |
+          git config user.name "oss-integrations-bot"
+          git config user.email "oss-integrations-bot@astronomer.io"
+
+          git fetch origin gh-pages --depth=1
+
+          if [[ $GITHUB_EVENT_NAME == "release" ]]; then
+              hatch run docs:gh-release
+          else
+              hatch run docs:gh-deploy
+          fi
 
   build-n-publish:
     if: github.event_name == 'release'
@@ -27,13 +56,12 @@ jobs:
     - uses: actions/cache@v3
       with:
         path: ~/.cache/pip
-        key: ${{ hashFiles('setup.cfg') }}
+        key: ${{ hashFiles('pyproject.toml') }}
     - name: Verify Git Tag and package version
       run: python3 .github/scripts/verify_tag_and_version.py
-    - run: pip3 install -U pip wheel build twine
-    - run: python3 -m build
-    - run: twine check dist/*
-    - run: twine upload dist/*
+    - run: pip3 install hatch
+    - run: hatch build
+    - run: hatch publish
     env:
-      TWINE_USERNAME: __token__
-      TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      HATCH_INDEX_USER: __token__
+      HATCH_INDEX_AUTH: ${{ secrets.PYPI_PASSWORD }}

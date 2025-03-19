@@ -1,7 +1,7 @@
 # Contributors
 
 There are different ways people can contribute to the Great Expectations Airflow Provider.
-Learn more about the project [contributors roles](https://github.com/astronomer/airflow-provider-great-expectations/blob/main/docs/contributing/contributor-roles.md).
+Learn more about the project [contributors roles](./contributor-roles.md).
 
 ## Committers
 
