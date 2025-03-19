@@ -7,7 +7,7 @@ Here is an overview of key differences between versions:
 | Provider version | V0 | V1 |
 |---|---|---|
 | Operators | `GreatExpectationsOperator` | `GXValidateDataFrameOperator`<br>`GXValidateBatchOperator`<br>`GXValidateCheckpointOperator` |
-| GX version | 0.18 and earlier | 1.3.10 and later |
+| GX version | 0.18 and earlier | 1.3.11 and later |
 | Data Contexts | File | Ephemeral<br>Cloud<br>File (`GXValidateCheckpointOperator` only) |
 | Response handling | By default, any Expectation failure raises an `AirflowException`. To override this behavior and continue running the pipeline even if tests fail, you can set the `fail_task_on_validation_failure` flag to `False`. | Regardless of Expectation failure or success, a Validation Result is made available to subsequent tasks, which can decide what to do with the result. |
 
