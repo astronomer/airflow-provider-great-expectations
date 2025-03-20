@@ -33,7 +33,7 @@ Setting up a local development environment involves fulfilling requirements, get
 
 - [Git](https://git-scm.com/)
 - [Python](https://www.python.org/) version 3.9 to 3.12
-- [Great Expectations](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/install_gx) version 1.3.9+
+- [Great Expectations](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/install_gx) version 1.3.11+
 - [Apache Airflow®](https://airflow.apache.org/) version 2.1.0+
 
 ### Get a copy of the repository
