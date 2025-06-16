@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Callable, Generator, Literal, Union, cast
 from airflow.models import BaseOperator
 
 from great_expectations_provider.common.constants import USER_AGENT_STR
+from great_expectations_provider.common.errors import GXValidationFailed
 from great_expectations_provider.common.gx_context_actions import load_data_context
 from great_expectations_provider.hooks.gx_cloud import GXCloudHook
 
@@ -71,7 +72,7 @@ class GXValidateCheckpointOperator(BaseOperator):
         self.configure_checkpoint = configure_checkpoint
         self.conn_id = conn_id
 
-    def execute(self, context: Context) -> CheckpointDescriptionDict:
+    def execute(self, context: Context) -> None:
         from great_expectations.data_context import AbstractDataContext, FileDataContext
 
         gx_context: AbstractDataContext
@@ -111,7 +112,9 @@ class GXValidateCheckpointOperator(BaseOperator):
         if file_context_generator:
             self._allow_generator_teardown(file_context_generator)
 
-        return result.describe_dict()
+        context["ti"].xcom_push(key="return_value", value=result.describe_dict())
+        if not result.success:
+            raise GXValidationFailed
 
     def _get_value_from_generator(
         self, generator: Generator[FileDataContext, None, None]
