@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Callable
+from unittest.mock import Mock
 
 import great_expectations as gx
 import great_expectations.expectations as gxe
@@ -7,10 +8,11 @@ import pandas as pd
 import pytest
 from great_expectations.data_context import AbstractDataContext, FileDataContext
 
+from great_expectations_provider.common.errors import GXValidationFailed
 from great_expectations_provider.operators.validate_checkpoint import (
     GXValidateCheckpointOperator,
 )
-from integration.conftest import is_valid_gx_cloud_url, rand_name
+from tests.integration.conftest import is_valid_gx_cloud_url, rand_name
 
 pytestmark = pytest.mark.integration
 
@@ -114,11 +116,16 @@ class TestValidateCheckpointOperator:
             batch_parameters={"dataframe": data_frame},
         )
 
-        result = validate_cloud_checkpoint.execute(context={})
+        mock_ti = Mock()
+        validate_cloud_checkpoint.execute(context={"ti": mock_ti})
 
-        assert result["success"] is True
+        # Get the result from xcom_push call
+        pushed_result = mock_ti.xcom_push.call_args[1]["value"]
+        assert pushed_result["success"] is True
         # make sure we have something that looks like a valid result url
-        assert is_valid_gx_cloud_url(result["validation_results"][0]["result_url"])
+        assert is_valid_gx_cloud_url(
+            pushed_result["validation_results"][0]["result_url"]
+        )
 
     def test_with_file_context(
         self,
@@ -138,9 +145,12 @@ class TestValidateCheckpointOperator:
             batch_parameters={"dataframe": data_frame},
         )
 
-        result = validate_cloud_checkpoint.execute(context={})
+        mock_ti = Mock()
+        validate_cloud_checkpoint.execute(context={"ti": mock_ti})
 
-        assert result["success"] is True
+        # Get the result from xcom_push call
+        pushed_result = mock_ti.xcom_push.call_args[1]["value"]
+        assert pushed_result["success"] is True
 
     def test_with_ephemeral_context(
         self,
@@ -156,9 +166,12 @@ class TestValidateCheckpointOperator:
             batch_parameters={"dataframe": data_frame},
         )
 
-        result = validate_cloud_checkpoint.execute(context={})
+        mock_ti = Mock()
+        validate_cloud_checkpoint.execute(context={"ti": mock_ti})
 
-        assert result["success"] is True
+        # Get the result from xcom_push call
+        pushed_result = mock_ti.xcom_push.call_args[1]["value"]
+        assert pushed_result["success"] is True
 
     def test_postgres_data_source(
         self,
@@ -212,9 +225,12 @@ class TestValidateCheckpointOperator:
             configure_checkpoint=configure_checkpoint,
         )
 
-        result = validate_checkpoint.execute(context={})
+        mock_ti = Mock()
+        validate_checkpoint.execute(context={"ti": mock_ti})
 
-        assert result["success"] is True
+        # Get the result from xcom_push call
+        pushed_result = mock_ti.xcom_push.call_args[1]["value"]
+        assert pushed_result["success"] is True
 
     def test_filesystem_data_source(
         self,
@@ -275,6 +291,116 @@ class TestValidateCheckpointOperator:
             configure_checkpoint=configure_checkpoint,
         )
 
-        result = validate_checkpoint.execute(context={})
+        mock_ti = Mock()
+        validate_checkpoint.execute(context={"ti": mock_ti})
 
-        assert result["success"] is True
+        # Get the result from xcom_push call
+        pushed_result = mock_ti.xcom_push.call_args[1]["value"]
+        assert pushed_result["success"] is True
+
+    def test_validation_failure_raises_exception(self) -> None:
+        """Test that validation failure raises GXValidationFailed exception."""
+        # Create data that will fail validation
+        failing_data_frame = pd.DataFrame(
+            {self.COL_NAME: [200, 300, 400]}
+        )  # values outside expected range
+
+        def configure_failing_checkpoint(context: AbstractDataContext) -> gx.Checkpoint:
+            batch_definition = (
+                context.data_sources.add_pandas(name=rand_name())
+                .add_dataframe_asset(rand_name())
+                .add_batch_definition_whole_dataframe(rand_name())
+            )
+            suite = context.suites.add(
+                gx.ExpectationSuite(
+                    name=rand_name(),
+                    expectations=[
+                        gxe.ExpectColumnValuesToBeBetween(
+                            column=self.COL_NAME,
+                            min_value=0,
+                            max_value=100,  # values in data are > 100, so this will fail
+                        )
+                    ],
+                )
+            )
+            validation_definition = context.validation_definitions.add(
+                gx.ValidationDefinition(
+                    name=rand_name(),
+                    data=batch_definition,
+                    suite=suite,
+                )
+            )
+            checkpoint = context.checkpoints.add(
+                gx.Checkpoint(
+                    name=rand_name(), validation_definitions=[validation_definition]
+                )
+            )
+            return checkpoint
+
+        validate_checkpoint = GXValidateCheckpointOperator(
+            context_type="ephemeral",
+            task_id="validation_failure_test",
+            configure_checkpoint=configure_failing_checkpoint,
+            batch_parameters={"dataframe": failing_data_frame},
+        )
+
+        mock_ti = Mock()
+        with pytest.raises(GXValidationFailed):
+            validate_checkpoint.execute(context={"ti": mock_ti})
+
+    def test_validation_failure_xcom_contains_result(self) -> None:
+        """Test that when validation fails and exception is raised, xcom still contains the failed result."""
+        # Create data that will fail validation
+        failing_data_frame = pd.DataFrame(
+            {self.COL_NAME: [200, 300, 400]}
+        )  # values outside expected range
+
+        def configure_failing_checkpoint(context: AbstractDataContext) -> gx.Checkpoint:
+            batch_definition = (
+                context.data_sources.add_pandas(name=rand_name())
+                .add_dataframe_asset(rand_name())
+                .add_batch_definition_whole_dataframe(rand_name())
+            )
+            suite = context.suites.add(
+                gx.ExpectationSuite(
+                    name=rand_name(),
+                    expectations=[
+                        gxe.ExpectColumnValuesToBeBetween(
+                            column=self.COL_NAME,
+                            min_value=0,
+                            max_value=100,  # values in data are > 100, so this will fail
+                        )
+                    ],
+                )
+            )
+            validation_definition = context.validation_definitions.add(
+                gx.ValidationDefinition(
+                    name=rand_name(),
+                    data=batch_definition,
+                    suite=suite,
+                )
+            )
+            checkpoint = context.checkpoints.add(
+                gx.Checkpoint(
+                    name=rand_name(), validation_definitions=[validation_definition]
+                )
+            )
+            return checkpoint
+
+        validate_checkpoint = GXValidateCheckpointOperator(
+            context_type="ephemeral",
+            task_id="validation_failure_xcom_test",
+            configure_checkpoint=configure_failing_checkpoint,
+            batch_parameters={"dataframe": failing_data_frame},
+        )
+
+        mock_ti = Mock()
+        with pytest.raises(GXValidationFailed):
+            validate_checkpoint.execute(context={"ti": mock_ti})
+
+        # Verify that xcom_push was called with the failed validation result
+        mock_ti.xcom_push.assert_called_once()
+        call_args = mock_ti.xcom_push.call_args
+        assert call_args[1]["key"] == "return_value"
+        result = call_args[1]["value"]
+        assert result["success"] is False

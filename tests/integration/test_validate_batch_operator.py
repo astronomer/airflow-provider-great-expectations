@@ -1,7 +1,6 @@
-import random
-import string
 from pathlib import Path
 from typing import Callable
+from unittest.mock import Mock
 
 import great_expectations as gx
 import pandas as pd
@@ -9,10 +8,11 @@ import pytest
 from great_expectations import expectations as gxe
 from great_expectations.core.batch_definition import BatchDefinition
 from great_expectations.data_context import AbstractDataContext
-from great_expectations.datasource.fluent.interfaces import Batch
 
+
+from great_expectations_provider.common.errors import GXValidationFailed
 from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
-from integration.conftest import rand_name
+from tests.integration.conftest import rand_name
 
 pytestmark = pytest.mark.integration
 
@@ -52,9 +52,12 @@ class TestValidateBatchOperator:
             context_type="cloud",
         )
 
-        result = validate_cloud_batch.execute(context={})
+        mock_ti = Mock()
+        validate_cloud_batch.execute(context={"ti": mock_ti})
 
-        assert result["success"] is True
+        # Get the result from xcom_push call
+        pushed_result = mock_ti.xcom_push.call_args[1]["value"]
+        assert pushed_result["success"] is True
 
     def test_file_system_data_source(
         self,
@@ -104,9 +107,12 @@ class TestValidateBatchOperator:
             context_type="ephemeral",
         )
 
-        result = validate_cloud_batch.execute(context={})
+        mock_ti = Mock()
+        validate_cloud_batch.execute(context={"ti": mock_ti})
 
-        assert result["success"] is True
+        # Get the result from xcom_push call
+        pushed_result = mock_ti.xcom_push.call_args[1]["value"]
+        assert pushed_result["success"] is True
 
     def test_sql_data_source(
         self,
@@ -148,6 +154,80 @@ class TestValidateBatchOperator:
             expect=expect,
         )
 
-        result = validate_batch.execute(context={})
+        mock_ti = Mock()
+        validate_batch.execute(context={"ti": mock_ti})
 
-        assert result["success"] is True
+        # Get the result from xcom_push call
+        pushed_result = mock_ti.xcom_push.call_args[1]["value"]
+        assert pushed_result["success"] is True
+
+    def test_validation_failure_raises_exception(self) -> None:
+        """Test that validation failure raises GXValidationFailed exception."""
+        task_id = f"validate_batch_failure_integration_test_{rand_name()}"
+        # Create data that will fail validation
+        dataframe = pd.DataFrame(
+            {self.COL_NAME: ["x", "y", "z"]}
+        )  # values NOT in expected set
+        expect = gxe.ExpectColumnValuesToBeInSet(
+            column=self.COL_NAME,
+            value_set=["a", "b", "c"],  # different values to cause failure
+        )
+        batch_parameters = {"dataframe": dataframe}
+
+        def configure_batch_definition(context: AbstractDataContext) -> BatchDefinition:
+            return (
+                context.data_sources.add_pandas(name=task_id)
+                .add_dataframe_asset(task_id)
+                .add_batch_definition_whole_dataframe(task_id)
+            )
+
+        validate_batch = GXValidateBatchOperator(
+            task_id=task_id,
+            configure_batch_definition=configure_batch_definition,
+            expect=expect,
+            batch_parameters=batch_parameters,
+            context_type="ephemeral",
+        )
+
+        mock_ti = Mock()
+        with pytest.raises(GXValidationFailed):
+            validate_batch.execute(context={"ti": mock_ti})
+
+    def test_validation_failure_xcom_contains_result(self) -> None:
+        """Test that when validation fails and exception is raised, xcom still contains the failed result."""
+        task_id = f"validate_batch_failure_xcom_integration_test_{rand_name()}"
+        # Create data that will fail validation
+        dataframe = pd.DataFrame(
+            {self.COL_NAME: ["x", "y", "z"]}
+        )  # values NOT in expected set
+        expect = gxe.ExpectColumnValuesToBeInSet(
+            column=self.COL_NAME,
+            value_set=["a", "b", "c"],  # different values to cause failure
+        )
+        batch_parameters = {"dataframe": dataframe}
+
+        def configure_batch_definition(context: AbstractDataContext) -> BatchDefinition:
+            return (
+                context.data_sources.add_pandas(name=task_id)
+                .add_dataframe_asset(task_id)
+                .add_batch_definition_whole_dataframe(task_id)
+            )
+
+        validate_batch = GXValidateBatchOperator(
+            task_id=task_id,
+            configure_batch_definition=configure_batch_definition,
+            expect=expect,
+            batch_parameters=batch_parameters,
+            context_type="ephemeral",
+        )
+
+        mock_ti = Mock()
+        with pytest.raises(GXValidationFailed):
+            validate_batch.execute(context={"ti": mock_ti})
+
+        # Verify that xcom_push was called with the failed validation result
+        mock_ti.xcom_push.assert_called_once()
+        call_args = mock_ti.xcom_push.call_args
+        assert call_args[1]["key"] == "return_value"
+        result = call_args[1]["value"]
+        assert result["success"] is False
