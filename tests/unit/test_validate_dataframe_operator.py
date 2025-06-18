@@ -1,5 +1,5 @@
 import json
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 from unittest.mock import Mock, create_autospec
 
 import pandas as pd
@@ -17,9 +17,13 @@ from great_expectations.datasource.fluent.spark_datasource import (
 from great_expectations.expectations import ExpectColumnValuesToBeInSet
 
 from great_expectations_provider.common.constants import USER_AGENT_STR
+from great_expectations_provider.common.errors import GXValidationFailed
 from great_expectations_provider.operators.validate_dataframe import (
     GXValidateDataFrameOperator,
 )
+
+if TYPE_CHECKING:
+    from airflow.utils.context import Context
 
 pytestmark = pytest.mark.unit
 
@@ -50,13 +54,17 @@ class TestValidateDataFrameOperator:
             configure_dataframe=configure_dataframe,
             expect=expect,
         )
+        mock_ti = Mock()
+        context: Context = {"ti": mock_ti}  # type: ignore[typeddict-item]
 
         # act
-        result = validate_df.execute(context={})
+        validate_df.execute(context=context)
 
         # assert
-        json.dumps(result)  # result must be json serializable
-        deserialized_result = ExpectationValidationResult(**result)
+        # Get the result from xcom_push call
+        pushed_result = mock_ti.xcom_push.call_args[1]["value"]
+        json.dumps(pushed_result)  # result must be json serializable
+        deserialized_result = ExpectationValidationResult(**pushed_result)
         assert deserialized_result.success
 
     def test_expectation_suite(self) -> None:
@@ -81,13 +89,17 @@ class TestValidateDataFrameOperator:
             configure_dataframe=configure_dataframe,
             expect=expect,
         )
+        mock_ti = Mock()
+        context: Context = {"ti": mock_ti}  # type: ignore[typeddict-item]
 
         # act
-        result = validate_df.execute(context={})
+        validate_df.execute(context=context)
 
         # assert
-        json.dumps(result)  # result must be json serializable
-        assert result["success"] is True
+        # Get the result from xcom_push call
+        pushed_result = mock_ti.xcom_push.call_args[1]["value"]
+        json.dumps(pushed_result)  # result must be json serializable
+        assert pushed_result["success"] is True
 
     @pytest.mark.parametrize(
         "result_format,expected_result",
@@ -166,13 +178,17 @@ class TestValidateDataFrameOperator:
             expect=expect,
             result_format=result_format,
         )
+        mock_ti = Mock()
+        context: Context = {"ti": mock_ti}  # type: ignore[typeddict-item]
 
         # act
-        result = validate_df.execute(context={})
+        validate_df.execute(context=context)
 
         # assert
+        # Get the result from xcom_push call
+        pushed_result = mock_ti.xcom_push.call_args[1]["value"]
         # check the result of the first (only) expectation
-        assert result["expectations"][0]["result"] == expected_result
+        assert pushed_result["expectations"][0]["result"] == expected_result
 
     def test_context_type_ephemeral(self, mock_gx_with_pandas_datasource: Mock):
         """Expect that param context_type creates an EphemeralDataContext."""
@@ -185,9 +201,11 @@ class TestValidateDataFrameOperator:
             expect=Mock(),
             context_type=context_type,
         )
+        mock_ti = Mock()
+        context: Context = {"ti": mock_ti}  # type: ignore[typeddict-item]
 
         # act
-        validate_df.execute(context={})
+        validate_df.execute(context=context)
 
         # assert
         mock_gx_with_pandas_datasource.get_context.assert_called_once_with(
@@ -206,9 +224,11 @@ class TestValidateDataFrameOperator:
             expect=Mock(),
             context_type=context_type,
         )
+        mock_ti = Mock()
+        context: Context = {"ti": mock_ti}  # type: ignore[typeddict-item]
 
         # act
-        validate_df.execute(context={})
+        validate_df.execute(context=context)
 
         # assert
         mock_gx_with_pandas_datasource.get_context.assert_called_once_with(
@@ -225,9 +245,11 @@ class TestValidateDataFrameOperator:
             expect=Mock(),
             context_type="cloud",
         )
+        mock_ti = Mock()
+        context: Context = {"ti": mock_ti}  # type: ignore[typeddict-item]
 
         # act
-        validate_df.execute(context={})
+        validate_df.execute(context=context)
 
     def test_pandas_does_not_error_when_no_asset(
         self, mock_gx_with_pandas_datasource_but_no_asset: Mock
@@ -238,9 +260,11 @@ class TestValidateDataFrameOperator:
             expect=Mock(),
             context_type="cloud",
         )
+        mock_ti = Mock()
+        context: Context = {"ti": mock_ti}  # type: ignore[typeddict-item]
 
         # act
-        validate_df.execute(context={})
+        validate_df.execute(context=context)
 
     def test_pandas_does_not_error_when_no_batch_definition(
         self, mock_gx_with_pandas_datasource_but_no_batch_definition: Mock
@@ -251,9 +275,11 @@ class TestValidateDataFrameOperator:
             expect=Mock(),
             context_type="cloud",
         )
+        mock_ti = Mock()
+        context: Context = {"ti": mock_ti}  # type: ignore[typeddict-item]
 
         # act
-        validate_df.execute(context={})
+        validate_df.execute(context=context)
 
     def test_spark_does_not_error_when_no_datasource(
         self, mock_gx_no_datasource: Mock
@@ -264,9 +290,11 @@ class TestValidateDataFrameOperator:
             expect=Mock(),
             context_type="cloud",
         )
+        mock_ti = Mock()
+        context: Context = {"ti": mock_ti}  # type: ignore[typeddict-item]
 
         # act
-        validate_df.execute(context={})
+        validate_df.execute(context=context)
 
     def test_spark_does_not_error_when_no_asset(
         self, mock_gx_with_spark_datasource_but_no_asset: Mock
@@ -277,9 +305,11 @@ class TestValidateDataFrameOperator:
             expect=Mock(),
             context_type="cloud",
         )
+        mock_ti = Mock()
+        context: Context = {"ti": mock_ti}  # type: ignore[typeddict-item]
 
         # act
-        validate_df.execute(context={})
+        validate_df.execute(context=context)
 
     def test_spark_does_not_error_when_no_batch_definition(
         self, mock_gx_with_spark_datasource_but_no_batch_definition: Mock
@@ -290,9 +320,74 @@ class TestValidateDataFrameOperator:
             expect=Mock(),
             context_type="cloud",
         )
+        mock_ti = Mock()
+        context: Context = {"ti": mock_ti}  # type: ignore[typeddict-item]
 
         # act
-        validate_df.execute(context={})
+        validate_df.execute(context=context)
+
+    def test_validation_failure_raises_exception(self) -> None:
+        """Expect that when validation fails, GXValidationFailed exception is raised."""
+
+        # arrange
+        column_name = "col_A"
+
+        def configure_dataframe() -> pd.DataFrame:
+            return pd.DataFrame(
+                {column_name: ["x", "y", "z"]}
+            )  # values NOT in the expected set
+
+        expect = ExpectColumnValuesToBeInSet(
+            column=column_name,
+            value_set=["a", "b", "c"],  # different values to cause failure
+        )
+
+        validate_df = GXValidateDataFrameOperator(
+            task_id="validate_df_failure",
+            configure_dataframe=configure_dataframe,
+            expect=expect,
+        )
+        mock_ti = Mock()
+        context: Context = {"ti": mock_ti}  # type: ignore[typeddict-item]
+
+        # act & assert
+        with pytest.raises(GXValidationFailed):
+            validate_df.execute(context=context)
+
+    def test_validation_failure_xcom_contains_result(self) -> None:
+        """Expect that when validation fails and exception is raised, xcom still contains the result."""
+
+        # arrange
+        column_name = "col_A"
+
+        def configure_dataframe() -> pd.DataFrame:
+            return pd.DataFrame(
+                {column_name: ["x", "y", "z"]}
+            )  # values NOT in the expected set
+
+        expect = ExpectColumnValuesToBeInSet(
+            column=column_name,
+            value_set=["a", "b", "c"],  # different values to cause failure
+        )
+
+        validate_df = GXValidateDataFrameOperator(
+            task_id="validate_df_failure",
+            configure_dataframe=configure_dataframe,
+            expect=expect,
+        )
+        mock_ti = Mock()
+        context: Context = {"ti": mock_ti}  # type: ignore[typeddict-item]
+
+        # act & assert
+        with pytest.raises(GXValidationFailed):
+            validate_df.execute(context=context)
+
+        # Verify that xcom_push was called with the validation result
+        mock_ti.xcom_push.assert_called_once()
+        call_args = mock_ti.xcom_push.call_args
+        assert call_args[1]["key"] == "return_value"
+        result = call_args[1]["value"]
+        assert result["success"] is False
 
     @pytest.fixture
     def mock_gx_no_datasource(

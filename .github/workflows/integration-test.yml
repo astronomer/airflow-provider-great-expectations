@@ -1,14 +1,12 @@
 name: "Integration Tests"
 
 on:
-  pull_request_target:
+  pull_request:
     branches:
       - main
   push:
     branches:
       - main
-      - joshua-stauffer:v1_gx_provider  # temporarily allow rewrite fork to run integration tests with secrets
-
 
 jobs:
   integration-test:
@@ -50,7 +48,6 @@ jobs:
       - name: Setup
         run: |
           airflow db reset -y
-          airflow db init
 
       - name: Run Regular Integration Tests
         run: pytest -vvv -m integration tests/integration
@@ -84,7 +81,6 @@ jobs:
       - name: Setup
         run: |
           airflow db reset -y
-          airflow db init
 
       - name: Run Spark Integration Tests
         run: pytest -vvv -m spark_integration tests/integration
@@ -118,7 +114,6 @@ jobs:
       - name: Setup
         run: |
           airflow db reset -y
-          airflow db init
 
       - name: Run Spark Connect Integration Tests
         run: pytest -vvv -m spark_connect_integration tests/integration
