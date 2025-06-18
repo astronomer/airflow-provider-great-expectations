@@ -7,8 +7,6 @@ on:
   push:
     branches:
       - main
-      - joshua-stauffer:v1_gx_provider  # temporarily allow rewrite fork to run integration tests with secrets
-
 
 jobs:
   integration-test:
