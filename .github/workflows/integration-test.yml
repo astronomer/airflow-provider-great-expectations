@@ -48,7 +48,6 @@ jobs:
       - name: Setup
         run: |
           airflow db reset -y
-          airflow db init
 
       - name: Run Regular Integration Tests
         run: pytest -vvv -m integration tests/integration
