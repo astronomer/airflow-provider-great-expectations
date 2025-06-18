@@ -117,7 +117,6 @@ expectation_suite = ExpectationSuite(
 with DAG(
     dag_id="gx_provider_example_dag",
 ) as dag:
-    # define a consistent set of expectations we'll use throughout the pipeline
 
     validate_extract = GXValidateBatchOperator(
         task_id="validate_extract",
