@@ -10,7 +10,7 @@ from great_expectations.expectations import ExpectColumnValuesToBeInSet
 from pytest_mock import MockerFixture
 
 from great_expectations_provider.common.errors import GXValidationFailed
-from great_expectations_provider.operators.constants import USER_AGENT_STR
+from great_expectations_provider.common.constants import USER_AGENT_STR
 from great_expectations_provider.operators.validate_checkpoint import (
     GXValidateCheckpointOperator,
 )
