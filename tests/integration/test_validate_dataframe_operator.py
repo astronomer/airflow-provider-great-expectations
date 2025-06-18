@@ -15,9 +15,9 @@ from great_expectations_provider.operators.validate_dataframe import (
 from tests.integration.conftest import is_valid_gx_cloud_url, rand_name
 
 if TYPE_CHECKING:
+    from airflow.utils.context import Context
     from pyspark.sql import SparkSession
     from pyspark.sql.connect.session import SparkSession as SparkConnectSession
-    from airflow.utils.context import Context
 
 
 class TestGXValidateDataFrameOperator:

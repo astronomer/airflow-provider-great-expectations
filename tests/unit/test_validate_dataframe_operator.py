@@ -1,5 +1,5 @@
 import json
-from typing import Literal, TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 from unittest.mock import Mock, create_autospec
 
 import pandas as pd
