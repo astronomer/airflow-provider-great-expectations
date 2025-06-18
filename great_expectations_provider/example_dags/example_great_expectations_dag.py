@@ -117,7 +117,6 @@ expectation_suite = ExpectationSuite(
 with DAG(
     dag_id="gx_provider_example_dag",
 ) as dag:
-
     validate_extract = GXValidateBatchOperator(
         task_id="validate_extract",
         configure_batch_definition=configure_pandas_batch_definition,
