@@ -17,6 +17,7 @@ from tests.integration.conftest import is_valid_gx_cloud_url, rand_name
 if TYPE_CHECKING:
     from pyspark.sql import SparkSession
     from pyspark.sql.connect.session import SparkSession as SparkConnectSession
+    from airflow.utils.context import Context
 
 
 class TestGXValidateDataFrameOperator:
@@ -73,7 +74,7 @@ class TestGXValidateDataFrameOperator:
     ) -> None:
         """Test to ensure we don't error when running multiple times.
 
-        This validates that botht he add_* and update_* code paths work."""
+        This validates that both the add_* and update_* code paths work."""
         # arrange
         column_name = "col_A"
         task_id = f"test_validate_dataframe_multiple_{rand_name()}"
@@ -100,14 +101,20 @@ class TestGXValidateDataFrameOperator:
             configure_dataframe=configure_dataframe,
             expect=expect,
         )
+        mock_ti_a = Mock()
+        context_a: Context = {"ti": mock_ti_a}  # type: ignore[typeddict-item]
+        mock_ti_b = Mock()
+        context_b: Context = {"ti": mock_ti_b}  # type: ignore[typeddict-item]
 
         # act
-        result_a = validate_df.execute(context={})
-        result_b = validate_df.execute(context={})
+        validate_df.execute(context=context_a)
+        validate_df.execute(context=context_b)
 
         # assert
-        assert result_a["success"] is True
-        assert result_b["success"] is True
+        pushed_result_a = mock_ti_a.xcom_push.call_args[1]["value"]
+        pushed_result_b = mock_ti_b.xcom_push.call_args[1]["value"]
+        assert pushed_result_a["success"] is True
+        assert pushed_result_b["success"] is True
 
     @pytest.mark.spark_integration
     def test_spark(self, spark_session: SparkSession) -> None:
