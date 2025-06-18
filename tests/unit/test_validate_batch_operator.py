@@ -1,5 +1,5 @@
 import json
-from typing import Literal, TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 from unittest.mock import Mock, create_autospec
 
 import pandas as pd
@@ -9,7 +9,6 @@ from great_expectations.core import ExpectationValidationResult
 from great_expectations.core.batch_definition import BatchDefinition
 from great_expectations.data_context import AbstractDataContext
 from great_expectations.expectations import ExpectColumnValuesToBeInSet
-
 
 from great_expectations_provider.common.errors import GXValidationFailed
 from great_expectations_provider.operators.constants import USER_AGENT_STR

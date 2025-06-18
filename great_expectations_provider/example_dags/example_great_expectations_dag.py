@@ -17,9 +17,9 @@ from great_expectations_provider.operators.validate_dataframe import (
 )
 
 if TYPE_CHECKING:
+    import pandas as pd
     from great_expectations.core.batch_definition import BatchDefinition
     from great_expectations.data_context import AbstractDataContext
-    import pandas as pd
 
 base_path = Path(__file__).parents[2]
 data_dir = base_path / "include" / "data"
