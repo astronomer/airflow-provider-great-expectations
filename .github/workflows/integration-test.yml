@@ -81,7 +81,6 @@ jobs:
       - name: Setup
         run: |
           airflow db reset -y
-          airflow db init
 
       - name: Run Spark Integration Tests
         run: pytest -vvv -m spark_integration tests/integration
@@ -115,7 +114,6 @@ jobs:
       - name: Setup
         run: |
           airflow db reset -y
-          airflow db init
 
       - name: Run Spark Connect Integration Tests
         run: pytest -vvv -m spark_connect_integration tests/integration
