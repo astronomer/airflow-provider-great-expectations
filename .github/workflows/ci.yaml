@@ -27,8 +27,13 @@ jobs:
           python-version: "3.12"
           architecture: "x64"
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.7.13"
+
       - name: Install packages and dependencies
-        run: pip install hatch
+        run: uv tool install hatch
 
       - name: Deploy Docs
         run: |
@@ -48,20 +53,16 @@ jobs:
     name: Build and publish Python 🐍 distributions 📦 to PyPI
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v3
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
       with:
-        python-version: '3.9'
-        architecture: 'x64'
-    - uses: actions/cache@v3
+        python-version: "3.12"
+        architecture: "x64"
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
       with:
-        path: ~/.cache/pip
-        key: ${{ hashFiles('pyproject.toml') }}
+        version: "0.7.13"
     - name: Verify Git Tag and package version
       run: python3 .github/scripts/verify_tag_and_version.py
-    - run: pip3 install hatch
-    - run: hatch build
-    - run: hatch publish
-    env:
-      HATCH_INDEX_USER: __token__
-      HATCH_INDEX_AUTH: ${{ secrets.PYPI_PASSWORD }}
+    - run: uv build --wheel --sdist
+    - run: uv publish --token ${{ secrets.PYPI_TOKEN }}

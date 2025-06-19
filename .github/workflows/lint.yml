@@ -19,14 +19,19 @@ jobs:
         with:
           python-version: 3.12
 
-      - name: Install Library
-        run: pip install .[lint]
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.7.13"
 
-      - name: Ruff Formatter
-        run: ruff format --check .
+      - name: Install dependencies
+        run: uv pip install --system  -e ".[lint]"
 
-      - name: Ruff Linter
-        run: ruff check .
+      - name: Check code formatting
+        run: uv run ruff format --check .
 
-      - name: MyPy
-        run: mypy --pretty  --no-error-summary .
+      - name: Run linter
+        run: uv run ruff check .
+
+      - name: Type checking
+        run: uv run mypy --pretty --no-error-summary .
