@@ -52,7 +52,10 @@ s3 = ["great-expectations[s3]>=1.3.11"]
 snowflake = ["great-expectations[snowflake]>=1.3.11"]
 spark = [
     "great-expectations[spark, spark-connect]>=1.3.11",
-    "pyarrow>=4.0.0"
+    "pyarrow>=4.0.0",
+    # Ensure numpy/pandas compatibility in spark environment
+    "numpy<2.0.0",
+#    "pandas>=1.3.0,<3.0.0",
 ]
 tests = [
     "pytest==8.3.4",
