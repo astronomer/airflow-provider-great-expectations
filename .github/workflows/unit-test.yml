@@ -32,4 +32,4 @@ jobs:
         run: uv venv .venv && source .venv/bin/activate && uv pip install -e ".[tests]"
 
       - name: Run Unit Tests
-        run: pytest -vvv -m unit tests/unit
+        run: source .venv/bin/activate && pytest -vvv -m unit tests/unit
