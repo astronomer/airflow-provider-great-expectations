@@ -28,8 +28,8 @@ jobs:
         with:
           version: "0.7.13"
 
-      - name: Install dependencies
-        run: uv pip install --system -e ".[tests]"
+      - name: Create venv
+        run: uv venv .venv && source .venv/bin/activate && uv pip install -e ".[tests]"
 
       - name: Run Unit Tests
         run: pytest -vvv -m unit tests/unit
