@@ -92,6 +92,7 @@ class GXValidateBatchOperator(BaseOperator):
             batch_parameters=batch_parameters,
             gx_context=gx_context,
         )
-        context["ti"].xcom_push(key="return_value", value=result.describe_dict())
+        result_dict = result.describe_dict()
+        context["ti"].xcom_push(key="return_value", value=result_dict)
         if not result.success:
-            raise GXValidationFailed
+            raise GXValidationFailed(result_dict, self.task_id)

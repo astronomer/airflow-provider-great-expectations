@@ -112,9 +112,10 @@ class GXValidateCheckpointOperator(BaseOperator):
         if file_context_generator:
             self._allow_generator_teardown(file_context_generator)
 
-        context["ti"].xcom_push(key="return_value", value=result.describe_dict())
+        result_dict = result.describe_dict()
+        context["ti"].xcom_push(key="return_value", value=result_dict)
         if not result.success:
-            raise GXValidationFailed
+            raise GXValidationFailed(result_dict, self.task_id)
 
     def _get_value_from_generator(
         self, generator: Generator[FileDataContext, None, None]
