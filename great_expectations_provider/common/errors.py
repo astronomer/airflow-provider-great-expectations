@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from airflow.exceptions import AirflowException
+
 if TYPE_CHECKING:
     from great_expectations.checkpoint.checkpoint import CheckpointDescriptionDict
 
@@ -66,7 +68,7 @@ def extract_validation_failure_context(
     return context
 
 
-class GXValidationFailed(Exception):
+class GXValidationFailed(AirflowException):
     """Great Expectations data validation failed.
 
     This exception includes detailed context about the validation failure,
