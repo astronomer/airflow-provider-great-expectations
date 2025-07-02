@@ -49,15 +49,15 @@ To get the most out of this getting started guide, make sure you have an underst
    pip install "airflow-provider-great-expectations[snowflake]"
    ```
    The following backends are supported as optional dependencies:
-      - `athena`
-      - `azure`
-      - `bigquery`
-      - `gcp`
-      - `mssql`
-      - `postgresql`
-      - `s3`
-      - `snowflake`
-      - `spark`
+    - `athena`
+    - `azure`
+    - `bigquery`
+    - `gcp`
+    - `mssql`
+    - `postgresql`
+    - `s3`
+    - `snowflake`
+    - `spark`
 
 ## Configure an Operator
 
@@ -98,7 +98,7 @@ After deciding [which Operator best fits your use case](#operator-use-cases), fo
     - **`result_format` (optional)**: accepts `BOOLEAN_ONLY`, `BASIC`, `SUMMARY`, or `COMPLETE` to set the [verbosity of returned Validation Results](https://docs.greatexpectations.io/docs/core/trigger_actions_based_on_results/choose_a_result_format/). Defaults to `SUMMARY`.
     - **`context_type` (optional)**: accepts `ephemeral` or `cloud` to set the [Data Context](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context) used by the Operator. Defaults to `ephemeral`, which does not persist results between runs. To save and view Validation Results in GX Cloud, use `cloud` and complete the additional Cloud Data Context configuration below.
 
-    For more details, explore this [end-to-end code sample](https://github.com/astronomer/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags/example_great_expectations_dag.py#L134-L138).
+   For more details, explore this [end-to-end code sample](https://github.com/astronomer/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags/example_great_expectations_dag.py#L134-L138).
 
 3. If you use a Cloud Data Context, create a [free GX Cloud account](https://app.greatexpectations.io/) to get your [Cloud credentials](https://docs.greatexpectations.io/docs/cloud/connect/connect_python#get-your-user-access-token-and-organization-id) and then set the following Airflow variables.
 
@@ -133,7 +133,7 @@ After deciding [which Operator best fits your use case](#operator-use-cases), fo
     - **`result_format` (optional)**: accepts `BOOLEAN_ONLY`, `BASIC`, `SUMMARY`, or `COMPLETE` to set the [verbosity of returned Validation Results](https://docs.greatexpectations.io/docs/core/trigger_actions_based_on_results/choose_a_result_format/). Defaults to `SUMMARY`.
     - **`context_type` (optional)**: accepts `ephemeral` or `cloud` to set the [Data Context](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context) used by the Operator. Defaults to `ephemeral`, which does not persist results between runs. To save and view Validation Results in GX Cloud, use `cloud` and complete the additional Cloud Data Context configuration below.
 
-    For more details, explore this [end-to-end code sample](https://github.com/astronomer/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags/example_dag_with_batch_parameters.py#L123-L127).
+   For more details, explore this [end-to-end code sample](https://github.com/astronomer/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags/example_dag_with_batch_parameters.py#L123-L127).
 
 3. If you use a Cloud Data Context, create a [free GX Cloud account](https://app.greatexpectations.io/) to get your [Cloud credentials](https://docs.greatexpectations.io/docs/cloud/connect/connect_python#get-your-user-access-token-and-organization-id) and then set the following Airflow variables.
 
@@ -165,7 +165,7 @@ After deciding [which Operator best fits your use case](#operator-use-cases), fo
     - **`context_type` (optional)**: accepts `ephemeral`, `cloud`, or `file` to set the [Data Context](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context) used by the Operator. Defaults to `ephemeral`, which does not persist results between runs. To save and view Validation Results in GX Cloud, use `cloud` and complete the additional Cloud Data Context configuration below. To manage Validation Results yourself, use `file` and complete the additional File Data Context configuration below.
     - **`configure_file_data_context` (optional)**: function that returns a [FileDataContext](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context?context_type=file). Applicable only when using a File Data Context. See the additional File Data Context configuration below for more information.
 
-    For more details, explore this [end-to-end code sample](https://github.com/astronomer/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags/example_dag_with_batch_parameters.py#L134-L137).
+   For more details, explore this [end-to-end code sample](https://github.com/astronomer/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags/example_dag_with_batch_parameters.py#L134-L137).
 
 3. If you use a Cloud Data Context, create a [free GX Cloud account](https://app.greatexpectations.io/) to get your [Cloud credentials](https://docs.greatexpectations.io/docs/cloud/connect/connect_python#get-your-user-access-token-and-organization-id) and then set the following Airflow variables.
 
@@ -173,6 +173,60 @@ After deciding [which Operator best fits your use case](#operator-use-cases), fo
     - `GX_CLOUD_ORGANIZATION_ID`
 
 4. If you use a File Data Context, pass the `configure_file_data_context` parameter. This takes a function that returns a [FileDataContext](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context?context_type=file). By default, GX will write results in the configuration directory. If you are retrieving your FileDataContext from a remote location, you can yield the FileDataContext in the `configure_file_data_context` function and write the directory back to the remote after control is returned to the generator.
+
+### Manage Data Source credentials with Airflow Connections
+
+The Great Expectations Airflow Provider includes hooks to retrieve connection credentials from third party Airflow Connections.
+To use these hooks, first install the Airflow Provider that maintains the connection you need, 
+and use the Airflow UI to configure the Connection with your credentials.
+Then, these hooks can then be called within your `configure_batch_definition` or `configure_checkpoint` functions.
+
+
+```python
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from great_expectations_provider.hooks.external_connections import (
+    build_postgres_connection_string,
+)
+
+if TYPE_CHECKING:
+    from great_expectations.data_context import AbstractDataContext
+    from great_expectations.core.batch_definition import BatchDefinition
+
+
+def configure_postgres_batch_definition(
+    context: AbstractDataContext,
+) -> BatchDefinition:
+    task_id = "example_task"
+    table_name = "example_table"
+    postgres_conn_id = "example_conn_id"
+    return (
+        context.data_sources.add_postgres(
+            name=task_id,
+            connection_string=build_postgres_connection_string(
+                conn_id=postgres_conn_id
+            ),
+        )
+        .add_table_asset(
+            name=task_id,
+            table_name=table_name,
+        )
+        .add_batch_definition_whole_table(task_id)
+    )
+
+```
+
+The following external Connections are supported:
+- Redshift
+- MySQL
+- MSSQL
+- PostgreSQL
+- Snowflake (Connection String and Public Key)
+- BigQuery
+- Sqlite
+- AWS Athena
 
 ## Add the configured Operator to a DAG
 
