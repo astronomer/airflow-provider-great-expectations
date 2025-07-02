@@ -25,7 +25,12 @@ class SnowflakeKeyConnection(BaseModel):
     """Pydantic model for key-based Snowflake connection."""
 
     type: Literal["key"] = "key"
-    url: str
+    account: str
+    user: str
+    role: Optional[str] = None
+    warehouse: str
+    database: str
+    schema: str
     private_key: bytes
 
 
@@ -230,7 +235,40 @@ def _build_snowflake_connection_config_from_hook(
             encryption_algorithm=serialization.NoEncryption(),
         )
 
-        return SnowflakeKeyConnection(url=url, private_key=pkb)
+        # Extract individual connection fields
+        snowflake_account = conn.extra_dejson.get("account") or conn.extra_dejson.get(
+            "extra__snowflake__account"
+        )
+        snowflake_database = conn.extra_dejson.get("database") or conn.extra_dejson.get(
+            "extra__snowflake__database"
+        )
+        snowflake_warehouse = conn.extra_dejson.get("warehouse") or conn.extra_dejson.get(
+            "extra__snowflake__warehouse"
+        )
+        snowflake_role = conn.extra_dejson.get("role") or conn.extra_dejson.get(
+            "extra__snowflake__role"
+        )
+        
+        if not snowflake_account:
+            raise ValueError(f"Snowflake account is required in connection extras for conn_id: {conn_id}")
+        if not snowflake_database:
+            raise ValueError(f"Snowflake database is required in connection extras for conn_id: {conn_id}")
+        if not snowflake_warehouse:
+            raise ValueError(f"Snowflake warehouse is required in connection extras for conn_id: {conn_id}")
+
+        effective_schema = schema or hook.schema
+        if not effective_schema:
+            raise ValueError(f"Schema is required for Snowflake connection: {conn_id}")
+
+        return SnowflakeKeyConnection(
+            account=snowflake_account,
+            user=conn.login,
+            role=snowflake_role,
+            warehouse=snowflake_warehouse,
+            database=snowflake_database,
+            schema=effective_schema,
+            private_key=pkb
+        )
 
     # If no private key, treat it as URI connection
     return SnowflakeUriConnection(connection_string=url)

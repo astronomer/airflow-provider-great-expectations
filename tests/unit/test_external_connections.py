@@ -304,7 +304,12 @@ class TestSnowflakeConnectionConfig:
         """Test Snowflake connection config from hook with private key."""
         # Mock the hook function directly to return the expected result
         mock_hook_func.return_value = SnowflakeKeyConnection(
-            url="snowflake://user:pass@account/db/schema",
+            account="test_account",
+            user="test_user",
+            role="test_role",
+            warehouse="test_warehouse",
+            database="test_database",
+            schema="test_schema",
             private_key=b"private_key_bytes",
         )
 
@@ -312,7 +317,12 @@ class TestSnowflakeConnectionConfig:
 
         assert isinstance(result, SnowflakeKeyConnection)
         assert result.type == "key"
-        assert result.url == "snowflake://user:pass@account/db/schema"
+        assert result.account == "test_account"
+        assert result.user == "test_user"
+        assert result.role == "test_role"
+        assert result.warehouse == "test_warehouse"
+        assert result.database == "test_database"
+        assert result.schema == "test_schema"
         assert result.private_key == b"private_key_bytes"
         mock_hook_func.assert_called_once_with("test_conn")
 
@@ -410,7 +420,12 @@ class TestSnowflakeConnectionConfig:
         mock_conn = Mock()
         mock_get_connection.return_value = mock_conn
         mock_hook_build.return_value = SnowflakeKeyConnection(
-            url="snowflake://user:pass@account/db/schema",
+            account="test_account",
+            user="test_user",
+            role="test_role",
+            warehouse="test_warehouse",
+            database="test_database",
+            schema="test_schema",
             private_key=b"test_private_key",
         )
 
@@ -418,7 +433,12 @@ class TestSnowflakeConnectionConfig:
 
         assert isinstance(result, SnowflakeKeyConnection)
         assert result.type == "key"
-        assert result.url == "snowflake://user:pass@account/db/schema"
+        assert result.account == "test_account"
+        assert result.user == "test_user"
+        assert result.role == "test_role"
+        assert result.warehouse == "test_warehouse"
+        assert result.database == "test_database"
+        assert result.schema == "test_schema"
         assert result.private_key == b"test_private_key"
 
 
