@@ -2,16 +2,13 @@
 Unit tests for external connection utilities.
 """
 
-from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 
-from great_expectations_provider.common.external_connections import (
-    SnowflakeConnection,
+from great_expectations_provider.hooks.external_connections import (
     SnowflakeKeyConnection,
     SnowflakeUriConnection,
-    _build_snowflake_connection_config_from_hook,
     _build_snowflake_connection_config_manual,
     build_aws_connection_string,
     build_gcpbigquery_connection_string,
