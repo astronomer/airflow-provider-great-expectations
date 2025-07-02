@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from airflow.utils.context import Context
     from great_expectations.checkpoint.checkpoint import CheckpointDescriptionDict
 
 
@@ -41,12 +40,9 @@ def extract_validation_failure_context(
     """
     context: dict[str, Any] = {
         "xcom_location": f"Task '{task_id}' -> XCom key 'return_value'",
-        "statistics": None,
+        "statistics": validation_result_dict.get("statistics"),
         "failed_expectation_types": [],
     }
-
-    # Extract statistics if present - use get() for safe access
-    context["statistics"] = validation_result_dict.get("statistics")
 
     failed_types: set[str] = set()  # Use set to ensure uniqueness
 
@@ -65,7 +61,7 @@ def extract_validation_failure_context(
                 )
 
     # Limit to first 10 unique types, sorted alphabetically
-    limited_failed_types = sorted(list(failed_types))[:10]
+    limited_failed_types = sorted(failed_types)[:10]
     context["failed_expectation_types"] = limited_failed_types
     return context
 
