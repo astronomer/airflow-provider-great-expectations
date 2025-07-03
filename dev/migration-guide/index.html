@@ -474,9 +474,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#migrate-snowflake-private-key-authentication" class="md-nav__link">
+  <a href="#migrate-connections" class="md-nav__link">
     <span class="md-ellipsis">
-      Migrate Snowflake private key authentication
+      Migrate Connections
     </span>
   </a>
   
@@ -687,9 +687,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#migrate-snowflake-private-key-authentication" class="md-nav__link">
+  <a href="#migrate-connections" class="md-nav__link">
     <span class="md-ellipsis">
-      Migrate Snowflake private key authentication
+      Migrate Connections
     </span>
   </a>
   
@@ -789,16 +789,14 @@ def configure_file_data_context() -&gt; FileDataContext:
         project_root_dir=&quot;./path_to_your_existing_project&quot;
     )
 ```
-
-Here&#39;s a more advanced example for running Airflow in an environment where the underlying file system is not stable. The steps here are as follows:
-- fetch your GX project
-- load the context
-- yield the context to the Operator
-- after the Operator has finished, write your project configuration back to the remote
-
-Be aware that you are responsible for managing concurrency, in the case that multiple tasks are reading and writing back to the remote simultaneously.
-
-```
+</code></pre></div>
+<p>Here's a more advanced example for running Airflow in an environment where the underlying file system is not stable. The steps here are as follows:
+    - fetch your GX project
+    - load the context
+    - yield the context to the Operator
+    - after the Operator has finished, write your project configuration back to the remote</p>
+<p>Be aware that you are responsible for managing concurrency, in the case that multiple tasks are reading and writing back to the remote simultaneously.</p>
+<div class="language-text highlight"><pre><span></span><code>```
 import great_expectatations as gx
 from great_expectations.data_context import FileDataContext
 
@@ -826,67 +824,57 @@ def configure_file_data_context() -&gt; FileDataContext:
 </li>
 <li>Explore <a href="https://github.com/astronomer/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags">examples</a> of end-to-end configuration and usage.</li>
 </ol>
-<h2 id="migrate-snowflake-private-key-authentication">Migrate Snowflake private key authentication</h2>
-<p>GX Core continues to support connecting to Snowflake with private keys. The legacy Great Expectations Airflow Provider contained logic to read the key from disk. With the new Provider, you must read the key into memory, as described by the <a href="https://docs.greatexpectations.io/docs/core/connect_to_data/sql_data/?storage_type=key_pair">GX Core docs</a>. Here is a complete example of what that may look like, using the <code>GXValidateBatchOperator</code>.</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>import os
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>import pathlib
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>from cryptography.hazmat.backends import default_backend
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>from cryptography.hazmat.primitives import serialization
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>import great_expectations as gx
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>from great_expectations.core.batch_definition import BatchDefinition
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>from great_expectations.data_context import AbstractDataContext
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>def get_private_key():
-</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    snowflake_password = os.environ.get(&quot;SNOWFLAKE_PASSWORD&quot;)
-</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    PRIVATE_KEY_FILE = pathlib.Path(&quot;path/to/my/rsa_key.p8&quot;).resolve(strict=True)
-</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>    p_key = serialization.load_pem_private_key(
-</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>        PRIVATE_KEY_FILE.read_bytes(),
-</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>        password=snowflake_password.encode(),
-</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>        backend=default_backend(),
-</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>    )
-</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>    return p_key.private_bytes(
-</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>        encoding=serialization.Encoding.DER,
-</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>        format=serialization.PrivateFormat.PKCS8,
-</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>        encryption_algorithm=serialization.NoEncryption(),
-</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>    )
-</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>
-</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>def my_batch_definition_function(context: AbstractDataContext) -&gt; BatchDefinition:
-</span><span id="__span-3-28"><a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>    return (
-</span><span id="__span-3-29"><a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a>        context.data_sources.add_snowflake(
-</span><span id="__span-3-30"><a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>            name=&quot;snowflake sandbox&quot;,
-</span><span id="__span-3-31"><a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a>            account=&quot;&lt;ACCOUNT&gt;&quot;,
-</span><span id="__span-3-32"><a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a>            user=&quot;&lt;USER&gt;&quot;,
-</span><span id="__span-3-33"><a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a>            role=&quot;&lt;ROLE&gt;&quot;,
-</span><span id="__span-3-34"><a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a>            password=&quot;&lt;PLACEHOLDER PASSWORD&gt;&quot;,  # must be provided to pass validation but will be ignored
-</span><span id="__span-3-35"><a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a>            warehouse=&quot;&lt;WAREHOUSE&gt;&quot;,
-</span><span id="__span-3-36"><a id="__codelineno-3-36" name="__codelineno-3-36" href="#__codelineno-3-36"></a>            database=&quot;&lt;DATABASE&gt;&quot;,
-</span><span id="__span-3-37"><a id="__codelineno-3-37" name="__codelineno-3-37" href="#__codelineno-3-37"></a>            schema=&quot;&lt;SCHEMA&gt;&quot;,
-</span><span id="__span-3-38"><a id="__codelineno-3-38" name="__codelineno-3-38" href="#__codelineno-3-38"></a>            kwargs={&quot;private_key&quot;: get_private_key()},
-</span><span id="__span-3-39"><a id="__codelineno-3-39" name="__codelineno-3-39" href="#__codelineno-3-39"></a>        )
-</span><span id="__span-3-40"><a id="__codelineno-3-40" name="__codelineno-3-40" href="#__codelineno-3-40"></a>        .add_table_asset(name=&quot;&lt;SCHEMA.TABLE&gt;&quot;, table_name=&quot;&lt;TABLE_NAME&gt;&quot;)
-</span><span id="__span-3-41"><a id="__codelineno-3-41" name="__codelineno-3-41" href="#__codelineno-3-41"></a>        .add_batch_definition_whole_table(  # you can also batch by year, month, or day here
-</span><span id="__span-3-42"><a id="__codelineno-3-42" name="__codelineno-3-42" href="#__codelineno-3-42"></a>            name=&quot;Whole Table Batch Definition&quot;
-</span><span id="__span-3-43"><a id="__codelineno-3-43" name="__codelineno-3-43" href="#__codelineno-3-43"></a>        )
-</span><span id="__span-3-44"><a id="__codelineno-3-44" name="__codelineno-3-44" href="#__codelineno-3-44"></a>    )
-</span><span id="__span-3-45"><a id="__codelineno-3-45" name="__codelineno-3-45" href="#__codelineno-3-45"></a>
-</span><span id="__span-3-46"><a id="__codelineno-3-46" name="__codelineno-3-46" href="#__codelineno-3-46"></a>my_expectations = gx.ExpectationSuite(
-</span><span id="__span-3-47"><a id="__codelineno-3-47" name="__codelineno-3-47" href="#__codelineno-3-47"></a>    name=&quot;&lt;SUITE_NAME&gt;&quot;,
-</span><span id="__span-3-48"><a id="__codelineno-3-48" name="__codelineno-3-48" href="#__codelineno-3-48"></a>    expectations=[
-</span><span id="__span-3-49"><a id="__codelineno-3-49" name="__codelineno-3-49" href="#__codelineno-3-49"></a>        # define expectations
-</span><span id="__span-3-50"><a id="__codelineno-3-50" name="__codelineno-3-50" href="#__codelineno-3-50"></a>    ],
-</span><span id="__span-3-51"><a id="__codelineno-3-51" name="__codelineno-3-51" href="#__codelineno-3-51"></a>)
-</span><span id="__span-3-52"><a id="__codelineno-3-52" name="__codelineno-3-52" href="#__codelineno-3-52"></a>
-</span><span id="__span-3-53"><a id="__codelineno-3-53" name="__codelineno-3-53" href="#__codelineno-3-53"></a>my_batch_operator = GXValidateBatchOperator(
-</span><span id="__span-3-54"><a id="__codelineno-3-54" name="__codelineno-3-54" href="#__codelineno-3-54"></a>    task_id=&quot;my_batch_operator&quot;,
-</span><span id="__span-3-55"><a id="__codelineno-3-55" name="__codelineno-3-55" href="#__codelineno-3-55"></a>    configure_batch_definition=my_batch_definition_function,
-</span><span id="__span-3-56"><a id="__codelineno-3-56" name="__codelineno-3-56" href="#__codelineno-3-56"></a>    expect=my_expectations,
-</span><span id="__span-3-57"><a id="__codelineno-3-57" name="__codelineno-3-57" href="#__codelineno-3-57"></a>    context_type=&quot;ephemeral&quot;,
-</span><span id="__span-3-58"><a id="__codelineno-3-58" name="__codelineno-3-58" href="#__codelineno-3-58"></a>)
-</span></code></pre></div>
+<h2 id="migrate-connections">Migrate Connections</h2>
+<p>The legacy Great Expectations Airflow Provider accepted a <code>conn_id</code> argument, which
+would attempt to retrieve credentials from a third-party Airflow provider. That logic
+is now available as provider-specific hooks in <code>great_expectations_provider.hooks.external_connections</code>,
+and can be used when configuring your Great Expectations data source within the <code>configure_batch_definition</code> or
+<code>configure_checkpoint</code> function.</p>
+<p>Here is an example that uses the <code>build_snowflake_key_connection</code> hook to connect to Snowflake using a private key.
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">great_expectations_provider.operators.validate_batch</span><span class="w"> </span><span class="kn">import</span> <span class="n">GXValidateBatchOperator</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">great_expectations_provider.hooks.external_connections</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">build_snowflake_key_connection</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="p">)</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="kn">import</span><span class="w"> </span><span class="nn">great_expectations</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gx</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="kn">from</span><span class="w"> </span><span class="nn">great_expectations.core.batch_definition</span><span class="w"> </span><span class="kn">import</span> <span class="n">BatchDefinition</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="kn">from</span><span class="w"> </span><span class="nn">great_expectations.data_context</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractDataContext</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="k">def</span><span class="w"> </span><span class="nf">my_batch_definition_function</span><span class="p">(</span><span class="n">context</span><span class="p">:</span> <span class="n">AbstractDataContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BatchDefinition</span><span class="p">:</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="n">snowflake_config</span> <span class="o">=</span> <span class="n">build_snowflake_key_connection</span><span class="p">(</span><span class="n">conn_id</span><span class="o">=</span><span class="s2">&quot;snowflake_conn_id&quot;</span><span class="p">)</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="k">return</span> <span class="p">(</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>        <span class="n">context</span><span class="o">.</span><span class="n">data_sources</span><span class="o">.</span><span class="n">add_snowflake</span><span class="p">(</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;snowflake sandbox&quot;</span><span class="p">,</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>            <span class="n">account</span><span class="o">=</span><span class="n">snowflake_config</span><span class="o">.</span><span class="n">account</span><span class="p">,</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>            <span class="n">user</span><span class="o">=</span><span class="n">snowflake_config</span><span class="o">.</span><span class="n">user</span><span class="p">,</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>            <span class="n">role</span><span class="o">=</span><span class="n">snowflake_config</span><span class="o">.</span><span class="n">role</span><span class="p">,</span>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>            <span class="n">password</span><span class="o">=</span><span class="s2">&quot;&lt;PLACEHOLDER PASSWORD&gt;&quot;</span><span class="p">,</span>  <span class="c1"># must be provided to pass validation but will be ignored</span>
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>            <span class="n">warehouse</span><span class="o">=</span><span class="n">snowflake_config</span><span class="o">.</span><span class="n">warehouse</span><span class="p">,</span>
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>            <span class="n">database</span><span class="o">=</span><span class="n">snowflake_config</span><span class="o">.</span><span class="n">database</span><span class="p">,</span>
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>            <span class="n">schema</span><span class="o">=</span><span class="n">snowflake_config</span><span class="o">.</span><span class="n">schema</span><span class="p">,</span>
+</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>            <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;private_key&quot;</span><span class="p">:</span> <span class="n">snowflake_config</span><span class="o">.</span><span class="n">private_key</span><span class="p">},</span>
+</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>        <span class="p">)</span>
+</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>        <span class="o">.</span><span class="n">add_table_asset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;&lt;SCHEMA.TABLE&gt;&quot;</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="s2">&quot;&lt;TABLE_NAME&gt;&quot;</span><span class="p">)</span>
+</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>        <span class="o">.</span><span class="n">add_batch_definition_whole_table</span><span class="p">(</span>  <span class="c1"># you can also batch by year, month, or day here</span>
+</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Whole Table Batch Definition&quot;</span>
+</span><span id="__span-3-28"><a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>        <span class="p">)</span>
+</span><span id="__span-3-29"><a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a>    <span class="p">)</span>
+</span><span id="__span-3-30"><a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>
+</span><span id="__span-3-31"><a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a><span class="n">my_expectations</span> <span class="o">=</span> <span class="n">gx</span><span class="o">.</span><span class="n">ExpectationSuite</span><span class="p">(</span>
+</span><span id="__span-3-32"><a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&lt;SUITE_NAME&gt;&quot;</span><span class="p">,</span>
+</span><span id="__span-3-33"><a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a>    <span class="n">expectations</span><span class="o">=</span><span class="p">[</span>
+</span><span id="__span-3-34"><a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a>        <span class="c1"># define expectations</span>
+</span><span id="__span-3-35"><a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a>    <span class="p">],</span>
+</span><span id="__span-3-36"><a id="__codelineno-3-36" name="__codelineno-3-36" href="#__codelineno-3-36"></a><span class="p">)</span>
+</span><span id="__span-3-37"><a id="__codelineno-3-37" name="__codelineno-3-37" href="#__codelineno-3-37"></a>
+</span><span id="__span-3-38"><a id="__codelineno-3-38" name="__codelineno-3-38" href="#__codelineno-3-38"></a><span class="n">my_batch_operator</span> <span class="o">=</span> <span class="n">GXValidateBatchOperator</span><span class="p">(</span>
+</span><span id="__span-3-39"><a id="__codelineno-3-39" name="__codelineno-3-39" href="#__codelineno-3-39"></a>    <span class="n">task_id</span><span class="o">=</span><span class="s2">&quot;my_batch_operator&quot;</span><span class="p">,</span>
+</span><span id="__span-3-40"><a id="__codelineno-3-40" name="__codelineno-3-40" href="#__codelineno-3-40"></a>    <span class="n">configure_batch_definition</span><span class="o">=</span><span class="n">my_batch_definition_function</span><span class="p">,</span>
+</span><span id="__span-3-41"><a id="__codelineno-3-41" name="__codelineno-3-41" href="#__codelineno-3-41"></a>    <span class="n">expect</span><span class="o">=</span><span class="n">my_expectations</span><span class="p">,</span>
+</span><span id="__span-3-42"><a id="__codelineno-3-42" name="__codelineno-3-42" href="#__codelineno-3-42"></a>    <span class="n">context_type</span><span class="o">=</span><span class="s2">&quot;ephemeral&quot;</span><span class="p">,</span>
+</span><span id="__span-3-43"><a id="__codelineno-3-43" name="__codelineno-3-43" href="#__codelineno-3-43"></a><span class="p">)</span>
+</span></code></pre></div></p>
 
 
 
