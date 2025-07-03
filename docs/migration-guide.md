@@ -84,7 +84,7 @@ is now available as provider-specific hooks in `great_expectations_provider.hook
 and can be used when configuring your Great Expectations data source within the `configure_batch_definition` or 
 `configure_checkpoint` function.
 
-Here is an example that uses the `build_snowflake_connection_config` hook to connect to Snowflake using a private key.
+Here is an example that uses the `build_snowflake_key_connection` hook to connect to Snowflake using a private key.
 ```python
 from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
 from great_expectations_provider.hooks.external_connections import (

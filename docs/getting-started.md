@@ -178,18 +178,27 @@ After deciding [which Operator best fits your use case](#operator-use-cases), fo
 
 The Great Expectations Airflow Provider includes hooks to retrieve connection credentials from third party Airflow Connections.
 The following external Connections are supported:
-- Redshift
-- MySQL
-- MSSQL
-- PostgreSQL
-- Snowflake (Connection String and Key Pair Authentication)
-- BigQuery
-- Sqlite
-- AWS Athena
+
+#### Supported Connection Types
+
+| Connection Type | API Function | External Provider Documentation |
+|-----------------|-------------|--------------------------------|
+| **Amazon Redshift** | `build_redshift_connection_string(conn_id, schema=None)` | [Amazon Provider](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/redshift.html) |
+| **MySQL** | `build_mysql_connection_string(conn_id, schema=None)` | [MySQL Provider](https://airflow.apache.org/docs/apache-airflow-providers-mysql/stable/connections/mysql.html) |
+| **Microsoft SQL Server** | `build_mssql_connection_string(conn_id, schema=None)` | [Microsoft SQL Server Provider](https://airflow.apache.org/docs/apache-airflow-providers-microsoft-mssql/stable/connections/mssql.html) |
+| **PostgreSQL** | `build_postgres_connection_string(conn_id, schema=None)` | [PostgreSQL Provider](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/connections/postgres.html) |
+| **Snowflake** | `build_snowflake_connection_string(conn_id, schema=None)` | [Snowflake Provider](https://airflow.apache.org/docs/apache-airflow-providers-snowflake/stable/connections/snowflake.html) |
+| **Snowflake (Key-based Auth)** | `build_snowflake_key_connection(conn_id, schema=None)` | [Snowflake Provider](https://airflow.apache.org/docs/apache-airflow-providers-snowflake/stable/connections/snowflake.html) |
+| **Google Cloud BigQuery** | `build_gcpbigquery_connection_string(conn_id, schema=None)` | [Google Cloud Provider](https://airflow.apache.org/docs/apache-airflow-providers-google/stable/connections/gcp.html) |
+| **SQLite** | `build_sqlite_connection_string(conn_id)` | [SQLite Provider](https://airflow.apache.org/docs/apache-airflow-providers-sqlite/stable/connections/sqlite.html) |
+| **AWS Athena** | `build_aws_connection_string(conn_id, schema=None, database=None, s3_path=None, region=None)` | [Amazon Provider](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html) |
+
+#### Usage
 
 To use these hooks, first install the Airflow Provider that maintains the connection you need, 
 and use the Airflow UI to configure the Connection with your credentials.
-Then, these hooks can then be called within your `configure_batch_definition` or `configure_checkpoint` functions.
+Then, import the hook you need from `great_expectations_provider.hooks.external_connections`
+and use it within your `configure_batch_definition` or `configure_checkpoint` function.
 
 
 ```python
