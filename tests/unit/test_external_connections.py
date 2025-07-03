@@ -39,7 +39,7 @@ class TestRedshiftConnectionString:
         result = build_redshift_connection_string("test_conn")
 
         expected = (
-            "postgresql+psycopg2://user:pass@redshift-cluster.amazonaws.com:5439/public"
+            "redshift+psycopg2://user:pass@redshift-cluster.amazonaws.com:5439/public"
         )
         assert result == expected
         mock_get_connection.assert_called_once_with("test_conn")
@@ -61,7 +61,7 @@ class TestRedshiftConnectionString:
 
         result = build_redshift_connection_string("test_conn", schema="analytics")
 
-        expected = "postgresql+psycopg2://user:pass@redshift-cluster.amazonaws.com:5439/analytics"
+        expected = "redshift+psycopg2://user:pass@redshift-cluster.amazonaws.com:5439/analytics"
         assert result == expected
 
     @patch(

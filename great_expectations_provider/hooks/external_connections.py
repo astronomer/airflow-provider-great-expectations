@@ -61,7 +61,7 @@ def build_redshift_connection_string(conn_id: str, schema: Optional[str] = None)
         )
 
     return (
-        f"postgresql+psycopg2://{conn.login}:{conn.password}@"
+        f"redshift+psycopg2://{conn.login}:{conn.password}@"
         f"{conn.host}:{conn.port}/{database_name}"
     )
 
