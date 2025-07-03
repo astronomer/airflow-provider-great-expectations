@@ -8,15 +8,14 @@ import pytest
 
 from great_expectations_provider.hooks.external_connections import (
     SnowflakeKeyConnection,
-    SnowflakeUriConnection,
-    _build_snowflake_connection_config_manual,
     build_aws_connection_string,
     build_gcpbigquery_connection_string,
     build_mssql_connection_string,
     build_mysql_connection_string,
     build_postgres_connection_string,
     build_redshift_connection_string,
-    build_snowflake_connection_config,
+    build_snowflake_connection_string,
+    build_snowflake_key_connection,
     build_sqlite_connection_string,
 )
 
@@ -242,151 +241,93 @@ class TestPostgresConnectionString:
             build_postgres_connection_string("test_conn")
 
 
-class TestSnowflakeConnectionConfig:
-    """Test class for Snowflake connection configuration."""
+class TestSnowflakeConnectionString:
+    """Test class for Snowflake connection string."""
 
     @patch(
         "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
     )
     @patch(
-        "great_expectations_provider.hooks.external_connections._build_snowflake_connection_config_from_hook"
+        "great_expectations_provider.hooks.external_connections._build_snowflake_connection_string_from_hook"
     )
-    def test_build_snowflake_connection_config_hook_success(
+    def test_build_snowflake_connection_string_hook_success(
         self, mock_hook_build, mock_get_connection
     ):
-        """Test successful Snowflake connection config using hook."""
+        """Test successful Snowflake connection string using hook."""
         mock_conn = Mock()
         mock_get_connection.return_value = mock_conn
-        mock_hook_build.return_value = SnowflakeUriConnection(
-            connection_string="snowflake://user:pass@account/db/schema"
-        )
+        mock_hook_build.return_value = "snowflake://user:pass@account/db/schema"
 
-        result = build_snowflake_connection_config("test_conn")
+        result = build_snowflake_connection_string("test_conn")
 
-        assert isinstance(result, SnowflakeUriConnection)
-        assert result.type == "uri"
-        assert result.connection_string == "snowflake://user:pass@account/db/schema"
+        assert result == "snowflake://user:pass@account/db/schema"
         mock_hook_build.assert_called_once_with("test_conn", None)
 
     @patch(
         "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
     )
     @patch(
-        "great_expectations_provider.hooks.external_connections._build_snowflake_connection_config_from_hook"
+        "great_expectations_provider.hooks.external_connections._build_snowflake_connection_string_from_hook"
     )
     @patch(
-        "great_expectations_provider.hooks.external_connections._build_snowflake_connection_config_manual"
+        "great_expectations_provider.hooks.external_connections._build_snowflake_connection_string_manual"
     )
-    def test_build_snowflake_connection_config_fallback_to_manual(
+    def test_build_snowflake_connection_string_fallback_to_manual(
         self, mock_manual_build, mock_hook_build, mock_get_connection
     ):
-        """Test Snowflake connection config falls back to manual when hook fails."""
+        """Test Snowflake connection string falls back to manual when hook fails."""
         mock_conn = Mock()
         mock_get_connection.return_value = mock_conn
         mock_hook_build.side_effect = ImportError("Snowflake provider not found")
-        mock_manual_build.return_value = SnowflakeUriConnection(
-            connection_string="snowflake://user:pass@account/db/schema"
-        )
+        mock_manual_build.return_value = "snowflake://user:pass@account/db/schema"
 
-        result = build_snowflake_connection_config("test_conn")
+        result = build_snowflake_connection_string("test_conn")
 
-        assert isinstance(result, SnowflakeUriConnection)
-        assert result.type == "uri"
-        assert result.connection_string == "snowflake://user:pass@account/db/schema"
+        assert result == "snowflake://user:pass@account/db/schema"
         mock_manual_build.assert_called_once_with(mock_conn, None)
-
-    @patch(
-        "great_expectations_provider.hooks.external_connections._build_snowflake_connection_config_from_hook"
-    )
-    def test_build_snowflake_connection_config_from_hook_with_private_key(
-        self, mock_hook_func
-    ):
-        """Test Snowflake connection config from hook with private key."""
-        # Mock the hook function directly to return the expected result
-        mock_hook_func.return_value = SnowflakeKeyConnection(
-            account="test_account",
-            user="test_user",
-            role="test_role",
-            warehouse="test_warehouse",
-            database="test_database",
-            schema="test_schema",
-            private_key=b"private_key_bytes",
-        )
-
-        result = mock_hook_func("test_conn")
-
-        assert isinstance(result, SnowflakeKeyConnection)
-        assert result.type == "key"
-        assert result.account == "test_account"
-        assert result.user == "test_user"
-        assert result.role == "test_role"
-        assert result.warehouse == "test_warehouse"
-        assert result.database == "test_database"
-        assert result.schema == "test_schema"
-        assert result.private_key == b"private_key_bytes"
-        mock_hook_func.assert_called_once_with("test_conn")
-
-    def test_build_snowflake_connection_config_manual_with_region(self):
-        """Test manual Snowflake connection config with region."""
-        mock_conn = Mock()
-        mock_conn.login = "user"
-        mock_conn.password = "pass"
-        mock_conn.schema = "test_schema"
-        mock_conn.extra_dejson = {
-            "account": "test_account",
-            "region": "us-west-2",
-            "database": "test_db",
-            "warehouse": "test_wh",
-            "role": "test_role",
-        }
-
-        result = _build_snowflake_connection_config_manual(mock_conn)
-
-        assert isinstance(result, SnowflakeUriConnection)
-        assert result.type == "uri"
-        assert (
-            result.connection_string
-            == "snowflake://user:pass@test_account.us-west-2/test_db/test_schema?warehouse=test_wh&role=test_role"
-        )
-
-    def test_build_snowflake_connection_config_manual_without_region(self):
-        """Test manual Snowflake connection config without region."""
-        mock_conn = Mock()
-        mock_conn.login = "user"
-        mock_conn.password = "pass"
-        mock_conn.schema = "test_schema"
-        mock_conn.extra_dejson = {
-            "account": "test_account",
-            "database": "test_db",
-            "warehouse": "test_wh",
-        }
-
-        result = _build_snowflake_connection_config_manual(mock_conn)
-
-        assert isinstance(result, SnowflakeUriConnection)
-        assert result.type == "uri"
-        assert (
-            result.connection_string
-            == "snowflake://user:pass@test_account/test_db/test_schema?warehouse=test_wh"
-        )
-
-    def test_build_snowflake_connection_config_manual_missing_account(self):
-        """Test manual Snowflake connection config with missing account."""
-        mock_conn = Mock()
-        mock_conn.extra_dejson = {}
-
-        with pytest.raises(
-            ValueError, match="Snowflake account is required in connection extras"
-        ):
-            _build_snowflake_connection_config_manual(mock_conn)
 
     @patch(
         "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
     )
-    def test_build_snowflake_connection_config_returns_uri_connection(
-        self, mock_get_connection
+    def test_build_snowflake_connection_string_no_connection(self, mock_get_connection):
+        """Test Snowflake connection string when connection doesn't exist."""
+        mock_get_connection.return_value = None
+
+        with pytest.raises(
+            ValueError,
+            match="Connection does not exist in Airflow for conn_id: test_conn",
+        ):
+            build_snowflake_connection_string("test_conn")
+
+    @patch(
+        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+    )
+    @patch(
+        "great_expectations_provider.hooks.external_connections._build_snowflake_connection_string_from_hook"
+    )
+    def test_build_snowflake_connection_string_with_schema_override(
+        self, mock_hook_build, mock_get_connection
     ):
-        """Test that build_snowflake_connection_config returns URI connection for manual fallback."""
+        """Test Snowflake connection string with schema override."""
+        mock_conn = Mock()
+        mock_get_connection.return_value = mock_conn
+        mock_hook_build.return_value = "snowflake://user:pass@account/db/custom_schema"
+
+        result = build_snowflake_connection_string("test_conn", schema="custom_schema")
+
+        assert result == "snowflake://user:pass@account/db/custom_schema"
+        mock_hook_build.assert_called_once_with("test_conn", "custom_schema")
+
+    @patch(
+        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+    )
+    @patch(
+        "great_expectations_provider.hooks.external_connections._build_snowflake_connection_string_manual"
+    )
+    def test_build_snowflake_connection_string_manual_success(
+        self, mock_manual_build, mock_get_connection
+    ):
+        """Test successful Snowflake connection string with manual construction."""
         mock_conn = Mock()
         mock_conn.login = "user"
         mock_conn.password = "pass"
@@ -397,26 +338,31 @@ class TestSnowflakeConnectionConfig:
             "warehouse": "test_wh",
         }
         mock_get_connection.return_value = mock_conn
-
-        result = build_snowflake_connection_config("test_conn")
-
-        assert isinstance(result, SnowflakeUriConnection)
-        assert result.type == "uri"
-        assert (
-            "snowflake://user:pass@test_account/test_db/test_schema"
-            in result.connection_string
+        mock_manual_build.return_value = (
+            "snowflake://user:pass@test_account/test_db/test_schema?warehouse=test_wh"
         )
+
+        result = build_snowflake_connection_string("test_conn")
+
+        assert (
+            result
+            == "snowflake://user:pass@test_account/test_db/test_schema?warehouse=test_wh"
+        )
+
+
+class TestSnowflakeKeyConnection:
+    """Test class for Snowflake key connection."""
 
     @patch(
         "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
     )
     @patch(
-        "great_expectations_provider.hooks.external_connections._build_snowflake_connection_config_from_hook"
+        "great_expectations_provider.hooks.external_connections._build_snowflake_key_connection_from_hook"
     )
-    def test_build_snowflake_connection_config_returns_key_connection(
+    def test_build_snowflake_key_connection_success(
         self, mock_hook_build, mock_get_connection
     ):
-        """Test that build_snowflake_connection_config returns key connection when using hook."""
+        """Test successful Snowflake key connection."""
         mock_conn = Mock()
         mock_get_connection.return_value = mock_conn
         mock_hook_build.return_value = SnowflakeKeyConnection(
@@ -426,10 +372,10 @@ class TestSnowflakeConnectionConfig:
             warehouse="test_warehouse",
             database="test_database",
             schema="test_schema",
-            private_key=b"test_private_key",
+            private_key=b"private_key_bytes",
         )
 
-        result = build_snowflake_connection_config("test_conn")
+        result = build_snowflake_key_connection("test_conn")
 
         assert isinstance(result, SnowflakeKeyConnection)
         assert result.type == "key"
@@ -438,8 +384,180 @@ class TestSnowflakeConnectionConfig:
         assert result.role == "test_role"
         assert result.warehouse == "test_warehouse"
         assert result.database == "test_database"
-        assert result.schema == "test_schema"
-        assert result.private_key == b"test_private_key"
+        assert result.schema_name == "test_schema"
+        assert result.private_key == b"private_key_bytes"
+        mock_hook_build.assert_called_once_with("test_conn", None)
+
+    @patch(
+        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+    )
+    def test_build_snowflake_key_connection_no_connection(self, mock_get_connection):
+        """Test Snowflake key connection when connection doesn't exist."""
+        mock_get_connection.return_value = None
+
+        with pytest.raises(
+            ValueError,
+            match="Connection does not exist in Airflow for conn_id: test_conn",
+        ):
+            build_snowflake_key_connection("test_conn")
+
+    @patch(
+        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+    )
+    @patch(
+        "great_expectations_provider.hooks.external_connections._build_snowflake_key_connection_from_hook"
+    )
+    def test_build_snowflake_key_connection_with_schema_override(
+        self, mock_hook_build, mock_get_connection
+    ):
+        """Test Snowflake key connection with schema override."""
+        mock_conn = Mock()
+        mock_get_connection.return_value = mock_conn
+        mock_hook_build.return_value = SnowflakeKeyConnection(
+            account="test_account",
+            user="test_user",
+            role="test_role",
+            warehouse="test_warehouse",
+            database="test_database",
+            schema="custom_schema",
+            private_key=b"private_key_bytes",
+        )
+
+        result = build_snowflake_key_connection("test_conn", schema="custom_schema")
+
+        assert isinstance(result, SnowflakeKeyConnection)
+        assert result.schema_name == "custom_schema"
+        mock_hook_build.assert_called_once_with("test_conn", "custom_schema")
+
+    @patch(
+        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+    )
+    @patch(
+        "great_expectations_provider.hooks.external_connections._build_snowflake_key_connection_from_hook"
+    )
+    def test_build_snowflake_key_connection_missing_private_key(
+        self, mock_hook_build, mock_get_connection
+    ):
+        """Test Snowflake key connection when private key is missing."""
+        mock_conn = Mock()
+        mock_get_connection.return_value = mock_conn
+        mock_hook_build.side_effect = ValueError(
+            "Private key file is required for key-based authentication: test_conn"
+        )
+
+        with pytest.raises(
+            ValueError,
+            match="Private key file is required for key-based authentication: test_conn",
+        ):
+            build_snowflake_key_connection("test_conn")
+
+    @patch(
+        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+    )
+    @patch(
+        "great_expectations_provider.hooks.external_connections._build_snowflake_key_connection_from_hook"
+    )
+    def test_build_snowflake_key_connection_missing_account(
+        self, mock_hook_build, mock_get_connection
+    ):
+        """Test Snowflake key connection when account is missing."""
+        mock_conn = Mock()
+        mock_get_connection.return_value = mock_conn
+        mock_hook_build.side_effect = ValueError(
+            "Snowflake account is required in connection extras for conn_id: test_conn"
+        )
+
+        with pytest.raises(
+            ValueError,
+            match="Snowflake account is required in connection extras for conn_id: test_conn",
+        ):
+            build_snowflake_key_connection("test_conn")
+
+    @patch(
+        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+    )
+    @patch(
+        "great_expectations_provider.hooks.external_connections._build_snowflake_key_connection_from_hook"
+    )
+    def test_build_snowflake_key_connection_missing_database(
+        self, mock_hook_build, mock_get_connection
+    ):
+        """Test Snowflake key connection when database is missing."""
+        mock_conn = Mock()
+        mock_get_connection.return_value = mock_conn
+        mock_hook_build.side_effect = ValueError(
+            "Snowflake database is required in connection extras for conn_id: test_conn"
+        )
+
+        with pytest.raises(
+            ValueError,
+            match="Snowflake database is required in connection extras for conn_id: test_conn",
+        ):
+            build_snowflake_key_connection("test_conn")
+
+    @patch(
+        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+    )
+    @patch(
+        "great_expectations_provider.hooks.external_connections._build_snowflake_key_connection_from_hook"
+    )
+    def test_build_snowflake_key_connection_missing_warehouse(
+        self, mock_hook_build, mock_get_connection
+    ):
+        """Test Snowflake key connection when warehouse is missing."""
+        mock_conn = Mock()
+        mock_get_connection.return_value = mock_conn
+        mock_hook_build.side_effect = ValueError(
+            "Snowflake warehouse is required in connection extras for conn_id: test_conn"
+        )
+
+        with pytest.raises(
+            ValueError,
+            match="Snowflake warehouse is required in connection extras for conn_id: test_conn",
+        ):
+            build_snowflake_key_connection("test_conn")
+
+    @patch(
+        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+    )
+    @patch(
+        "great_expectations_provider.hooks.external_connections._build_snowflake_key_connection_from_hook"
+    )
+    def test_build_snowflake_key_connection_missing_schema(
+        self, mock_hook_build, mock_get_connection
+    ):
+        """Test Snowflake key connection when schema is missing."""
+        mock_conn = Mock()
+        mock_get_connection.return_value = mock_conn
+        mock_hook_build.side_effect = ValueError(
+            "Schema is required for Snowflake connection: test_conn"
+        )
+
+        with pytest.raises(
+            ValueError,
+            match="Schema is required for Snowflake connection: test_conn",
+        ):
+            build_snowflake_key_connection("test_conn")
+
+    @patch(
+        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+    )
+    @patch(
+        "great_expectations_provider.hooks.external_connections._build_snowflake_key_connection_from_hook"
+    )
+    def test_build_snowflake_key_connection_import_error(
+        self, mock_hook_build, mock_get_connection
+    ):
+        """Test Snowflake key connection when SnowflakeHook is not available."""
+        mock_conn = Mock()
+        mock_get_connection.return_value = mock_conn
+        mock_hook_build.side_effect = ImportError("Snowflake provider not found")
+
+        with pytest.raises(
+            ImportError,
+            match="Snowflake provider not found",
+        ):
+            build_snowflake_key_connection("test_conn")
 
 
 class TestGCPBigQueryConnectionString:

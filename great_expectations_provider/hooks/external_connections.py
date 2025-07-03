@@ -9,7 +9,7 @@ from typing import Literal, Optional, Union
 
 from airflow.hooks.base import BaseHook
 from airflow.models import Connection
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
@@ -24,18 +24,16 @@ class SnowflakeUriConnection(BaseModel):
 class SnowflakeKeyConnection(BaseModel):
     """Pydantic model for key-based Snowflake connection."""
 
+    model_config = {"extra": "forbid"}
+
     type: Literal["key"] = "key"
     account: str
     user: str
     role: Optional[str] = None
     warehouse: str
     database: str
-    schema: str
+    schema_name: str = Field(..., alias="schema")
     private_key: bytes
-
-
-# Union of both connection modes
-SnowflakeConnection = Union[SnowflakeUriConnection, SnowflakeKeyConnection]
 
 
 def build_redshift_connection_string(conn_id: str, schema: Optional[str] = None) -> str:
@@ -159,11 +157,11 @@ def build_postgres_connection_string(conn_id: str, schema: Optional[str] = None)
     )
 
 
-def build_snowflake_connection_config(
+def build_snowflake_connection_string(
     conn_id: str, schema: Optional[str] = None
-) -> SnowflakeConnection:
+) -> str:
     """
-    Build connection configuration for Snowflake connections.
+    Build connection string for Snowflake connections.
     Attempts to use SnowflakeHook first, falls back to manual construction.
 
     Args:
@@ -171,7 +169,7 @@ def build_snowflake_connection_config(
         schema: Optional schema override
 
     Returns:
-        SnowflakeConnection containing connection configuration (either URI or key-based)
+        Connection string for Snowflake
 
     Raises:
         ValueError: If connection doesn't exist or required parameters are missing
@@ -182,7 +180,7 @@ def build_snowflake_connection_config(
 
     # Try to use SnowflakeHook first
     try:
-        return _build_snowflake_connection_config_from_hook(conn_id, schema)
+        return _build_snowflake_connection_string_from_hook(conn_id, schema)
     except ImportError:
         logger.warning(
             "Snowflake provider package could not be imported, "
@@ -193,13 +191,55 @@ def build_snowflake_connection_config(
         )
 
     # Fallback to manual construction
-    return _build_snowflake_connection_config_manual(conn, schema)
+    return _build_snowflake_connection_string_manual(conn, schema)
 
 
-def _build_snowflake_connection_config_from_hook(
+def build_snowflake_key_connection(
     conn_id: str, schema: Optional[str] = None
-) -> SnowflakeConnection:
-    """Build Snowflake configuration using SnowflakeHook."""
+) -> SnowflakeKeyConnection:
+    """
+    Build key-based connection configuration for Snowflake connections.
+    Requires SnowflakeHook and private key authentication.
+
+    Args:
+        conn_id: Airflow connection ID
+        schema: Optional schema override
+
+    Returns:
+        SnowflakeKeyConnection containing key-based connection configuration
+
+    Raises:
+        ValueError: If connection doesn't exist, required parameters are missing, or private key is not configured
+        ImportError: If SnowflakeHook is not available
+    """
+    conn = BaseHook.get_connection(conn_id)
+    if not conn:
+        raise ValueError(f"Connection does not exist in Airflow for conn_id: {conn_id}")
+
+    # Key-based authentication requires SnowflakeHook
+    return _build_snowflake_key_connection_from_hook(conn_id, schema)
+
+
+def _build_snowflake_connection_string_from_hook(
+    conn_id: str, schema: Optional[str] = None
+) -> str:
+    """Build Snowflake connection string using SnowflakeHook."""
+    from airflow.providers.snowflake.hooks.snowflake import (  # type: ignore[import-not-found]
+        SnowflakeHook,
+    )
+
+    hook = SnowflakeHook(snowflake_conn_id=conn_id)
+    hook.schema = schema or hook.schema
+
+    engine = hook.get_sqlalchemy_engine()
+    url = engine.url.render_as_string(hide_password=False)
+    return url
+
+
+def _build_snowflake_key_connection_from_hook(
+    conn_id: str, schema: Optional[str] = None
+) -> SnowflakeKeyConnection:
+    """Build Snowflake key-based connection using SnowflakeHook."""
     from airflow.providers.snowflake.hooks.snowflake import (  # type: ignore[import-not-found]
         SnowflakeHook,
     )
@@ -210,74 +250,79 @@ def _build_snowflake_connection_config_from_hook(
     hook.schema = schema or hook.schema
 
     conn = hook.get_connection(conn_id)
-    engine = hook.get_sqlalchemy_engine()
-    url = engine.url.render_as_string(hide_password=False)
 
     # Check for private key authentication
     private_key_file = conn.extra_dejson.get(
         "extra__snowflake__private_key_file"
     ) or conn.extra_dejson.get("private_key_file")
 
-    if private_key_file:
-        private_key_pem = Path(private_key_file).read_bytes()
-
-        passphrase = None
-        if conn.password:
-            passphrase = conn.password.strip().encode()
-
-        p_key = serialization.load_pem_private_key(
-            private_key_pem, password=passphrase, backend=default_backend()
+    if not private_key_file:
+        raise ValueError(
+            f"Private key file is required for key-based authentication: {conn_id}"
         )
 
-        pkb = p_key.private_bytes(
-            encoding=serialization.Encoding.DER,
-            format=serialization.PrivateFormat.PKCS8,
-            encryption_algorithm=serialization.NoEncryption(),
+    private_key_pem = Path(private_key_file).read_bytes()
+
+    passphrase = None
+    if conn.password:
+        passphrase = conn.password.strip().encode()
+
+    p_key = serialization.load_pem_private_key(
+        private_key_pem, password=passphrase, backend=default_backend()
+    )
+
+    pkb = p_key.private_bytes(
+        encoding=serialization.Encoding.DER,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption(),
+    )
+
+    # Extract individual connection fields
+    snowflake_account = conn.extra_dejson.get("account") or conn.extra_dejson.get(
+        "extra__snowflake__account"
+    )
+    snowflake_database = conn.extra_dejson.get("database") or conn.extra_dejson.get(
+        "extra__snowflake__database"
+    )
+    snowflake_warehouse = conn.extra_dejson.get("warehouse") or conn.extra_dejson.get(
+        "extra__snowflake__warehouse"
+    )
+    snowflake_role = conn.extra_dejson.get("role") or conn.extra_dejson.get(
+        "extra__snowflake__role"
+    )
+
+    if not snowflake_account:
+        raise ValueError(
+            f"Snowflake account is required in connection extras for conn_id: {conn_id}"
+        )
+    if not snowflake_database:
+        raise ValueError(
+            f"Snowflake database is required in connection extras for conn_id: {conn_id}"
+        )
+    if not snowflake_warehouse:
+        raise ValueError(
+            f"Snowflake warehouse is required in connection extras for conn_id: {conn_id}"
         )
 
-        # Extract individual connection fields
-        snowflake_account = conn.extra_dejson.get("account") or conn.extra_dejson.get(
-            "extra__snowflake__account"
-        )
-        snowflake_database = conn.extra_dejson.get("database") or conn.extra_dejson.get(
-            "extra__snowflake__database"
-        )
-        snowflake_warehouse = conn.extra_dejson.get("warehouse") or conn.extra_dejson.get(
-            "extra__snowflake__warehouse"
-        )
-        snowflake_role = conn.extra_dejson.get("role") or conn.extra_dejson.get(
-            "extra__snowflake__role"
-        )
-        
-        if not snowflake_account:
-            raise ValueError(f"Snowflake account is required in connection extras for conn_id: {conn_id}")
-        if not snowflake_database:
-            raise ValueError(f"Snowflake database is required in connection extras for conn_id: {conn_id}")
-        if not snowflake_warehouse:
-            raise ValueError(f"Snowflake warehouse is required in connection extras for conn_id: {conn_id}")
+    effective_schema = schema or hook.schema
+    if not effective_schema:
+        raise ValueError(f"Schema is required for Snowflake connection: {conn_id}")
 
-        effective_schema = schema or hook.schema
-        if not effective_schema:
-            raise ValueError(f"Schema is required for Snowflake connection: {conn_id}")
-
-        return SnowflakeKeyConnection(
-            account=snowflake_account,
-            user=conn.login,
-            role=snowflake_role,
-            warehouse=snowflake_warehouse,
-            database=snowflake_database,
-            schema=effective_schema,
-            private_key=pkb
-        )
-
-    # If no private key, treat it as URI connection
-    return SnowflakeUriConnection(connection_string=url)
+    return SnowflakeKeyConnection(
+        account=snowflake_account,
+        user=conn.login,
+        role=snowflake_role,
+        warehouse=snowflake_warehouse,
+        database=snowflake_database,
+        schema=effective_schema,
+        private_key=pkb,
+    )
 
 
-def _build_snowflake_connection_config_manual(
+def _build_snowflake_connection_string_manual(
     conn: Connection, schema: Optional[str] = None
-) -> SnowflakeUriConnection:
-    """Build Snowflake configuration manually from connection parameters."""
+) -> str:
+    """Build Snowflake connection string manually from connection parameters."""
     snowflake_account = conn.extra_dejson.get("account") or conn.extra_dejson.get(
         "extra__snowflake__account"
     )
@@ -319,7 +364,7 @@ def _build_snowflake_connection_config_manual(
     if snowflake_role:
         uri_string += f"&role={snowflake_role}"
 
-    return SnowflakeUriConnection(connection_string=uri_string)
+    return uri_string
 
 
 def build_gcpbigquery_connection_string(

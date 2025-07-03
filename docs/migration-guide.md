@@ -88,7 +88,7 @@ Here is an example that uses the `build_snowflake_connection_config` hook to con
 ```python
 from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
 from great_expectations_provider.hooks.external_connections import (
-    build_snowflake_connection_config
+    build_snowflake_key_connection
 )
 
 import great_expectations as gx
@@ -97,7 +97,7 @@ from great_expectations.data_context import AbstractDataContext
 
 
 def my_batch_definition_function(context: AbstractDataContext) -> BatchDefinition:
-    snowflake_config = build_snowflake_connection_config(conn_id="snowflake_conn_id")
+    snowflake_config = build_snowflake_key_connection(conn_id="snowflake_conn_id")
     return (
         context.data_sources.add_snowflake(
             name="snowflake sandbox",
