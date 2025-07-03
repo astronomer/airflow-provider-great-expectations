@@ -126,24 +126,12 @@ with DAG(
         expect=expectation_suite,
     )
 
-    @task.short_circuit()
-    def check_validate_extract(task_instance):
-        result = task_instance.xcom_pull(task_ids="validate_extract")
-        return result.get("success")
-
     validate_load = GXValidateCheckpointOperator(
         task_id="validate_load",
         configure_checkpoint=configure_checkpoint,
     )
 
-    @task.short_circuit()
-    def check_validate_load(task_instance):
-        result = task_instance.xcom_pull(task_ids="validate_load")
-        return result.get("success")
-
     chain(
         validate_extract,
-        check_validate_extract(),  # type: ignore[call-arg, misc]
         validate_load,
-        check_validate_load(),  # type: ignore[call-arg, misc]
     )
