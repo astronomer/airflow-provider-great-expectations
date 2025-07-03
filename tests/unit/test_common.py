@@ -8,6 +8,8 @@ from great_expectations_provider.common.gx_context_actions import (
     run_validation_definition,
 )
 
+pytestmark = pytest.mark.unit
+
 
 class TestRunValidationDefinition:
     def test_validation_is_added_or_updated(self, mock_gx: Mock) -> None:

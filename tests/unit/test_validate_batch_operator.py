@@ -1,5 +1,5 @@
 import json
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 from unittest.mock import Mock, create_autospec
 
 import pandas as pd
@@ -11,7 +11,11 @@ from great_expectations.data_context import AbstractDataContext
 from great_expectations.expectations import ExpectColumnValuesToBeInSet
 
 from great_expectations_provider.common.constants import USER_AGENT_STR
+from great_expectations_provider.common.errors import GXValidationFailed
 from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
+
+if TYPE_CHECKING:
+    from airflow.utils.context import Context
 
 pytestmark = pytest.mark.unit
 
@@ -42,12 +46,19 @@ class TestValidateBatchOperator:
             expect=expect,
             batch_parameters={"dataframe": df},
         )
+        mock_ti = Mock()
+        context: Context = {"ti": mock_ti}  # type: ignore[typeddict-item]
 
         # act
-        result = validate_batch.execute(context={})
+        validate_batch.execute(context=context)
 
         # assert
-        deserialized_result = ExpectationValidationResult(**result)
+        # Get the result from xcom_push call
+        mock_ti.xcom_push.assert_called_once_with(
+            key="return_value", value=mock_ti.xcom_push.call_args[1]["value"]
+        )
+        pushed_result = mock_ti.xcom_push.call_args[1]["value"]
+        deserialized_result = ExpectationValidationResult(**pushed_result)
         assert deserialized_result.success
 
     def test_expectation_suite(self):
@@ -80,13 +91,17 @@ class TestValidateBatchOperator:
             expect=expect,
             batch_parameters={"dataframe": df},
         )
+        mock_ti = Mock()
+        context: Context = {"ti": mock_ti}  # type: ignore[typeddict-item]
 
         # act
-        result = validate_batch.execute(context={})
+        validate_batch.execute(context=context)
 
         # assert
-        json.dumps(result)  # result must be json serializable
-        assert result["success"] is True
+        # Get the result from xcom_push call
+        pushed_result = mock_ti.xcom_push.call_args[1]["value"]
+        json.dumps(pushed_result)  # result must be json serializable
+        assert pushed_result["success"] is True
 
     @pytest.mark.parametrize(
         "result_format,expected_result",
@@ -174,13 +189,17 @@ class TestValidateBatchOperator:
             batch_parameters={"dataframe": df},
             result_format=result_format,
         )
+        mock_ti = Mock()
+        context: Context = {"ti": mock_ti}  # type: ignore[typeddict-item]
 
         # act
-        result = validate_batch.execute(context={})
+        validate_batch.execute(context=context)
 
         # assert
+        # Get the result from xcom_push call
+        pushed_result = mock_ti.xcom_push.call_args[1]["value"]
         # check the result of the first (only) expectation
-        assert result["expectations"][0]["result"] == expected_result
+        assert pushed_result["expectations"][0]["result"] == expected_result
 
     def test_context_type_ephemeral(self, mock_gx: Mock):
         """Expect that param context_type creates an EphemeralDataContext."""
@@ -193,9 +212,11 @@ class TestValidateBatchOperator:
             batch_parameters={"dataframe": Mock()},
             context_type=context_type,
         )
+        mock_ti = Mock()
+        context: Context = {"ti": mock_ti}  # type: ignore[typeddict-item]
 
         # act
-        validate_batch.execute(context={})
+        validate_batch.execute(context=context)
 
         # assert
         mock_gx.get_context.assert_called_once_with(
@@ -214,9 +235,11 @@ class TestValidateBatchOperator:
             batch_parameters={"dataframe": Mock()},
             context_type=context_type,
         )
+        mock_ti = Mock()
+        context: Context = {"ti": mock_ti}  # type: ignore[typeddict-item]
 
         # act
-        validate_batch.execute(context={})
+        validate_batch.execute(context=context)
 
         # assert
         mock_gx.get_context.assert_called_once_with(
@@ -246,9 +269,11 @@ class TestValidateBatchOperator:
             batch_parameters=batch_parameters,
             context_type="ephemeral",
         )
+        mock_ti = Mock()
+        context: Context = {"ti": mock_ti}  # type: ignore[typeddict-item]
 
         # act
-        validate_batch.execute(context={})
+        validate_batch.execute(context=context)
 
         # assert
         mock_validation_definition.run.assert_called_once_with(
@@ -276,11 +301,14 @@ class TestValidateBatchOperator:
             expect=expect,
             context_type="ephemeral",
         )
+        mock_ti = Mock()
+        context: Context = {
+            "ti": mock_ti,
+            "params": {"gx_batch_parameters": batch_parameters},  # type: ignore[typeddict-item]
+        }
 
         # act
-        validate_batch.execute(
-            context={"params": {"gx_batch_parameters": batch_parameters}}  # type: ignore[typeddict-item]
-        )
+        validate_batch.execute(context=context)
 
         # assert
         mock_validation_definition.run.assert_called_once_with(
@@ -314,11 +342,14 @@ class TestValidateBatchOperator:
             batch_parameters=init_batch_parameters,
             context_type="ephemeral",
         )
+        mock_ti = Mock()
+        context: Context = {
+            "ti": mock_ti,
+            "params": {"gx_batch_parameters": context_batch_parameters},  # type: ignore[typeddict-item]
+        }
 
         # act
-        validate_batch.execute(
-            context={"params": {"gx_batch_parameters": context_batch_parameters}}  # type: ignore[typeddict-item]
-        )
+        validate_batch.execute(context=context)
 
         # assert
         mock_validation_definition.run.assert_called_once_with(
@@ -344,9 +375,11 @@ class TestValidateBatchOperator:
             batch_parameters=Mock(),
             context_type="ephemeral",
         )
+        mock_ti = Mock()
+        context: Context = {"ti": mock_ti}  # type: ignore[typeddict-item]
 
         # act
-        validate_batch.execute(context={})
+        validate_batch.execute(context=context)
 
         # assert
         mock_gx.ValidationDefinition.assert_called_once_with(
@@ -355,3 +388,81 @@ class TestValidateBatchOperator:
         mock_validation_definition_factory.add_or_update.assert_called_once_with(
             validation=mock_validation_definition
         )
+
+    def test_validation_failure_raises_exception(self):
+        """Expect that when validation fails, GXValidationFailed exception is raised."""
+
+        # arrange
+        def configure_ephemeral_batch_definition(
+            context: AbstractDataContext,
+        ) -> BatchDefinition:
+            return (
+                context.data_sources.add_pandas(name="test datasource")
+                .add_dataframe_asset("test asset")
+                .add_batch_definition_whole_dataframe("test batch def")
+            )
+
+        column_name = "col_A"
+        df = pd.DataFrame(
+            {column_name: ["x", "y", "z"]}
+        )  # values NOT in the expected set
+        expect = ExpectColumnValuesToBeInSet(
+            column=column_name,
+            value_set=["a", "b", "c"],  # different values to cause failure
+        )
+
+        validate_batch = GXValidateBatchOperator(
+            task_id="validate_batch_failure",
+            configure_batch_definition=configure_ephemeral_batch_definition,
+            expect=expect,
+            batch_parameters={"dataframe": df},
+        )
+        mock_ti = Mock()
+        context: Context = {"ti": mock_ti}  # type: ignore[typeddict-item]
+
+        # act & assert
+        with pytest.raises(GXValidationFailed):
+            validate_batch.execute(context=context)
+
+    def test_validation_failure_xcom_contains_result(self):
+        """Expect that when validation fails and exception is raised, xcom still contains the result."""
+
+        # arrange
+        def configure_ephemeral_batch_definition(
+            context: AbstractDataContext,
+        ) -> BatchDefinition:
+            return (
+                context.data_sources.add_pandas(name="test datasource")
+                .add_dataframe_asset("test asset")
+                .add_batch_definition_whole_dataframe("test batch def")
+            )
+
+        column_name = "col_A"
+        df = pd.DataFrame(
+            {column_name: ["x", "y", "z"]}
+        )  # values NOT in the expected set
+        expect = ExpectColumnValuesToBeInSet(
+            column=column_name,
+            value_set=["a", "b", "c"],  # different values to cause failure
+        )
+
+        validate_batch = GXValidateBatchOperator(
+            task_id="validate_batch_failure",
+            configure_batch_definition=configure_ephemeral_batch_definition,
+            expect=expect,
+            batch_parameters={"dataframe": df},
+        )
+
+        mock_ti = Mock()
+        context: Context = {"ti": mock_ti}  # type: ignore[typeddict-item]
+
+        # act & assert
+        with pytest.raises(GXValidationFailed):
+            validate_batch.execute(context=context)
+
+        # Verify that xcom_push was called with the validation result
+        mock_ti.xcom_push.assert_called_once()
+        call_args = mock_ti.xcom_push.call_args
+        assert call_args[1]["key"] == "return_value"
+        result = call_args[1]["value"]
+        assert result["success"] is False

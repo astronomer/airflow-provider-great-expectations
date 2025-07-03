@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Callable, Literal, Union
 
 from airflow.models import BaseOperator
 
+from great_expectations_provider.common.errors import GXValidationFailed
 from great_expectations_provider.common.gx_context_actions import (
     load_data_context,
     run_validation_definition,
@@ -68,7 +69,7 @@ class GXValidateBatchOperator(BaseOperator):
         self.result_format = result_format
         self.conn_id = conn_id
 
-    def execute(self, context: Context) -> dict:
+    def execute(self, context: Context) -> None:
         if self.conn_id:
             gx_cloud_config = GXCloudHook(gx_cloud_conn_id=self.conn_id).get_conn()
         else:
@@ -91,4 +92,7 @@ class GXValidateBatchOperator(BaseOperator):
             batch_parameters=batch_parameters,
             gx_context=gx_context,
         )
-        return result.describe_dict()
+        result_dict = result.describe_dict()
+        context["ti"].xcom_push(key="return_value", value=result_dict)
+        if not result.success:
+            raise GXValidationFailed(result_dict, self.task_id)
