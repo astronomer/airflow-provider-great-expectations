@@ -177,6 +177,16 @@ After deciding [which Operator best fits your use case](#operator-use-cases), fo
 ### Manage Data Source credentials with Airflow Connections
 
 The Great Expectations Airflow Provider includes hooks to retrieve connection credentials from third party Airflow Connections.
+The following external Connections are supported:
+- Redshift
+- MySQL
+- MSSQL
+- PostgreSQL
+- Snowflake (Connection String and Key Pair Authentication)
+- BigQuery
+- Sqlite
+- AWS Athena
+
 To use these hooks, first install the Airflow Provider that maintains the connection you need, 
 and use the Airflow UI to configure the Connection with your credentials.
 Then, these hooks can then be called within your `configure_batch_definition` or `configure_checkpoint` functions.
@@ -218,15 +228,6 @@ def configure_postgres_batch_definition(
 
 ```
 
-The following external Connections are supported:
-- Redshift
-- MySQL
-- MSSQL
-- PostgreSQL
-- Snowflake (Connection String and Public Key)
-- BigQuery
-- Sqlite
-- AWS Athena
 
 ## Add the configured Operator to a DAG
 
