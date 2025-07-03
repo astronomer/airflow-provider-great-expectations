@@ -195,7 +195,7 @@ The following external Connections are supported:
 
 #### Usage
 
-To use these hooks, first install the Airflow Provider that maintains the connection you need, 
+To use these hooks, first install the Airflow Provider that maintains the connection you need,
 and use the Airflow UI to configure the Connection with your credentials.
 Then, import the hook you need from `great_expectations_provider.hooks.external_connections`
 and use it within your `configure_batch_definition` or `configure_checkpoint` function.

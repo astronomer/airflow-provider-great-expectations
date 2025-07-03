@@ -91,8 +91,7 @@ def build_mysql_connection_string(conn_id: str, schema: Optional[str] = None) ->
         )
 
     return (
-        f"mysql://{conn.login}:{conn.password}@"
-        f"{conn.host}:{conn.port}/{database_name}"
+        f"mysql://{conn.login}:{conn.password}@{conn.host}:{conn.port}/{database_name}"
     )
 
 
