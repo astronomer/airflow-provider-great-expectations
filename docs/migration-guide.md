@@ -76,12 +76,12 @@ If you want to update your existing `GreatExpectationsOperator` configuration to
 - Explore [examples](https://github.com/astronomer/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags) of end-to-end configuration and usage.
 
 
-## Migrate Connections 
+## Migrate Connections
 
 The legacy Great Expectations Airflow Provider accepted a `conn_id` argument, which
 would attempt to retrieve credentials from a third-party Airflow provider. That logic
 is now available as provider-specific hooks in `great_expectations_provider.hooks.external_connections`,
-and can be used when configuring your Great Expectations data source within the `configure_batch_definition` or 
+and can be used when configuring your Great Expectations data source within the `configure_batch_definition` or
 `configure_checkpoint` function.
 
 Here is an example that uses the `build_snowflake_key_connection` hook to connect to Snowflake using a private key.
