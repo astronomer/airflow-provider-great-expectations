@@ -79,16 +79,17 @@ If you want to update your existing `GreatExpectationsOperator` configuration to
 ## Migrate Connections
 
 The legacy Great Expectations Airflow Provider accepted a `conn_id` argument, which
-would attempt to retrieve credentials from a third-party Airflow provider. That logic
-is now available as provider-specific hooks in `great_expectations_provider.hooks.external_connections`,
+would attempt to retrieve credentials from other Airflow provider Connections. That logic
+is now available as provider-specific functions in `great_expectations_provider.common.external_connections`,
 and can be used when configuring your Great Expectations data source within the `configure_batch_definition` or
 `configure_checkpoint` function.
 
-Here is an example that uses the `build_snowflake_key_connection` hook to connect to Snowflake using a private key.
+Here is an example that uses the `build_snowflake_key_connection` function to connect to Snowflake using a private key.
+
 ```python
 from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
-from great_expectations_provider.hooks.external_connections import (
-    build_snowflake_key_connection
+from great_expectations_provider.common.external_connections import (
+   build_snowflake_key_connection
 )
 
 import great_expectations as gx
@@ -97,36 +98,37 @@ from great_expectations.data_context import AbstractDataContext
 
 
 def my_batch_definition_function(context: AbstractDataContext) -> BatchDefinition:
-    snowflake_config = build_snowflake_key_connection(conn_id="snowflake_conn_id")
-    return (
-        context.data_sources.add_snowflake(
-            name="snowflake sandbox",
-            account=snowflake_config.account,
-            user=snowflake_config.user,
-            role=snowflake_config.role,
-            password="<PLACEHOLDER PASSWORD>",  # must be provided to pass validation but will be ignored
-            warehouse=snowflake_config.warehouse,
-            database=snowflake_config.database,
-            schema=snowflake_config.schema,
-            kwargs={"private_key": snowflake_config.private_key},
-        )
-        .add_table_asset(name="<SCHEMA.TABLE>", table_name="<TABLE_NAME>")
-        .add_batch_definition_whole_table(  # you can also batch by year, month, or day here
-            name="Whole Table Batch Definition"
-        )
-    )
+   snowflake_config = build_snowflake_key_connection(conn_id="snowflake_conn_id")
+   return (
+      context.data_sources.add_snowflake(
+         name="snowflake sandbox",
+         account=snowflake_config.account,
+         user=snowflake_config.user,
+         role=snowflake_config.role,
+         password="<PLACEHOLDER PASSWORD>",  # must be provided to pass validation but will be ignored
+         warehouse=snowflake_config.warehouse,
+         database=snowflake_config.database,
+         schema=snowflake_config.schema,
+         kwargs={"private_key": snowflake_config.private_key},
+      )
+      .add_table_asset(name="<SCHEMA.TABLE>", table_name="<TABLE_NAME>")
+      .add_batch_definition_whole_table(  # you can also batch by year, month, or day here
+         name="Whole Table Batch Definition"
+      )
+   )
+
 
 my_expectations = gx.ExpectationSuite(
-    name="<SUITE_NAME>",
-    expectations=[
-        # define expectations
-    ],
+   name="<SUITE_NAME>",
+   expectations=[
+      # define expectations
+   ],
 )
 
 my_batch_operator = GXValidateBatchOperator(
-    task_id="my_batch_operator",
-    configure_batch_definition=my_batch_definition_function,
-    expect=my_expectations,
-    context_type="ephemeral",
+   task_id="my_batch_operator",
+   configure_batch_definition=my_batch_definition_function,
+   expect=my_expectations,
+   context_type="ephemeral",
 )
 ```

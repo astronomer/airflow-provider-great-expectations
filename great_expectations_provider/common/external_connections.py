@@ -36,6 +36,15 @@ class SnowflakeKeyConnection(BaseModel):
     private_key: bytes
 
 
+def get_connection_by_id(conn_id: str) -> Connection:
+    conn = BaseHook.get_connection(conn_id)
+    if not conn:
+        raise ValueError(
+            f"Failed to retrieve Airflow connection with conn_id: {conn_id}"
+        )
+    return conn
+
+
 def build_redshift_connection_string(conn_id: str, schema: Optional[str] = None) -> str:
     """
     Build connection string for Redshift connections.
@@ -50,9 +59,7 @@ def build_redshift_connection_string(conn_id: str, schema: Optional[str] = None)
     Raises:
         ValueError: If connection doesn't exist or is invalid
     """
-    conn = BaseHook.get_connection(conn_id)
-    if not conn:
-        raise ValueError(f"Connection does not exist in Airflow for conn_id: {conn_id}")
+    conn = get_connection_by_id(conn_id=conn_id)
 
     database_name = schema or conn.schema
     if not database_name:
@@ -80,9 +87,7 @@ def build_mysql_connection_string(conn_id: str, schema: Optional[str] = None) ->
     Raises:
         ValueError: If connection doesn't exist or is invalid
     """
-    conn = BaseHook.get_connection(conn_id)
-    if not conn:
-        raise ValueError(f"Connection does not exist in Airflow for conn_id: {conn_id}")
+    conn = get_connection_by_id(conn_id=conn_id)
 
     database_name = schema or conn.schema
     if not database_name:
@@ -109,9 +114,7 @@ def build_mssql_connection_string(conn_id: str, schema: Optional[str] = None) ->
     Raises:
         ValueError: If connection doesn't exist or is invalid
     """
-    conn = BaseHook.get_connection(conn_id)
-    if not conn:
-        raise ValueError(f"Connection does not exist in Airflow for conn_id: {conn_id}")
+    conn = get_connection_by_id(conn_id=conn_id)
 
     database_name = schema or conn.schema or "master"
 
@@ -139,9 +142,7 @@ def build_postgres_connection_string(conn_id: str, schema: Optional[str] = None)
     Raises:
         ValueError: If connection doesn't exist or database name is missing
     """
-    conn = BaseHook.get_connection(conn_id)
-    if not conn:
-        raise ValueError(f"Connection does not exist in Airflow for conn_id: {conn_id}")
+    conn = get_connection_by_id(conn_id=conn_id)
 
     postgres_database = schema or conn.schema
     if not postgres_database:
@@ -173,9 +174,7 @@ def build_snowflake_connection_string(
     Raises:
         ValueError: If connection doesn't exist or required parameters are missing
     """
-    conn = BaseHook.get_connection(conn_id)
-    if not conn:
-        raise ValueError(f"Connection does not exist in Airflow for conn_id: {conn_id}")
+    conn = get_connection_by_id(conn_id=conn_id)
 
     # Try to use SnowflakeHook first
     try:
@@ -211,9 +210,7 @@ def build_snowflake_key_connection(
         ValueError: If connection doesn't exist, required parameters are missing, or private key is not configured
         ImportError: If SnowflakeHook is not available
     """
-    conn = BaseHook.get_connection(conn_id)
-    if not conn:
-        raise ValueError(f"Connection does not exist in Airflow for conn_id: {conn_id}")
+    conn = get_connection_by_id(conn_id=conn_id)
 
     # Key-based authentication requires SnowflakeHook
     return _build_snowflake_key_connection_from_hook(conn_id, schema)
@@ -382,9 +379,7 @@ def build_gcpbigquery_connection_string(
     Raises:
         ValueError: If connection doesn't exist
     """
-    conn = BaseHook.get_connection(conn_id)
-    if not conn:
-        raise ValueError(f"Connection does not exist in Airflow for conn_id: {conn_id}")
+    conn = get_connection_by_id(conn_id=conn_id)
 
     effective_schema = schema or conn.schema or ""
     return f"{conn.host}{effective_schema}"
@@ -403,9 +398,7 @@ def build_sqlite_connection_string(conn_id: str) -> str:
     Raises:
         ValueError: If connection doesn't exist
     """
-    conn = BaseHook.get_connection(conn_id)
-    if not conn:
-        raise ValueError(f"Connection does not exist in Airflow for conn_id: {conn_id}")
+    conn = get_connection_by_id(conn_id=conn_id)
 
     return f"sqlite:///{conn.host}"
 
@@ -433,9 +426,7 @@ def build_aws_connection_string(
     Raises:
         ValueError: If connection doesn't exist or required parameters are missing
     """
-    conn = BaseHook.get_connection(conn_id)
-    if not conn:
-        raise ValueError(f"Connection does not exist in Airflow for conn_id: {conn_id}")
+    conn = get_connection_by_id(conn_id=conn_id)
 
     if not s3_path:
         raise ValueError("s3_path parameter is required for AWS connections")

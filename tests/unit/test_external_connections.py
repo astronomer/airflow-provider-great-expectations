@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from great_expectations_provider.hooks.external_connections import (
+from great_expectations_provider.common.external_connections import (
     SnowflakeKeyConnection,
     build_aws_connection_string,
     build_gcpbigquery_connection_string,
@@ -24,7 +24,7 @@ class TestRedshiftConnectionString:
     """Test class for Redshift connection string."""
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     def test_build_redshift_connection_string_success(self, mock_get_connection):
         """Test successful Redshift connection string creation."""
@@ -45,7 +45,7 @@ class TestRedshiftConnectionString:
         mock_get_connection.assert_called_once_with("test_conn")
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     def test_build_redshift_connection_string_with_schema_override(
         self, mock_get_connection
@@ -65,7 +65,7 @@ class TestRedshiftConnectionString:
         assert result == expected
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     def test_build_redshift_connection_string_no_connection(self, mock_get_connection):
         """Test Redshift connection string when connection doesn't exist."""
@@ -73,12 +73,12 @@ class TestRedshiftConnectionString:
 
         with pytest.raises(
             ValueError,
-            match="Connection does not exist in Airflow for conn_id: test_conn",
+            match="Failed to retrieve Airflow connection with conn_id: test_conn",
         ):
             build_redshift_connection_string("test_conn")
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     def test_build_redshift_connection_string_no_schema(self, mock_get_connection):
         """Test Redshift connection string when no schema is provided."""
@@ -101,7 +101,7 @@ class TestMySQLConnectionString:
     """Test class for MySQL connection string."""
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     def test_build_mysql_connection_string_success(self, mock_get_connection):
         """Test successful MySQL connection string creation."""
@@ -119,7 +119,7 @@ class TestMySQLConnectionString:
         assert result == expected
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     def test_build_mysql_connection_string_no_schema(self, mock_get_connection):
         """Test MySQL connection string when no schema is provided."""
@@ -142,7 +142,7 @@ class TestMSSQLConnectionString:
     """Test class for Microsoft SQL Server connection string."""
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     def test_build_mssql_connection_string_success(self, mock_get_connection):
         """Test successful MSSQL connection string creation."""
@@ -161,7 +161,7 @@ class TestMSSQLConnectionString:
         assert result == expected
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     def test_build_mssql_connection_string_custom_driver(self, mock_get_connection):
         """Test MSSQL connection string with custom driver."""
@@ -180,7 +180,7 @@ class TestMSSQLConnectionString:
         assert result == expected
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     def test_build_mssql_connection_string_no_schema_defaults_to_master(
         self, mock_get_connection
@@ -205,7 +205,7 @@ class TestPostgresConnectionString:
     """Test class for PostgreSQL connection string."""
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     def test_build_postgres_connection_string_success(self, mock_get_connection):
         """Test successful PostgreSQL connection string creation."""
@@ -223,7 +223,7 @@ class TestPostgresConnectionString:
         assert result == expected
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     def test_build_postgres_connection_string_no_schema(self, mock_get_connection):
         """Test PostgreSQL connection string when no schema is provided."""
@@ -245,10 +245,10 @@ class TestSnowflakeConnectionString:
     """Test class for Snowflake connection string."""
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     @patch(
-        "great_expectations_provider.hooks.external_connections._build_snowflake_connection_string_from_hook"
+        "great_expectations_provider.common.external_connections._build_snowflake_connection_string_from_hook"
     )
     def test_build_snowflake_connection_string_hook_success(
         self, mock_hook_build, mock_get_connection
@@ -264,13 +264,13 @@ class TestSnowflakeConnectionString:
         mock_hook_build.assert_called_once_with("test_conn", None)
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     @patch(
-        "great_expectations_provider.hooks.external_connections._build_snowflake_connection_string_from_hook"
+        "great_expectations_provider.common.external_connections._build_snowflake_connection_string_from_hook"
     )
     @patch(
-        "great_expectations_provider.hooks.external_connections._build_snowflake_connection_string_manual"
+        "great_expectations_provider.common.external_connections._build_snowflake_connection_string_manual"
     )
     def test_build_snowflake_connection_string_fallback_to_manual(
         self, mock_manual_build, mock_hook_build, mock_get_connection
@@ -287,7 +287,7 @@ class TestSnowflakeConnectionString:
         mock_manual_build.assert_called_once_with(mock_conn, None)
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     def test_build_snowflake_connection_string_no_connection(self, mock_get_connection):
         """Test Snowflake connection string when connection doesn't exist."""
@@ -295,15 +295,15 @@ class TestSnowflakeConnectionString:
 
         with pytest.raises(
             ValueError,
-            match="Connection does not exist in Airflow for conn_id: test_conn",
+            match="Failed to retrieve Airflow connection with conn_id: test_conn",
         ):
             build_snowflake_connection_string("test_conn")
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     @patch(
-        "great_expectations_provider.hooks.external_connections._build_snowflake_connection_string_from_hook"
+        "great_expectations_provider.common.external_connections._build_snowflake_connection_string_from_hook"
     )
     def test_build_snowflake_connection_string_with_schema_override(
         self, mock_hook_build, mock_get_connection
@@ -319,10 +319,10 @@ class TestSnowflakeConnectionString:
         mock_hook_build.assert_called_once_with("test_conn", "custom_schema")
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     @patch(
-        "great_expectations_provider.hooks.external_connections._build_snowflake_connection_string_manual"
+        "great_expectations_provider.common.external_connections._build_snowflake_connection_string_manual"
     )
     def test_build_snowflake_connection_string_manual_success(
         self, mock_manual_build, mock_get_connection
@@ -354,10 +354,10 @@ class TestSnowflakeKeyConnection:
     """Test class for Snowflake key connection."""
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     @patch(
-        "great_expectations_provider.hooks.external_connections._build_snowflake_key_connection_from_hook"
+        "great_expectations_provider.common.external_connections._build_snowflake_key_connection_from_hook"
     )
     def test_build_snowflake_key_connection_success(
         self, mock_hook_build, mock_get_connection
@@ -389,7 +389,7 @@ class TestSnowflakeKeyConnection:
         mock_hook_build.assert_called_once_with("test_conn", None)
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     def test_build_snowflake_key_connection_no_connection(self, mock_get_connection):
         """Test Snowflake key connection when connection doesn't exist."""
@@ -397,15 +397,15 @@ class TestSnowflakeKeyConnection:
 
         with pytest.raises(
             ValueError,
-            match="Connection does not exist in Airflow for conn_id: test_conn",
+            match="Failed to retrieve Airflow connection with conn_id: test_conn",
         ):
             build_snowflake_key_connection("test_conn")
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     @patch(
-        "great_expectations_provider.hooks.external_connections._build_snowflake_key_connection_from_hook"
+        "great_expectations_provider.common.external_connections._build_snowflake_key_connection_from_hook"
     )
     def test_build_snowflake_key_connection_with_schema_override(
         self, mock_hook_build, mock_get_connection
@@ -430,10 +430,10 @@ class TestSnowflakeKeyConnection:
         mock_hook_build.assert_called_once_with("test_conn", "custom_schema")
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     @patch(
-        "great_expectations_provider.hooks.external_connections._build_snowflake_key_connection_from_hook"
+        "great_expectations_provider.common.external_connections._build_snowflake_key_connection_from_hook"
     )
     def test_build_snowflake_key_connection_missing_private_key(
         self, mock_hook_build, mock_get_connection
@@ -452,10 +452,10 @@ class TestSnowflakeKeyConnection:
             build_snowflake_key_connection("test_conn")
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     @patch(
-        "great_expectations_provider.hooks.external_connections._build_snowflake_key_connection_from_hook"
+        "great_expectations_provider.common.external_connections._build_snowflake_key_connection_from_hook"
     )
     def test_build_snowflake_key_connection_missing_account(
         self, mock_hook_build, mock_get_connection
@@ -474,10 +474,10 @@ class TestSnowflakeKeyConnection:
             build_snowflake_key_connection("test_conn")
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     @patch(
-        "great_expectations_provider.hooks.external_connections._build_snowflake_key_connection_from_hook"
+        "great_expectations_provider.common.external_connections._build_snowflake_key_connection_from_hook"
     )
     def test_build_snowflake_key_connection_missing_database(
         self, mock_hook_build, mock_get_connection
@@ -496,10 +496,10 @@ class TestSnowflakeKeyConnection:
             build_snowflake_key_connection("test_conn")
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     @patch(
-        "great_expectations_provider.hooks.external_connections._build_snowflake_key_connection_from_hook"
+        "great_expectations_provider.common.external_connections._build_snowflake_key_connection_from_hook"
     )
     def test_build_snowflake_key_connection_missing_warehouse(
         self, mock_hook_build, mock_get_connection
@@ -518,10 +518,10 @@ class TestSnowflakeKeyConnection:
             build_snowflake_key_connection("test_conn")
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     @patch(
-        "great_expectations_provider.hooks.external_connections._build_snowflake_key_connection_from_hook"
+        "great_expectations_provider.common.external_connections._build_snowflake_key_connection_from_hook"
     )
     def test_build_snowflake_key_connection_missing_schema(
         self, mock_hook_build, mock_get_connection
@@ -540,10 +540,10 @@ class TestSnowflakeKeyConnection:
             build_snowflake_key_connection("test_conn")
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     @patch(
-        "great_expectations_provider.hooks.external_connections._build_snowflake_key_connection_from_hook"
+        "great_expectations_provider.common.external_connections._build_snowflake_key_connection_from_hook"
     )
     def test_build_snowflake_key_connection_import_error(
         self, mock_hook_build, mock_get_connection
@@ -564,7 +564,7 @@ class TestGCPBigQueryConnectionString:
     """Test class for Google Cloud BigQuery connection string."""
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     def test_build_gcpbigquery_connection_string_success(self, mock_get_connection):
         """Test successful BigQuery connection string creation."""
@@ -579,7 +579,7 @@ class TestGCPBigQueryConnectionString:
         assert result == expected
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     def test_build_gcpbigquery_connection_string_no_schema(self, mock_get_connection):
         """Test BigQuery connection string with no schema."""
@@ -598,7 +598,7 @@ class TestSQLiteConnectionString:
     """Test class for SQLite connection string."""
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     def test_build_sqlite_connection_string_success(self, mock_get_connection):
         """Test successful SQLite connection string creation."""
@@ -612,7 +612,7 @@ class TestSQLiteConnectionString:
         assert result == expected
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     def test_build_sqlite_connection_string_no_connection(self, mock_get_connection):
         """Test SQLite connection string when connection doesn't exist."""
@@ -620,7 +620,7 @@ class TestSQLiteConnectionString:
 
         with pytest.raises(
             ValueError,
-            match="Connection does not exist in Airflow for conn_id: test_conn",
+            match="Failed to retrieve Airflow connection with conn_id: test_conn",
         ):
             build_sqlite_connection_string("test_conn")
 
@@ -629,7 +629,7 @@ class TestAWSConnectionString:
     """Test class for AWS connection string."""
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     def test_build_aws_connection_string_success_with_database(
         self, mock_get_connection
@@ -650,7 +650,7 @@ class TestAWSConnectionString:
         assert result == expected
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     def test_build_aws_connection_string_success_without_database(
         self, mock_get_connection
@@ -668,7 +668,7 @@ class TestAWSConnectionString:
         assert result == expected
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     def test_build_aws_connection_string_missing_s3_path(self, mock_get_connection):
         """Test AWS connection string with missing s3_path."""
@@ -681,7 +681,7 @@ class TestAWSConnectionString:
             build_aws_connection_string("test_conn", region="us-east-1")
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     def test_build_aws_connection_string_missing_region(self, mock_get_connection):
         """Test AWS connection string with missing region."""
@@ -694,7 +694,7 @@ class TestAWSConnectionString:
             build_aws_connection_string("test_conn", s3_path="s3://bucket/path/")
 
     @patch(
-        "great_expectations_provider.hooks.external_connections.BaseHook.get_connection"
+        "great_expectations_provider.common.external_connections.BaseHook.get_connection"
     )
     def test_build_aws_connection_string_schema_fallback(self, mock_get_connection):
         """Test AWS connection string uses schema as database fallback."""

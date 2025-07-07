@@ -176,7 +176,7 @@ After deciding [which Operator best fits your use case](#operator-use-cases), fo
 
 ### Manage Data Source credentials with Airflow Connections
 
-The Great Expectations Airflow Provider includes hooks to retrieve connection credentials from third party Airflow Connections.
+The Great Expectations Airflow Provider includes functions to retrieve connection credentials from other Airflow provider Connections.
 The following external Connections are supported:
 
 #### Supported Connection Types
@@ -195,45 +195,44 @@ The following external Connections are supported:
 
 #### Usage
 
-To use these hooks, first install the Airflow Provider that maintains the connection you need,
+To use these functions, first install the Airflow Provider that maintains the connection you need,
 and use the Airflow UI to configure the Connection with your credentials.
-Then, import the hook you need from `great_expectations_provider.hooks.external_connections`
+Then, import the function you need from `great_expectations_provider.hooks.external_connections`
 and use it within your `configure_batch_definition` or `configure_checkpoint` function.
-
 
 ```python
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from great_expectations_provider.hooks.external_connections import (
-    build_postgres_connection_string,
+from great_expectations_provider.common.external_connections import (
+   build_postgres_connection_string,
 )
 
 if TYPE_CHECKING:
-    from great_expectations.data_context import AbstractDataContext
-    from great_expectations.core.batch_definition import BatchDefinition
+   from great_expectations.data_context import AbstractDataContext
+   from great_expectations.core.batch_definition import BatchDefinition
 
 
 def configure_postgres_batch_definition(
-    context: AbstractDataContext,
+        context: AbstractDataContext,
 ) -> BatchDefinition:
-    task_id = "example_task"
-    table_name = "example_table"
-    postgres_conn_id = "example_conn_id"
-    return (
-        context.data_sources.add_postgres(
-            name=task_id,
-            connection_string=build_postgres_connection_string(
-                conn_id=postgres_conn_id
-            ),
-        )
-        .add_table_asset(
-            name=task_id,
-            table_name=table_name,
-        )
-        .add_batch_definition_whole_table(task_id)
-    )
+   task_id = "example_task"
+   table_name = "example_table"
+   postgres_conn_id = "example_conn_id"
+   return (
+      context.data_sources.add_postgres(
+         name=task_id,
+         connection_string=build_postgres_connection_string(
+            conn_id=postgres_conn_id
+         ),
+      )
+      .add_table_asset(
+         name=task_id,
+         table_name=table_name,
+      )
+      .add_batch_definition_whole_table(task_id)
+   )
 
 ```
 
