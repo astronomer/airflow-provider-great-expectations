@@ -49,15 +49,15 @@ To get the most out of this getting started guide, make sure you have an underst
    pip install "airflow-provider-great-expectations[snowflake]"
    ```
    The following backends are supported as optional dependencies:
-    - `athena`
-    - `azure`
-    - `bigquery`
-    - `gcp`
-    - `mssql`
-    - `postgresql`
-    - `s3`
-    - `snowflake`
-    - `spark`
+      - `athena`
+      - `azure`
+      - `bigquery`
+      - `gcp`
+      - `mssql`
+      - `postgresql`
+      - `s3`
+      - `snowflake`
+      - `spark`
 
 ## Configure an Operator
 
