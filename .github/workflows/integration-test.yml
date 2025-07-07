@@ -1,16 +1,28 @@
 name: "Integration Tests"
 
 on:
-  pull_request_target:
-    branches:
-      - main
-  push:
-    branches:
-      - main
+  push: # Run on pushes to the default branch
+    branches: [main]
+  pull_request_target: # Also run on pull requests originated from forks
+    branches: [main]
+
+# This allows a subsequently queued workflow run to interrupt and cancel previous runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 
 jobs:
+  Authorize:
+    environment: ${{ github.event_name == 'pull_request_target' &&
+      github.event.pull_request.head.repo.full_name != github.repository &&
+      'external' || 'internal' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: true
+
   integration-test:
+    needs: Authorize
     runs-on: ubuntu-latest
 
     env:
@@ -57,6 +69,7 @@ jobs:
         run: pytest -vvv -m integration tests/integration
 
   spark-integration-test:
+    needs: Authorize
     runs-on: ubuntu-latest
 
     env:
@@ -93,6 +106,7 @@ jobs:
         run: pytest -vvv -m spark_integration tests/integration
 
   spark-connect-integration-test:
+    needs: Authorize
     runs-on: ubuntu-latest
 
     env:

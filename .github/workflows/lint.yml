@@ -1,13 +1,28 @@
 name: "Lint"
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
+  push: # Run on pushes to the default branch
+    branches: [main]
+  pull_request_target: # Also run on pull requests originated from forks
+    branches: [main]
+
+# This allows a subsequently queued workflow run to interrupt and cancel previous runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 
 jobs:
+  Authorize:
+    environment: ${{ github.event_name == 'pull_request_target' &&
+      github.event.pull_request.head.repo.full_name != github.repository &&
+      'external' || 'internal' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: true
+
   format-and-type-check:
+    needs: Authorize
     runs-on: ubuntu-latest
 
     steps:
