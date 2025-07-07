@@ -484,6 +484,39 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#manage-data-source-credentials-with-airflow-connections" class="md-nav__link">
+    <span class="md-ellipsis">
+      Manage Data Source credentials with Airflow Connections
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Manage Data Source credentials with Airflow Connections">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#supported-connection-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Supported Connection Types
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -810,6 +843,39 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#manage-data-source-credentials-with-airflow-connections" class="md-nav__link">
+    <span class="md-ellipsis">
+      Manage Data Source credentials with Airflow Connections
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Manage Data Source credentials with Airflow Connections">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#supported-connection-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Supported Connection Types
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -909,15 +975,15 @@
 <p><div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;airflow-provider-great-expectations[snowflake]&quot;</span>
 </span></code></pre></div>
    The following backends are supported as optional dependencies:
-      - <code>athena</code>
-      - <code>azure</code>
-      - <code>bigquery</code>
-      - <code>gcp</code>
-      - <code>mssql</code>
-      - <code>postgresql</code>
-      - <code>s3</code>
-      - <code>snowflake</code>
-      - <code>spark</code></p>
+    - <code>athena</code>
+    - <code>azure</code>
+    - <code>bigquery</code>
+    - <code>gcp</code>
+    - <code>mssql</code>
+    - <code>postgresql</code>
+    - <code>s3</code>
+    - <code>snowflake</code>
+    - <code>spark</code></p>
 <h2 id="configure-an-operator">Configure an Operator</h2>
 <p>After deciding <a href="#operator-use-cases">which Operator best fits your use case</a>, follow the Operator-specific instructions below to configure it.</p>
 <h3 id="data-frame-operator">Data Frame Operator</h3>
@@ -953,8 +1019,10 @@
 <li><strong><code>result_format</code> (optional)</strong>: accepts <code>BOOLEAN_ONLY</code>, <code>BASIC</code>, <code>SUMMARY</code>, or <code>COMPLETE</code> to set the <a href="https://docs.greatexpectations.io/docs/core/trigger_actions_based_on_results/choose_a_result_format/">verbosity of returned Validation Results</a>. Defaults to <code>SUMMARY</code>.</li>
 <li><strong><code>context_type</code> (optional)</strong>: accepts <code>ephemeral</code> or <code>cloud</code> to set the <a href="https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context">Data Context</a> used by the Operator. Defaults to <code>ephemeral</code>, which does not persist results between runs. To save and view Validation Results in GX Cloud, use <code>cloud</code> and complete the additional Cloud Data Context configuration below.</li>
 </ul>
-<p>For more details, explore this <a href="https://github.com/astronomer/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags/example_great_expectations_dag.py#L134-L138">end-to-end code sample</a>.</p>
 </li>
+</ol>
+<p>For more details, explore this <a href="https://github.com/astronomer/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags/example_great_expectations_dag.py#L134-L138">end-to-end code sample</a>.</p>
+<ol>
 <li>
 <p>If you use a Cloud Data Context, create a <a href="https://app.greatexpectations.io/">free GX Cloud account</a> to get your <a href="https://docs.greatexpectations.io/docs/cloud/connect/connect_python#get-your-user-access-token-and-organization-id">Cloud credentials</a> and then set the following Airflow variables.</p>
 <ul>
@@ -988,8 +1056,10 @@
 <li><strong><code>result_format</code> (optional)</strong>: accepts <code>BOOLEAN_ONLY</code>, <code>BASIC</code>, <code>SUMMARY</code>, or <code>COMPLETE</code> to set the <a href="https://docs.greatexpectations.io/docs/core/trigger_actions_based_on_results/choose_a_result_format/">verbosity of returned Validation Results</a>. Defaults to <code>SUMMARY</code>.</li>
 <li><strong><code>context_type</code> (optional)</strong>: accepts <code>ephemeral</code> or <code>cloud</code> to set the <a href="https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context">Data Context</a> used by the Operator. Defaults to <code>ephemeral</code>, which does not persist results between runs. To save and view Validation Results in GX Cloud, use <code>cloud</code> and complete the additional Cloud Data Context configuration below.</li>
 </ul>
-<p>For more details, explore this <a href="https://github.com/astronomer/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags/example_dag_with_batch_parameters.py#L123-L127">end-to-end code sample</a>.</p>
 </li>
+</ol>
+<p>For more details, explore this <a href="https://github.com/astronomer/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags/example_dag_with_batch_parameters.py#L123-L127">end-to-end code sample</a>.</p>
+<ol>
 <li>
 <p>If you use a Cloud Data Context, create a <a href="https://app.greatexpectations.io/">free GX Cloud account</a> to get your <a href="https://docs.greatexpectations.io/docs/cloud/connect/connect_python#get-your-user-access-token-and-organization-id">Cloud credentials</a> and then set the following Airflow variables.</p>
 <ul>
@@ -1021,8 +1091,10 @@
 <li><strong><code>context_type</code> (optional)</strong>: accepts <code>ephemeral</code>, <code>cloud</code>, or <code>file</code> to set the <a href="https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context">Data Context</a> used by the Operator. Defaults to <code>ephemeral</code>, which does not persist results between runs. To save and view Validation Results in GX Cloud, use <code>cloud</code> and complete the additional Cloud Data Context configuration below. To manage Validation Results yourself, use <code>file</code> and complete the additional File Data Context configuration below.</li>
 <li><strong><code>configure_file_data_context</code> (optional)</strong>: function that returns a <a href="https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context?context_type=file">FileDataContext</a>. Applicable only when using a File Data Context. See the additional File Data Context configuration below for more information.</li>
 </ul>
-<p>For more details, explore this <a href="https://github.com/astronomer/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags/example_dag_with_batch_parameters.py#L134-L137">end-to-end code sample</a>.</p>
 </li>
+</ol>
+<p>For more details, explore this <a href="https://github.com/astronomer/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags/example_dag_with_batch_parameters.py#L134-L137">end-to-end code sample</a>.</p>
+<ol>
 <li>
 <p>If you use a Cloud Data Context, create a <a href="https://app.greatexpectations.io/">free GX Cloud account</a> to get your <a href="https://docs.greatexpectations.io/docs/cloud/connect/connect_python#get-your-user-access-token-and-organization-id">Cloud credentials</a> and then set the following Airflow variables.</p>
 <ul>
@@ -1034,6 +1106,104 @@
 <p>If you use a File Data Context, pass the <code>configure_file_data_context</code> parameter. This takes a function that returns a <a href="https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context?context_type=file">FileDataContext</a>. By default, GX will write results in the configuration directory. If you are retrieving your FileDataContext from a remote location, you can yield the FileDataContext in the <code>configure_file_data_context</code> function and write the directory back to the remote after control is returned to the generator.</p>
 </li>
 </ol>
+<h3 id="manage-data-source-credentials-with-airflow-connections">Manage Data Source credentials with Airflow Connections</h3>
+<p>The Great Expectations Airflow Provider includes functions to retrieve connection credentials from other Airflow provider Connections.
+The following external Connections are supported:</p>
+<h4 id="supported-connection-types">Supported Connection Types</h4>
+<table>
+<thead>
+<tr>
+<th>Connection Type</th>
+<th>API Function</th>
+<th>External Provider Documentation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Amazon Redshift</strong></td>
+<td><code>build_redshift_connection_string(conn_id, schema=None)</code></td>
+<td><a href="https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/redshift.html">Amazon Provider</a></td>
+</tr>
+<tr>
+<td><strong>MySQL</strong></td>
+<td><code>build_mysql_connection_string(conn_id, schema=None)</code></td>
+<td><a href="https://airflow.apache.org/docs/apache-airflow-providers-mysql/stable/connections/mysql.html">MySQL Provider</a></td>
+</tr>
+<tr>
+<td><strong>Microsoft SQL Server</strong></td>
+<td><code>build_mssql_connection_string(conn_id, schema=None)</code></td>
+<td><a href="https://airflow.apache.org/docs/apache-airflow-providers-microsoft-mssql/stable/connections/mssql.html">Microsoft SQL Server Provider</a></td>
+</tr>
+<tr>
+<td><strong>PostgreSQL</strong></td>
+<td><code>build_postgres_connection_string(conn_id, schema=None)</code></td>
+<td><a href="https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/connections/postgres.html">PostgreSQL Provider</a></td>
+</tr>
+<tr>
+<td><strong>Snowflake</strong></td>
+<td><code>build_snowflake_connection_string(conn_id, schema=None)</code></td>
+<td><a href="https://airflow.apache.org/docs/apache-airflow-providers-snowflake/stable/connections/snowflake.html">Snowflake Provider</a></td>
+</tr>
+<tr>
+<td><strong>Snowflake (Key-based Auth)</strong></td>
+<td><code>build_snowflake_key_connection(conn_id, schema=None)</code></td>
+<td><a href="https://airflow.apache.org/docs/apache-airflow-providers-snowflake/stable/connections/snowflake.html">Snowflake Provider</a></td>
+</tr>
+<tr>
+<td><strong>Google Cloud BigQuery</strong></td>
+<td><code>build_gcpbigquery_connection_string(conn_id, schema=None)</code></td>
+<td><a href="https://airflow.apache.org/docs/apache-airflow-providers-google/stable/connections/gcp.html">Google Cloud Provider</a></td>
+</tr>
+<tr>
+<td><strong>SQLite</strong></td>
+<td><code>build_sqlite_connection_string(conn_id)</code></td>
+<td><a href="https://airflow.apache.org/docs/apache-airflow-providers-sqlite/stable/connections/sqlite.html">SQLite Provider</a></td>
+</tr>
+<tr>
+<td><strong>AWS Athena</strong></td>
+<td><code>build_aws_connection_string(conn_id, schema=None, database=None, s3_path=None, region=None)</code></td>
+<td><a href="https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html">Amazon Provider</a></td>
+</tr>
+</tbody>
+</table>
+<h4 id="usage">Usage</h4>
+<p>To use these functions, first install the Airflow Provider that maintains the connection you need,
+and use the Airflow UI to configure the Connection with your credentials.
+Then, import the function you need from <code>great_expectations_provider.hooks.external_connections</code>
+and use it within your <code>configure_batch_definition</code> or <code>configure_checkpoint</code> function.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">great_expectations_provider.common.external_connections</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>   <span class="n">build_postgres_connection_string</span><span class="p">,</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="p">)</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>   <span class="kn">from</span><span class="w"> </span><span class="nn">great_expectations.data_context</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractDataContext</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>   <span class="kn">from</span><span class="w"> </span><span class="nn">great_expectations.core.batch_definition</span><span class="w"> </span><span class="kn">import</span> <span class="n">BatchDefinition</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="k">def</span><span class="w"> </span><span class="nf">configure_postgres_batch_definition</span><span class="p">(</span>
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>        <span class="n">context</span><span class="p">:</span> <span class="n">AbstractDataContext</span><span class="p">,</span>
+</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BatchDefinition</span><span class="p">:</span>
+</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>   <span class="n">task_id</span> <span class="o">=</span> <span class="s2">&quot;example_task&quot;</span>
+</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>   <span class="n">table_name</span> <span class="o">=</span> <span class="s2">&quot;example_table&quot;</span>
+</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>   <span class="n">postgres_conn_id</span> <span class="o">=</span> <span class="s2">&quot;example_conn_id&quot;</span>
+</span><span id="__span-8-20"><a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>   <span class="k">return</span> <span class="p">(</span>
+</span><span id="__span-8-21"><a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>      <span class="n">context</span><span class="o">.</span><span class="n">data_sources</span><span class="o">.</span><span class="n">add_postgres</span><span class="p">(</span>
+</span><span id="__span-8-22"><a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>         <span class="n">name</span><span class="o">=</span><span class="n">task_id</span><span class="p">,</span>
+</span><span id="__span-8-23"><a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>         <span class="n">connection_string</span><span class="o">=</span><span class="n">build_postgres_connection_string</span><span class="p">(</span>
+</span><span id="__span-8-24"><a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a>            <span class="n">conn_id</span><span class="o">=</span><span class="n">postgres_conn_id</span>
+</span><span id="__span-8-25"><a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a>         <span class="p">),</span>
+</span><span id="__span-8-26"><a id="__codelineno-8-26" name="__codelineno-8-26" href="#__codelineno-8-26"></a>      <span class="p">)</span>
+</span><span id="__span-8-27"><a id="__codelineno-8-27" name="__codelineno-8-27" href="#__codelineno-8-27"></a>      <span class="o">.</span><span class="n">add_table_asset</span><span class="p">(</span>
+</span><span id="__span-8-28"><a id="__codelineno-8-28" name="__codelineno-8-28" href="#__codelineno-8-28"></a>         <span class="n">name</span><span class="o">=</span><span class="n">task_id</span><span class="p">,</span>
+</span><span id="__span-8-29"><a id="__codelineno-8-29" name="__codelineno-8-29" href="#__codelineno-8-29"></a>         <span class="n">table_name</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span>
+</span><span id="__span-8-30"><a id="__codelineno-8-30" name="__codelineno-8-30" href="#__codelineno-8-30"></a>      <span class="p">)</span>
+</span><span id="__span-8-31"><a id="__codelineno-8-31" name="__codelineno-8-31" href="#__codelineno-8-31"></a>      <span class="o">.</span><span class="n">add_batch_definition_whole_table</span><span class="p">(</span><span class="n">task_id</span><span class="p">)</span>
+</span><span id="__span-8-32"><a id="__codelineno-8-32" name="__codelineno-8-32" href="#__codelineno-8-32"></a>   <span class="p">)</span>
+</span></code></pre></div>
 <h2 id="add-the-configured-operator-to-a-dag">Add the configured Operator to a DAG</h2>
 <p>After configuring an Operator, add it to a DAG. Explore our <a href="https://github.com/astronomer/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags">example DAGs</a>, which have sample tasks that demonstrate Operator functionality.</p>
 <p>Note that the shape of the Validation Results depends on both the Operator type and whether or not you set the optional <code>result_format</code> parameter.
