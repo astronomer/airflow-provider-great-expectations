@@ -76,68 +76,59 @@ If you want to update your existing `GreatExpectationsOperator` configuration to
 - Explore [examples](https://github.com/astronomer/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags) of end-to-end configuration and usage.
 
 
-## Migrate Snowflake private key authentication
+## Migrate Connections
 
-GX Core continues to support connecting to Snowflake with private keys. The legacy Great Expectations Airflow Provider contained logic to read the key from disk. With the new Provider, you must read the key into memory, as described by the [GX Core docs](https://docs.greatexpectations.io/docs/core/connect_to_data/sql_data/?storage_type=key_pair). Here is a complete example of what that may look like, using the `GXValidateBatchOperator`.
+The legacy Great Expectations Airflow Provider accepted a `conn_id` argument, which
+would attempt to retrieve credentials from other Airflow provider Connections. That logic
+is now available as provider-specific functions in `great_expectations_provider.common.external_connections`,
+and can be used when configuring your Great Expectations data source within the `configure_batch_definition` or
+`configure_checkpoint` function.
 
+Here is an example that uses the `build_snowflake_key_connection` function to connect to Snowflake using a private key.
 
-```
-import os
-import pathlib
-
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization
-
+```python
 from great_expectations_provider.operators.validate_batch import GXValidateBatchOperator
+from great_expectations_provider.common.external_connections import (
+   build_snowflake_key_connection
+)
 
 import great_expectations as gx
 from great_expectations.core.batch_definition import BatchDefinition
 from great_expectations.data_context import AbstractDataContext
 
-def get_private_key():
-    snowflake_password = os.environ.get("SNOWFLAKE_PASSWORD")
-    PRIVATE_KEY_FILE = pathlib.Path("path/to/my/rsa_key.p8").resolve(strict=True)
-    p_key = serialization.load_pem_private_key(
-        PRIVATE_KEY_FILE.read_bytes(),
-        password=snowflake_password.encode(),
-        backend=default_backend(),
-    )
-    return p_key.private_bytes(
-        encoding=serialization.Encoding.DER,
-        format=serialization.PrivateFormat.PKCS8,
-        encryption_algorithm=serialization.NoEncryption(),
-    )
 
 def my_batch_definition_function(context: AbstractDataContext) -> BatchDefinition:
-    return (
-        context.data_sources.add_snowflake(
-            name="snowflake sandbox",
-            account="<ACCOUNT>",
-            user="<USER>",
-            role="<ROLE>",
-            password="<PLACEHOLDER PASSWORD>",  # must be provided to pass validation but will be ignored
-            warehouse="<WAREHOUSE>",
-            database="<DATABASE>",
-            schema="<SCHEMA>",
-            kwargs={"private_key": get_private_key()},
-        )
-        .add_table_asset(name="<SCHEMA.TABLE>", table_name="<TABLE_NAME>")
-        .add_batch_definition_whole_table(  # you can also batch by year, month, or day here
-            name="Whole Table Batch Definition"
-        )
-    )
+   snowflake_config = build_snowflake_key_connection(conn_id="snowflake_conn_id")
+   return (
+      context.data_sources.add_snowflake(
+         name="snowflake sandbox",
+         account=snowflake_config.account,
+         user=snowflake_config.user,
+         role=snowflake_config.role,
+         password="<PLACEHOLDER PASSWORD>",  # must be provided to pass validation but will be ignored
+         warehouse=snowflake_config.warehouse,
+         database=snowflake_config.database,
+         schema=snowflake_config.schema,
+         kwargs={"private_key": snowflake_config.private_key},
+      )
+      .add_table_asset(name="<SCHEMA.TABLE>", table_name="<TABLE_NAME>")
+      .add_batch_definition_whole_table(  # you can also batch by year, month, or day here
+         name="Whole Table Batch Definition"
+      )
+   )
+
 
 my_expectations = gx.ExpectationSuite(
-    name="<SUITE_NAME>",
-    expectations=[
-        # define expectations
-    ],
+   name="<SUITE_NAME>",
+   expectations=[
+      # define expectations
+   ],
 )
 
 my_batch_operator = GXValidateBatchOperator(
-    task_id="my_batch_operator",
-    configure_batch_definition=my_batch_definition_function,
-    expect=my_expectations,
-    context_type="ephemeral",
+   task_id="my_batch_operator",
+   configure_batch_definition=my_batch_definition_function,
+   expect=my_expectations,
+   context_type="ephemeral",
 )
 ```

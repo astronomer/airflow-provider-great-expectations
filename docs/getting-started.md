@@ -174,6 +174,69 @@ After deciding [which Operator best fits your use case](#operator-use-cases), fo
 
 4. If you use a File Data Context, pass the `configure_file_data_context` parameter. This takes a function that returns a [FileDataContext](https://docs.greatexpectations.io/docs/core/set_up_a_gx_environment/create_a_data_context?context_type=file). By default, GX will write results in the configuration directory. If you are retrieving your FileDataContext from a remote location, you can yield the FileDataContext in the `configure_file_data_context` function and write the directory back to the remote after control is returned to the generator.
 
+### Manage Data Source credentials with Airflow Connections
+
+The Great Expectations Airflow Provider includes functions to retrieve connection credentials from other Airflow provider Connections.
+The following external Connections are supported:
+
+#### Supported Connection Types
+
+| Connection Type | API Function | External Provider Documentation |
+|-----------------|-------------|--------------------------------|
+| **Amazon Redshift** | `build_redshift_connection_string(conn_id, schema=None)` | [Amazon Provider](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/redshift.html) |
+| **MySQL** | `build_mysql_connection_string(conn_id, schema=None)` | [MySQL Provider](https://airflow.apache.org/docs/apache-airflow-providers-mysql/stable/connections/mysql.html) |
+| **Microsoft SQL Server** | `build_mssql_connection_string(conn_id, schema=None)` | [Microsoft SQL Server Provider](https://airflow.apache.org/docs/apache-airflow-providers-microsoft-mssql/stable/connections/mssql.html) |
+| **PostgreSQL** | `build_postgres_connection_string(conn_id, schema=None)` | [PostgreSQL Provider](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/connections/postgres.html) |
+| **Snowflake** | `build_snowflake_connection_string(conn_id, schema=None)` | [Snowflake Provider](https://airflow.apache.org/docs/apache-airflow-providers-snowflake/stable/connections/snowflake.html) |
+| **Snowflake (Key-based Auth)** | `build_snowflake_key_connection(conn_id, schema=None)` | [Snowflake Provider](https://airflow.apache.org/docs/apache-airflow-providers-snowflake/stable/connections/snowflake.html) |
+| **Google Cloud BigQuery** | `build_gcpbigquery_connection_string(conn_id, schema=None)` | [Google Cloud Provider](https://airflow.apache.org/docs/apache-airflow-providers-google/stable/connections/gcp.html) |
+| **SQLite** | `build_sqlite_connection_string(conn_id)` | [SQLite Provider](https://airflow.apache.org/docs/apache-airflow-providers-sqlite/stable/connections/sqlite.html) |
+| **AWS Athena** | `build_aws_connection_string(conn_id, schema=None, database=None, s3_path=None, region=None)` | [Amazon Provider](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html) |
+
+#### Usage
+
+To use these functions, first install the Airflow Provider that maintains the connection you need,
+and use the Airflow UI to configure the Connection with your credentials.
+Then, import the function you need from `great_expectations_provider.common.external_connections`
+and use it within your `configure_batch_definition` or `configure_checkpoint` function.
+
+```python
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from great_expectations_provider.common.external_connections import (
+   build_postgres_connection_string,
+)
+
+if TYPE_CHECKING:
+   from great_expectations.data_context import AbstractDataContext
+   from great_expectations.core.batch_definition import BatchDefinition
+
+
+def configure_postgres_batch_definition(
+        context: AbstractDataContext,
+) -> BatchDefinition:
+   task_id = "example_task"
+   table_name = "example_table"
+   postgres_conn_id = "example_conn_id"
+   return (
+      context.data_sources.add_postgres(
+         name=task_id,
+         connection_string=build_postgres_connection_string(
+            conn_id=postgres_conn_id
+         ),
+      )
+      .add_table_asset(
+         name=task_id,
+         table_name=table_name,
+      )
+      .add_batch_definition_whole_table(task_id)
+   )
+
+```
+
+
 ## Add the configured Operator to a DAG
 
 After configuring an Operator, add it to a DAG. Explore our [example DAGs](https://github.com/astronomer/airflow-provider-great-expectations/tree/docs/great_expectations_provider/example_dags), which have sample tasks that demonstrate Operator functionality.
