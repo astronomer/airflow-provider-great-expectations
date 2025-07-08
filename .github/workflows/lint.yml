@@ -3,7 +3,7 @@ name: "Lint"
 on:
   push: # Run on pushes to the default branch
     branches: [main]
-  pull_request_target: # Also run on pull requests originated from forks
+  pull_request: # Also run on pull requests originated from forks
     branches: [main]
 
 # This allows a subsequently queued workflow run to interrupt and cancel previous runs
