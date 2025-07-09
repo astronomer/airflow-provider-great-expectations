@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://astronomer.github.io/airflow-provider-great-expectations/1.0.0a4/</loc>
+         <lastmod>2025-07-09</lastmod>
+    </url>
+    <url>
+         <loc>https://astronomer.github.io/airflow-provider-great-expectations/1.0.0a4/examples/</loc>
+         <lastmod>2025-07-09</lastmod>
+    </url>
+    <url>
+         <loc>https://astronomer.github.io/airflow-provider-great-expectations/1.0.0a4/getting-started/</loc>
+         <lastmod>2025-07-09</lastmod>
+    </url>
+    <url>
+         <loc>https://astronomer.github.io/airflow-provider-great-expectations/1.0.0a4/migration-guide/</loc>
+         <lastmod>2025-07-09</lastmod>
+    </url>
+    <url>
+         <loc>https://astronomer.github.io/airflow-provider-great-expectations/1.0.0a4/contributing/code-of-conduct/</loc>
+         <lastmod>2025-07-09</lastmod>
+    </url>
+    <url>
+         <loc>https://astronomer.github.io/airflow-provider-great-expectations/1.0.0a4/contributing/contributing-guide/</loc>
+         <lastmod>2025-07-09</lastmod>
+    </url>
+    <url>
+         <loc>https://astronomer.github.io/airflow-provider-great-expectations/1.0.0a4/contributing/contributor-roles/</loc>
+         <lastmod>2025-07-09</lastmod>
+    </url>
+    <url>
+         <loc>https://astronomer.github.io/airflow-provider-great-expectations/1.0.0a4/contributing/contributors/</loc>
+         <lastmod>2025-07-09</lastmod>
+    </url>
+</urlset>
