@@ -1,5 +1,17 @@
 # Apache Airflow Provider for Great Expectations
 
+## 1.0.0a5 (2025-07-15)
+* [FEATURE] Support external airflow connections by @joshua-stauffer in #201
+* [BUGFIX] Raise error on validation failure by @joshua-stauffer in #196
+* [DOCUMENTATION] Publish documentation on GitHub pages, refactor setup.cfg into pyproject.toml by @pankajkoti in #186
+* [MAINTENANCE] Bump GX version to 1.3.11 by @tyler-hoffman in #188
+* [MAINTENANCE] Use migrate command to initialise airflow metadata and uv to install dependencies in CI by @pankajkoti in #199
+* [MAINTENANCE] Upgrade pre-commit hook version as being attempted by pre-commit bot in PR 189 by @pankajkoti in #190
+* [MAINTENANCE] Require Authorize for all jobs on pull requests from external contributors in CI by @pankajkoti in #202
+* [MAINTENANCE] Change CI on trigger event to pull_request from pull_request_target by @pankajkoti in #204
+* [MAINTENANCE] Add environment and permissions for trusted publishing by @pankajkoti in #208
+* [MAINTENANCE] pre-commit-ci bot updates in #185, #191, #192, #193, #200, #203, #207
+
 ## 1.0.0a3 (2025-03-18)
 * [BUGFIX] Fix documentation links for URLs that appear in PyPI package listing README by @pankajkoti in #186
 
