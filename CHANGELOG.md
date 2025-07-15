@@ -9,7 +9,7 @@
 * [MAINTENANCE] Upgrade pre-commit hook version as being attempted by pre-commit bot in PR 189 by @pankajkoti in #190
 * [MAINTENANCE] Require Authorize for all jobs on pull requests from external contributors in CI by @pankajkoti in #202
 * [MAINTENANCE] Change CI on trigger event to pull_request from pull_request_target by @pankajkoti in #204
-* [MAINTENANCE] pre-commit-ci bot updates in #185, #191, #192, #193, #200, #203
+* [MAINTENANCE] pre-commit-ci bot updates in #185, #191, #192, #193, #200, #203, #207
 
 ## 1.0.0a3 (2025-03-18)
 * [BUGFIX] Fix documentation links for URLs that appear in PyPI package listing README by @pankajkoti in #186
