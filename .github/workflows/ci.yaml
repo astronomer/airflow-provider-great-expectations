@@ -66,8 +66,8 @@ jobs:
     environment:
       name: pypi
       url: https://pypi.org/p/airflow-provider-great-expectations/
-      permissions:
-        id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+    permissions:
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
