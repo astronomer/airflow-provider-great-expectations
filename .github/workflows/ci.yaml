@@ -63,6 +63,11 @@ jobs:
     if: github.event_name == 'release'
     name: Build and publish Python 🐍 distributions 📦 to PyPI
     runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/airflow-provider-great-expectations/
+      permissions:
+        id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
@@ -76,4 +81,4 @@ jobs:
     - name: Verify Git Tag and package version
       run: python3 .github/scripts/verify_tag_and_version.py
     - run: uv build --wheel --sdist
-    - run: uv publish --token ${{ secrets.PYPI_TOKEN }}
+    - run: uv publish
