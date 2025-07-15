@@ -1,6 +1,6 @@
 # Apache Airflow Provider for Great Expectations
 
-## 1.0.0a4 (2025-07-09)
+## 1.0.0a5 (2025-07-15)
 * [FEATURE] Support external airflow connections by @joshua-stauffer in #201
 * [BUGFIX] Raise error on validation failure by @joshua-stauffer in #196
 * [DOCUMENTATION] Publish documentation on GitHub pages, refactor setup.cfg into pyproject.toml by @pankajkoti in #186
