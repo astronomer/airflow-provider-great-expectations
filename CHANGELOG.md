@@ -9,6 +9,7 @@
 * [MAINTENANCE] Upgrade pre-commit hook version as being attempted by pre-commit bot in PR 189 by @pankajkoti in #190
 * [MAINTENANCE] Require Authorize for all jobs on pull requests from external contributors in CI by @pankajkoti in #202
 * [MAINTENANCE] Change CI on trigger event to pull_request from pull_request_target by @pankajkoti in #204
+* [MAINTENANCE] Add environment and permissions for trusted publishing by @pankajkoti in #208
 * [MAINTENANCE] pre-commit-ci bot updates in #185, #191, #192, #193, #200, #203, #207
 
 ## 1.0.0a3 (2025-03-18)
